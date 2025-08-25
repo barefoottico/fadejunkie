@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Milady Barber Test Prep</title>
+  <!-- Tailwind (cdn) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-50 text-zinc-900">
+  <main class="max-w-xl mx-auto px-6 py-12">
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold">Study smarter, not longer</h1>
+      <p class="text-zinc-600 mt-2">
+        Tap <strong>Open Play</strong> for quick reps. Tap <strong>Test Mode</strong> for a timed, chapter-based check.
+      </p>
+    </header>
+
+    <section id="cta" class="flex gap-3">
+      <button id="openPlayBtn" class="px-4 py-2 rounded-xl shadow bg-white border border-zinc-200 hover:bg-zinc-100">Open Play</button>
+      <button id="testModeBtn" class="px-4 py-2 rounded-xl shadow bg-black text-white hover:opacity-90">Start Test</button>
+    </section>
+
+    <p class="text-xs text-zinc-500 mt-3">Pick chapters via <em>Manage Sets</em>.</p>
+
+    <section class="mt-8">
+      <div id="status" class="text-sm text-zinc-600">Loading datasets…</div>
+      <div id="error" class="hidden text-sm text-red-600 mt-2"></div>
+    </section>
+
+    <section id="app" class="mt-8 hidden">
+      <!-- The app will populate here -->
+      <div class="text-sm text-zinc-600" id="setsInfo"></div>
+    </section>
+  </main>
+
+  <script>
+    // Keep CSV files next to this HTML (same folder)
+    const DATASETS = [
+      { id: "exam1", label: "MBF Exam 1", path: "./mbf_exam_1.csv" },
+      { id: "exam2", label: "MBF Exam 2", path: "./mbf_exam_2.csv" },
+    ];
+
+    const state = { cards: [], mode: null };
+
+    const $status = document.getElementById("status");
+    const $error = document.getElementById("error");
+    const $app = document.getElementById("app");
+    const $setsInfo = document.getElementById("setsInfo");
+
+    // Tiny CSV parser (no external libs): expects header row: question,option_a,option_b,option_c,option_d,answer
+    function parseCSV(text) {
+      const rows = text.trim().split(/\r?\n/).map(r => r.split(","));
+      const [header, ...lines] = rows;
+      const idx = Object.fromEntries(header.map((h,i)=>[h.trim().toLowerCase(), i]));
+      return lines.map(cols => ({
+        q: cols[idx["question"]] || "",
+        a: cols[idx["option_a"]] || "",
+        b: cols[idx["option_b"]] || "",
+        c: cols[idx["option_c"]] || "",
+        d: cols[idx["option_d"]] || "",
+        answer: (cols[idx["answer"]] || "").trim()
+      })).filter(card => card.q);
+    }
+
+    async function loadAll() {
+      try {
+        const results = await Promise.all(DATASETS.map(async ds => {
+          const res = await fetch(ds.path, { cache: "no-store" });
+          if (!res.ok) throw new Error(`${ds.label} not found at ${ds.path}`);
+          const text = await res.text();
+          const cards = parseCSV(text);
+          return { ...ds, cards };
+        }));
+
+        state.cards = results.flatMap(r => r.cards);
+        $status.textContent = `Loaded ${state.cards.length} cards from ${results.length} set(s).`;
+        $app.classList.remove("hidden");
+        $setsInfo.textContent = results.map(r => `${r.label}: ${r.cards.length}`).join(" • ");
+      } catch (e) {
+        $status.textContent = "Couldn’t finish loading.";
+        $error.classList.remove("hidden");
+        $error.textContent = e.message;
+      }
+    }
+
+    // Mode buttons (wire up to your views later)
+    document.getElementById("openPlayBtn").addEventListener("click", () => {
+      state.mode = "open";
+      alert("Open Play: flip front/back freely (wire your UI here).");
+    });
+    document.getElementById("testModeBtn").addEventListener("click", () => {
+      state.mode = "test";
+      alert("Test Mode: reveal back after choice + show grade at end (wire your UI here).");
+    });
+
+    loadAll();
+  </script>
+</body>
+</html>
