@@ -104,26 +104,56 @@
     const $setsInfo = document.getElementById("setsInfo");
     const $setPills = document.getElementById("setPills");
 
-    // Manage Sets state
-    let loadedSets = [];              // [{id, short, label, cards:[...] }]
-    const selectedSetIds = new Set(); // active set ids
+// Manage Sets state
+let loadedSets = [];              // [{id, short, label, cards:[...] }]
+const selectedSetIds = new Set(); // active set ids
 
-    const csvSafeSplit = (line) => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g);
-    function parseCSV(text) {
-      const rows = text.replace(/\r/g, "").split("\n").filter(Boolean)
-        .map(csvSafeSplit).map(cols => cols.map(s => s.replace(/^"(.*)"$/, "$1")));
-      const [header, ...lines] = rows; if (!header) return [];
-      const idx = Object.fromEntries(header.map((h,i)=>[h.trim().toLowerCase(), i]));
-      return lines.map((cols, i) => {
-        const q = (cols[idx["question"]] || "").trim();
-        const A = (cols[idx["option_a"]] || "").trim();
-        const B = (cols[idx["option_b"]] || "").trim();
-        const C = (cols[idx["option_c"]] || "").trim();
-        const D = (cols[idx["option_d"]] || "").trim();
-        const ans = ((cols[idx["answer"]] || "").trim() || "A").toUpperCase();
-        return { id: `c_${i}_${q.slice(0,16)}`, q, a:A, b:B, c:C, d:D, answer:ans };
-      }).filter(c => c.q);
-    }
+// CSV parsing (handles commas inside quotes)
+const csvSafeSplit = (line) => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g);
+function parseCSV(text) {
+  const rows = text
+    .replace(/\r/g, "")
+    .split("\n")
+    .filter(Boolean)
+    .map(csvSafeSplit)
+    .map(cols => cols.map(s => s.replace(/^"(.*)"$/, "$1")));
+
+  const [rawHeader, ...lines] = rows;
+  if (!rawHeader) return [];
+
+  // Strip BOM if present on first header cell
+  if (rawHeader[0]) rawHeader[0] = rawHeader[0].replace(/^\uFEFF/, "");
+
+  const idx = Object.fromEntries(rawHeader.map((h, i) => [h.trim().toLowerCase(), i]));
+
+  return lines.map((cols, i) => {
+    const q  = (cols[idx["question"]]  || "").trim();
+    const A  = (cols[idx["option_a"]]  || "").trim();
+    const B  = (cols[idx["option_b"]]  || "").trim();
+    const C  = (cols[idx["option_c"]]  || "").trim();
+    const D  = (cols[idx["option_d"]]  || "").trim();
+    const ans = ((cols[idx["answer"]]  || "").trim() || "A").toUpperCase();
+    return { id: `c_${i}_${q.slice(0,16)}`, q, a: A, b: B, c: C, d: D, answer: ans };
+  }).filter(c => c.q);
+}
+
+/* ==========================
+   MEMORY (localStorage)
+========================== */
+const MEM_KEYS = {
+  SELECTED_SETS: "fj_selected_sets",
+  OPENPLAY_STATE: "fj_openplay_state" // { shuffle, starFilter, i }
+};
+
+function loadJSON(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+}
+function saveJSON(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+// (next) data loading helper
    async function fetchWithFallback(ds) {
   try {
     const r = await fetch(ds.path, { cache: "no-store" });
@@ -145,6 +175,38 @@ async function loadAll() {
       if (!cards.length) throw new Error(`${ds.label} parsed 0 cards`);
       return { id: ds.id, short: ds.short, label: ds.label, cards };
     }));
+
+    loadedSets = results;
+
+    // Restore selected sets from memory, else default to "all"
+    const savedSetIds = loadJSON(MEM_KEYS.SELECTED_SETS, null);
+    selectedSetIds.clear();
+    if (Array.isArray(savedSetIds) && savedSetIds.length) {
+      const validIds = new Set(results.map(s => s.id));
+      savedSetIds.forEach(id => { if (validIds.has(id)) selectedSetIds.add(id); });
+      if (selectedSetIds.size === 0) results.forEach(s => selectedSetIds.add(s.id)); // fallback to all
+    } else {
+      results.forEach(s => selectedSetIds.add(s.id));
+    }
+    // Keep flat list for any legacy paths
+    state.cards = results.flatMap(r => r.cards);
+
+    // Render UI
+    $app.classList.remove("hidden");
+    renderSetsSummary();
+    renderSetPills();
+    updateShuffleAvailability();
+
+    // Persist selection immediately
+    saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
+
+  } catch (e) {
+    $status.textContent = "Couldn’t finish loading.";
+    $error.classList.remove("hidden");
+    $error.textContent = String(e?.message || e);
+  }
+}
+
 
     loadedSets = results;
 
@@ -190,6 +252,9 @@ function renderSetPills() {
   const totalSets = loadedSets.length;
   const activeCount = loadedSets.reduce((n, s) => n + (selectedSetIds.has(s.id) ? 1 : 0), 0);
   const allActive = activeCount === totalSets && totalSets > 0;
+
+  saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
+
 
   // Build "All" chip + one chip per set
   const pillsHtml = [
@@ -349,6 +414,7 @@ function updateShuffleAvailability() {
     function opRenderProgress() {
       $opProgress.textContent = op.deck.length ? `${op.i + 1} / ${op.deck.length}` : "0 / 0";
     }
+    
     function opRenderStarBtn(card) {
       $opStarBtn.textContent = card && op.stars.has(card.id) ? "★" : "☆";
     }
@@ -368,6 +434,25 @@ function updateShuffleAvailability() {
         opRenderProgress();
         return;
       }
+function saveOpenPlayState() {
+  // Clamp i just in case deck changed
+  const i = Math.max(0, Math.min(op.i, Math.max(0, op.deck.length - 1)));
+  saveJSON(MEM_KEYS.OPENPLAY_STATE, {
+    shuffle: op.shuffle,
+    starFilter: op.starFilter,
+    i
+  });
+}
+function restoreOpenPlayState() {
+  const saved = loadJSON(MEM_KEYS.OPENPLAY_STATE, null);
+  if (!saved) return;
+  op.shuffle = !!saved.shuffle;
+  op.starFilter = !!saved.starFilter;
+  // i will be clamped after deck is built
+  op.i = Number.isInteger(saved.i) ? saved.i : 0;
+}
+
+      
       // Front
       $opQuestion.textContent = card.q;
       const opts = [["A",card.a],["B",card.b],["C",card.c],["D",card.d]]
@@ -388,18 +473,40 @@ function updateShuffleAvailability() {
     }
 
     const opFlip = () => { op.flipped = !op.flipped; opRenderCard(); };
-    const opNext = () => { if (!op.deck.length) return; op.i = (op.i + 1) % op.deck.length; op.flipped = false; opRenderCard(); };
-    const opPrev = () => { if (!op.deck.length) return; op.i = (op.i - 1 + op.deck.length) % op.deck.length; op.flipped = false; opRenderCard(); };
-    function opToggleShuffle() {
-      op.shuffle = !op.shuffle;
-      $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
-      opBuildOrder(); op.flipped = false; opRenderCard();
-    }
-    function opToggleStarFilter() {
-      op.starFilter = !op.starFilter;
-      $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
-      opApplyFilters(); op.flipped = false; opRenderCard();
-    }
+ const opNext = () => {
+  if (!op.deck.length) return;
+  op.i = (op.i + 1) % op.deck.length;
+  op.flipped = false;
+  opRenderCard();
+  saveOpenPlayState();
+};
+
+const opPrev = () => {
+  if (!op.deck.length) return;
+  op.i = (op.i - 1 + op.deck.length) % op.deck.length;
+  op.flipped = false;
+  opRenderCard();
+  saveOpenPlayState();
+};
+
+function opToggleShuffle() {
+  op.shuffle = !op.shuffle;
+  $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
+  opBuildOrder();
+  op.flipped = false;
+  opRenderCard();
+  saveOpenPlayState();
+}
+
+function opToggleStarFilter() {
+  op.starFilter = !op.starFilter;
+  $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
+  opApplyFilters();
+  op.flipped = false;
+  opRenderCard();
+  saveOpenPlayState();
+}
+
     function opToggleStar() {
       const card = opCurrent(); if (!card) return;
       if (op.stars.has(card.id)) op.stars.delete(card.id); else op.stars.add(card.id);
@@ -410,14 +517,27 @@ function updateShuffleAvailability() {
 
     // Build op.all from selected sets, then refresh deck
     function opInjectFromSelection() {
-      op.all = loadedSets
-        .filter(s => selectedSetIds.has(s.id))
-        .flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
-      opApplyFilters();
-      op.i = 0;
-      op.flipped = false;
-      opRenderCard();
-    }
+  op.all = loadedSets
+    .filter(s => selectedSetIds.has(s.id))
+    .flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
+
+  opApplyFilters(); // builds order from op.deck and op.shuffle
+
+  // After deck exists, restore index (clamp to bounds)
+  const saved = loadJSON(MEM_KEYS.OPENPLAY_STATE, null);
+  if (saved && Number.isInteger(saved.i)) {
+    op.i = Math.max(0, Math.min(saved.i, Math.max(0, op.deck.length - 1)));
+  } else {
+    op.i = 0;
+  }
+
+  op.flipped = false;
+  opRenderCard();
+
+  // Persist the (possibly clamped) position
+  saveOpenPlayState();
+}
+
 
     async function showOpenPlay() {
       state.mode = "open";
@@ -425,6 +545,7 @@ function updateShuffleAvailability() {
 
       if (!loadedSets.length) await loadAll();
       // Always reflect current selection
+      restoreOpenPlayState();  
       opInjectFromSelection();
 
       $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
@@ -462,6 +583,7 @@ function updateShuffleAvailability() {
   </script>
 </body>
 </html>
+
 
 
 
