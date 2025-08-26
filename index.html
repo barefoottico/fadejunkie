@@ -20,15 +20,21 @@
       <button id="testModeBtn" class="px-4 py-2 rounded-xl shadow bg-black text-white hover:opacity-90">Start Test</button>
     </section>
 
-    <!-- Test config (slider for question count) -->
-    <section id="testConfig" class="mt-4">
-      <label for="tmCountRange" class="block text-sm text-zinc-600 mb-1">Questions per test</label>
-      <div class="flex items-center gap-3">
-        <input id="tmCountRange" type="range" min="0" max="3" step="1" value="0" class="w-full">
-        <span id="tmCountLabel" class="text-sm font-medium w-12 text-right">20</span>
-      </div>
-      <p class="text-xs text-zinc-500 mt-1">20 • 50 • 100 • 150</p>
-    </section>
+  <!-- Test config (slider for question count + Apply) -->
+<section id="testConfig" class="mt-4">
+  <label for="tmCountRange" class="block text-sm text-zinc-600 mb-1">Questions per test</label>
+  <div class="flex items-center gap-3">
+    <input id="tmCountRange" type="range" min="0" max="3" step="1" value="0" class="w-full" />
+    <span id="tmCountLabel" class="text-sm font-medium w-12 text-right">20</span>
+    <button id="tmApplyCount" class="px-3 py-1.5 rounded-lg border text-sm">Apply</button>
+  </div>
+  <p class="text-xs text-zinc-500 mt-1">
+    20 • 50 • 100 • 150 — press <kbd>Enter</kbd> on the slider or click Apply.
+    <span class="text-amber-700">Changing the number will restart any in-progress test.</span>
+  </p>
+</section>
+
+
 
     <!-- Loading / error -->
     <section class="mt-8">
@@ -365,6 +371,42 @@
       $tmCountLabel.textContent = String(TM_COUNTS[idx]);
       localStorage.setItem(TM_CFG_KEYS.COUNT_IDX, String(idx));
     });
+    // ---- Apply button wiring (with progress warning) ----
+const $tmApplyCount = document.getElementById("tmApplyCount");
+
+function hasInProgressAnswers() {
+  if (test && test.answers && test.answers.size > 0) return true;
+  const saved = loadJSON(TM_KEYS.STATE, null);
+  if (saved && Array.isArray(saved.answers) && saved.answers.length > 0) return true;
+  return false;
+}
+
+function applyQuestionCount() {
+  const idx = Number($tmCountRange.value);
+
+  if (hasInProgressAnswers()) {
+    const ok = confirm(
+      "You have an in-progress test. Changing the question count will restart it and your answers will be lost.\n\nContinue?"
+    );
+    if (!ok) return;
+  }
+
+  localStorage.setItem(TM_CFG_KEYS.COUNT_IDX, String(idx));
+  localStorage.removeItem(TM_KEYS.STATE);
+
+  if (!$testView.classList.contains("hidden")) {
+    startNewTest();
+  }
+}
+
+$tmApplyCount?.addEventListener("click", applyQuestionCount);
+$tmCountRange?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    applyQuestionCount();
+  }
+});
+
 
     /* =======================
        4) OPEN PLAY
@@ -537,11 +579,82 @@
     }
     function finalizeTest(){ const graded=gradeTest(); renderResults(graded); localStorage.removeItem(TM_KEYS.STATE); }
 
-    function startTestFlow(){
-      if (!loadedSets.length) { loadAll().then(()=>{ if (selectedSetIds.size===0){ alert("Pick at least one set in the Filter."); return; } showTestView(); if(!restoreTestState()) startNewTest(); }); return; }
-      if (selectedSetIds.size===0){ alert("Pick at least one set in the Filter."); return; }
-      showTestView(); if(!restoreTestState()) startNewTest();
+  function startTestFlow(){
+  const go = () => {
+    if (selectedSetIds.size === 0) {
+      alert("Pick at least one set in the Filter.");
+      return;
     }
+    showTestView();
+
+    const saved = loadJSON(TM_KEYS.STATE, null);
+    const idx = Number(localStorage.getItem(TM_CFG_KEYS.COUNT_IDX)) || 0;
+    const targetCount = TM_COUNTS[idx] || 20;
+
+    const canRestore = saved && Array.isArray(saved.deck) && saved.deck.length > 0;
+    const sameSize   = canRestore && saved.deck.length === targetCount;
+    const hasAnswers = canRestore && Array.isArray(saved.answers) && saved.answers.length > 0;
+
+    if (canRestore && sameSize) {
+      restoreTestState();
+    } else {
+      if (hasAnswers) {
+        const ok = confirm(
+          "You have an in-progress test saved with a different question count. " +
+          "Starting a new test will discard your answers.\n\nStart a new test now?"
+        );
+        if (!ok) return;
+      }
+      localStorage.removeItem(TM_KEYS.STATE);
+      startNewTest();
+    }
+  };
+
+  if (!loadedSets.length) {
+    loadAll().then(go);
+  } else {
+    go();
+  }
+}
+
+    showTestView();
+
+    const saved = loadJSON(TM_KEYS.STATE, null);
+    const idx = Number(localStorage.getItem(TM_CFG_KEYS.COUNT_IDX)) || 0;
+    const targetCount = TM_COUNTS[idx] || 20;
+
+    const canRestore =
+      saved &&
+      Array.isArray(saved.deck) &&
+      saved.deck.length > 0;
+
+    const sameSize = canRestore && saved.deck.length === targetCount;
+    const hasAnswers = canRestore && Array.isArray(saved.answers) && saved.answers.length > 0;
+
+    if (canRestore && sameSize) {
+      // Safe to restore (same deck length)
+      restoreTestState();
+    } else {
+      // Will discard saved state (size mismatch or no valid deck)
+      if (hasAnswers) {
+        const ok = confirm(
+          "You have an in-progress test saved with a different question count. " +
+          "Starting a new test will discard your answers.\n\nStart a new test now?"
+        );
+        if (!ok) return;
+      }
+      localStorage.removeItem(TM_KEYS.STATE);
+      startNewTest();
+    }
+  };
+
+  if (!loadedSets.length) {
+    loadAll().then(go);
+  } else {
+    go();
+  }
+}
+  
 
     // Test bindings
     document.getElementById("tmPrev").addEventListener("click", tmPrev);
@@ -560,3 +673,4 @@
   </script>
 </body>
 </html>
+
