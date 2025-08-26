@@ -32,6 +32,56 @@
       <!-- The app will populate here -->
       <div class="text-sm text-zinc-600" id="setsInfo"></div>
     </section>
+
+    <!-- ===== OPEN PLAY VIEW (NEW) ===== -->
+    <section id="openPlayView" class="hidden max-w-xl mx-auto mt-8">
+      <!-- Top bar -->
+      <div class="flex items-center justify-between mb-3">
+        <div id="opProgress" class="text-sm text-neutral-600">0 / 0</div>
+        <div class="flex items-center gap-2">
+          <button id="opShuffleBtn" class="px-3 py-1.5 rounded-lg border text-sm">Shuffle: Off</button>
+          <button id="opStarFilterBtn" class="px-3 py-1.5 rounded-lg border text-sm">Starred: All</button>
+        </div>
+      </div>
+
+      <!-- Card -->
+      <div id="opCard"
+           class="relative rounded-2xl border bg-white shadow p-6 min-h-[220px] cursor-pointer select-none"
+           tabindex="0" aria-live="polite">
+        <!-- Front (question/options) -->
+        <div id="opFront" class="block">
+          <div id="opQuestion" class="text-lg font-semibold mb-4">Question will appear here</div>
+          <ul id="opOptions" class="space-y-2 text-base"></ul>
+        </div>
+        <!-- Back (answer revealed) -->
+        <div id="opBack" class="hidden">
+          <div class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Answer</div>
+          <div id="opAnswer" class="text-lg font-semibold"></div>
+          <div id="opAnswerExplain" class="text-sm text-neutral-600 mt-2"></div>
+        </div>
+
+        <!-- Star icon -->
+        <button id="opStarBtn" title="Star this card"
+                class="absolute top-3 right-3 text-xl leading-none">☆</button>
+      </div>
+
+      <!-- Controls -->
+      <div class="mt-5 flex items-center justify-between">
+        <button id="opPrevBtn" class="px-4 py-2 rounded-xl border">◀ Prev</button>
+
+        <div class="flex items-center gap-2">
+          <button id="opFlipBtn" class="px-4 py-2 rounded-xl border">Flip</button>
+          <button id="opAgainBtn" class="px-3 py-2 rounded-xl border text-sm">Again</button>
+          <button id="opKnownBtn" class="px-3 py-2 rounded-xl border text-sm">Known</button>
+        </div>
+
+        <button id="opNextBtn" class="px-4 py-2 rounded-xl border">Next ▶</button>
+      </div>
+
+      <!-- Tiny help -->
+      <p class="mt-3 text-xs text-neutral-500">Tip: Tap card to flip · ←/→ to navigate · Space/Enter to flip</p>
+    </section>
+    <!-- ===== /OPEN PLAY VIEW ===== -->
   </main>
 
   <script>
@@ -53,13 +103,14 @@
       const rows = text.trim().split(/\r?\n/).map(r => r.split(","));
       const [header, ...lines] = rows;
       const idx = Object.fromEntries(header.map((h,i)=>[h.trim().toLowerCase(), i]));
-      return lines.map(cols => ({
+      return lines.map((cols, i) => ({
+        id: `c_${i}_${(cols[idx["question"]]||"").slice(0,16)}`,
         q: cols[idx["question"]] || "",
         a: cols[idx["option_a"]] || "",
         b: cols[idx["option_b"]] || "",
         c: cols[idx["option_c"]] || "",
         d: cols[idx["option_d"]] || "",
-        answer: (cols[idx["answer"]] || "").trim()
+        answer: (cols[idx["answer"]] || "").trim().toUpperCase()
       })).filter(card => card.q);
     }
 
@@ -84,16 +135,223 @@
       }
     }
 
-    // Mode buttons (wire up to your views later)
-    document.getElementById("openPlayBtn").addEventListener("click", () => {
+    /* ==========================
+       OPEN PLAY LOGIC (NEW)
+    ========================== */
+    const OP_LOCAL_KEY = {
+      STARS: "fj_op_stars",
+      KNOWN: "fj_op_known"
+    };
+
+    function opLoadSet(key) {
+      try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
+      catch { return new Set(); }
+    }
+    function opSaveSet(key, set) {
+      localStorage.setItem(key, JSON.stringify(Array.from(set)));
+    }
+
+    // Open Play state
+    const op = {
+      all: [],        // all cards (from state.cards)
+      deck: [],       // filtered (star toggle)
+      order: [],      // index order into deck
+      i: 0,
+      flipped: false,
+      shuffle: false,
+      starFilter: false, // false = all, true = only starred
+      stars: opLoadSet(OP_LOCAL_KEY.STARS),
+      known: opLoadSet(OP_LOCAL_KEY.KNOWN),
+    };
+
+    // UI nodes
+    const $openPlayView    = document.getElementById("openPlayView");
+    const $opCard          = document.getElementById("opCard");
+    const $opFront         = document.getElementById("opFront");
+    const $opBack          = document.getElementById("opBack");
+    const $opQuestion      = document.getElementById("opQuestion");
+    const $opOptions       = document.getElementById("opOptions");
+    const $opAnswer        = document.getElementById("opAnswer");
+    const $opAnswerExplain = document.getElementById("opAnswerExplain");
+    const $opProgress      = document.getElementById("opProgress");
+    const $opShuffleBtn    = document.getElementById("opShuffleBtn");
+    const $opStarFilterBtn = document.getElementById("opStarFilterBtn");
+    const $opStarBtn       = document.getElementById("opStarBtn");
+    const $opPrevBtn       = document.getElementById("opPrevBtn");
+    const $opNextBtn       = document.getElementById("opNextBtn");
+    const $opFlipBtn       = document.getElementById("opFlipBtn");
+    const $opAgainBtn      = document.getElementById("opAgainBtn");
+    const $opKnownBtn      = document.getElementById("opKnownBtn");
+
+    function opBuildOrder() {
+      op.order = Array.from({length: op.deck.length}, (_, i) => i);
+      if (op.shuffle) {
+        for (let j = op.order.length - 1; j > 0; j--) {
+          const k = Math.floor(Math.random() * (j + 1));
+          [op.order[j], op.order[k]] = [op.order[k], op.order[j]];
+        }
+      }
+      op.i = 0;
+    }
+
+    function opApplyFilters() {
+      op.deck = op.starFilter
+        ? op.all.filter(c => op.stars.has(c.id))
+        : op.all.slice();
+      opBuildOrder();
+    }
+
+    function opCurrent() {
+      if (!op.deck.length) return null;
+      return op.deck[op.order[op.i]];
+    }
+
+    function opRenderProgress() {
+      $opProgress.textContent = op.deck.length ? `${op.i + 1} / ${op.deck.length}` : "0 / 0";
+    }
+
+    function opRenderStarBtn(card) {
+      $opStarBtn.textContent = card && op.stars.has(card.id) ? "★" : "☆";
+    }
+
+    function opRenderCard() {
+      const card = opCurrent();
+      if (!card) {
+        $opFront.classList.remove("hidden");
+        $opBack.classList.add("hidden");
+        $opQuestion.textContent = op.starFilter ? "No starred cards yet." : "No cards loaded.";
+        $opOptions.innerHTML = "";
+        $opAnswer.textContent = "";
+        $opAnswerExplain.textContent = "";
+        opRenderProgress();
+        opRenderStarBtn(null);
+        return;
+      }
+
+      // FRONT
+      $opQuestion.textContent = card.q;
+      const opts = [
+        ["A", card.a], ["B", card.b], ["C", card.c], ["D", card.d]
+      ].filter(([_, v]) => v && v.trim().length);
+      $opOptions.innerHTML = opts.map(([k, v]) =>
+        `<li class="border rounded-lg px-3 py-2"><strong>${k}.</strong> ${v}</li>`
+      ).join("");
+
+      // BACK
+      const ansKey = card.answer;
+      const ansText = ({A:card.a, B:card.b, C:card.c, D:card.d}[ansKey]) || "";
+      $opAnswer.textContent = `${ansKey}. ${ansText}`;
+      $opAnswerExplain.textContent = "Review and move on. (Use Known/Again to track yourself.)";
+
+      if (op.flipped) {
+        $opFront.classList.add("hidden");
+        $opBack.classList.remove("hidden");
+      } else {
+        $opFront.classList.remove("hidden");
+        $opBack.classList.add("hidden");
+      }
+
+      opRenderProgress();
+      opRenderStarBtn(card);
+    }
+
+    function opFlip() { op.flipped = !op.flipped; opRenderCard(); }
+    function opNext() {
+      if (!op.deck.length) return;
+      op.i = (op.i + 1) % op.deck.length;
+      op.flipped = false;
+      opRenderCard();
+    }
+    function opPrev() {
+      if (!op.deck.length) return;
+      op.i = (op.i - 1 + op.deck.length) % op.deck.length;
+      op.flipped = false;
+      opRenderCard();
+    }
+    function opToggleShuffle() {
+      op.shuffle = !op.shuffle;
+      $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
+      opBuildOrder();
+      op.flipped = false;
+      opRenderCard();
+    }
+    function opToggleStarFilter() {
+      op.starFilter = !op.starFilter;
+      $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
+      opApplyFilters();
+      op.flipped = false;
+      opRenderCard();
+    }
+    function opToggleStar() {
+      const card = opCurrent(); if (!card) return;
+      if (op.stars.has(card.id)) op.stars.delete(card.id);
+      else op.stars.add(card.id);
+      opSaveSet(OP_LOCAL_KEY.STARS, op.stars);
+      opRenderStarBtn(card);
+      if (op.starFilter) { opApplyFilters(); opRenderCard(); }
+    }
+    function opMark(known) {
+      const card = opCurrent(); if (!card) return;
+      if (known) op.known.add(card.id); else op.known.delete(card.id);
+      opSaveSet(OP_LOCAL_KEY.KNOWN, op.known);
+      opNext();
+    }
+
+    async function showOpenPlay() {
       state.mode = "open";
-      alert("Open Play: flip front/back freely (wire your UI here).");
-    });
+      document.getElementById("openPlayView").classList.remove("hidden");
+
+      // load (or reuse) data
+      if (!op.all.length) {
+        // prefer already-loaded state.cards
+        if (!state.cards.length) {
+          // if not loaded yet, await the loader to fill state.cards
+          await loadAll();
+        }
+        op.all = state.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}` }));
+        opApplyFilters();
+      }
+
+      // set initial control labels
+      $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
+      $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
+
+      // initial render
+      op.flipped = false;
+      opRenderCard();
+
+      // bind events once
+      if (!showOpenPlay._bound) {
+        $opCard.addEventListener("click", opFlip);
+        $opFlipBtn.addEventListener("click", opFlip);
+        $opNextBtn.addEventListener("click", opNext);
+        $opPrevBtn.addEventListener("click", opPrev);
+        $opShuffleBtn.addEventListener("click", opToggleShuffle);
+        $opStarFilterBtn.addEventListener("click", opToggleStarFilter);
+        $opStarBtn.addEventListener("click", (e) => { e.stopPropagation(); opToggleStar(); });
+        $opAgainBtn.addEventListener("click", () => opMark(false));
+        $opKnownBtn.addEventListener("click", () => opMark(true));
+
+        // keyboard shortcuts
+        document.addEventListener("keydown", (e) => {
+          if ($openPlayView.classList.contains("hidden")) return;
+          if (e.key === "ArrowRight") { e.preventDefault(); opNext(); }
+          else if (e.key === "ArrowLeft") { e.preventDefault(); opPrev(); }
+          else if (e.key === " " || e.key === "Enter") { e.preventDefault(); opFlip(); }
+        });
+
+        showOpenPlay._bound = true;
+      }
+    }
+
+    // Hook the buttons
+    document.getElementById("openPlayBtn").addEventListener("click", showOpenPlay);
     document.getElementById("testModeBtn").addEventListener("click", () => {
       state.mode = "test";
-      alert("Test Mode: reveal back after choice + show grade at end (wire your UI here).");
+      alert("Test Mode coming next: reveal after choice + scoring.");
     });
 
+    // Initial data load
     loadAll();
   </script>
 </body>
