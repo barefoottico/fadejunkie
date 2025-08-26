@@ -11,13 +11,23 @@
     <header class="mb-6">
       <h1 class="text-2xl font-bold">Study smarter, not longer</h1>
       <p class="text-zinc-600 mt-2">
-        Tap <strong>Open Play</strong> for quick reps. Tap <strong>Test Mode</strong> for a timed, chapter-based check.
+        Tap <strong>Open Play</strong> for quick reps. Tap <strong>Test Mode</strong> for a chapter-based check.
       </p>
     </header>
 
     <section id="cta" class="flex gap-3">
       <button id="openPlayBtn" class="px-4 py-2 rounded-xl shadow bg-white border border-zinc-200 hover:bg-zinc-100">Open Play</button>
       <button id="testModeBtn" class="px-4 py-2 rounded-xl shadow bg-black text-white hover:opacity-90">Start Test</button>
+    </section>
+
+    <!-- Test config (slider for question count) -->
+    <section id="testConfig" class="mt-4">
+      <label for="tmCountRange" class="block text-sm text-zinc-600 mb-1">Questions per test</label>
+      <div class="flex items-center gap-3">
+        <input id="tmCountRange" type="range" min="0" max="3" step="1" value="0" class="w-full">
+        <span id="tmCountLabel" class="text-sm font-medium w-12 text-right">20</span>
+      </div>
+      <p class="text-xs text-zinc-500 mt-1">20 • 50 • 100 • 150</p>
     </section>
 
     <!-- Loading / error -->
@@ -73,14 +83,11 @@
       <p class="mt-3 text-xs text-neutral-500">Tip: Tap card to flip · ←/→ to navigate · Space/Enter to flip</p>
     </section>
 
-    <!-- TEST MODE VIEW (NOTE: outside of <script>) -->
+    <!-- TEST MODE VIEW -->
     <section id="testView" class="hidden max-w-xl mx-auto mt-8">
       <div class="flex items-center justify-between mb-3">
         <div id="tmProgress" class="text-sm text-neutral-600">Q 1 / 20</div>
-        <div class="flex items-center gap-2">
-          <span id="tmTimer" class="px-3 py-1.5 rounded-lg border text-sm">15:00</span>
-          <button id="tmSubmitBtn" class="px-3 py-1.5 rounded-lg border text-sm bg-black text-white">Submit</button>
-        </div>
+        <button id="tmSubmitBtn" class="px-3 py-1.5 rounded-lg border text-sm bg-black text-white">Submit</button>
       </div>
 
       <div id="tmCard" class="rounded-2xl border bg-white shadow p-6 min-h-[220px]">
@@ -341,6 +348,25 @@
     }
 
     /* =======================
+       3.5) TEST CONFIG (slider)
+    ======================= */
+    const TM_COUNTS = [20, 50, 100, 150];
+    const TM_CFG_KEYS = { COUNT_IDX: "fj_test_count_idx" };
+    const $tmCountRange = document.getElementById("tmCountRange");
+    const $tmCountLabel = document.getElementById("tmCountLabel");
+    // restore saved index or default to 0 (20 Qs)
+    let savedIdx = Number(localStorage.getItem(TM_CFG_KEYS.COUNT_IDX));
+    if (!Number.isInteger(savedIdx) || savedIdx < 0 || savedIdx > 3) savedIdx = 0;
+    if ($tmCountRange) $tmCountRange.value = String(savedIdx);
+    if ($tmCountLabel) $tmCountLabel.textContent = String(TM_COUNTS[savedIdx]);
+    // live update + persist
+    $tmCountRange?.addEventListener("input", () => {
+      const idx = Number($tmCountRange.value);
+      $tmCountLabel.textContent = String(TM_COUNTS[idx]);
+      localStorage.setItem(TM_CFG_KEYS.COUNT_IDX, String(idx));
+    });
+
+    /* =======================
        4) OPEN PLAY
     ======================= */
     const OP_LOCAL_KEY = { STARS: "fj_op_stars" };
@@ -419,13 +445,12 @@
     }
 
     /* =======================
-       5) TEST MODE
+       5) TEST MODE (no timer)
     ======================= */
     const TM_KEYS = { STATE: "fj_test_state" };
 
     const $testView = document.getElementById("testView");
     const $tmProgress = document.getElementById("tmProgress");
-    const $tmTimer = document.getElementById("tmTimer");
     const $tmQuestion = document.getElementById("tmQuestion");
     const $tmOptions = document.getElementById("tmOptions");
     const $tmFlag = document.getElementById("tmFlag");
@@ -439,20 +464,23 @@
     const $tmRestart = document.getElementById("tmRestart");
     const $tmBackToOpen = document.getElementById("tmBackToOpen");
 
-    const test = { deck: [], i: 0, answers: new Map(), flags: new Set(), timer: null, deadline: null, config: { count: 20, minutes: 15 } };
+    const test = { deck: [], i: 0, answers: new Map(), flags: new Set(), config: { count: 20 } };
 
     function sampleFromSelectedSets(n) {
       const pool = loadedSets.filter(s => selectedSetIds.has(s.id)).flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
       if (!pool.length) return [];
+      // Shuffle pool and take first n
       for (let j = pool.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [pool[j], pool[k]] = [pool[k], pool[j]]; }
       return pool.slice(0, Math.min(n, pool.length));
     }
 
-    const formatMMSS = (msLeft) => { const s = Math.max(0, Math.floor(msLeft/1000)); const m = Math.floor(s/60); const sec = s%60; return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`; };
-    function startTimer(){ stopTimer(); test.timer=setInterval(()=>{ const left=test.deadline-Date.now(); $tmTimer.textContent=formatMMSS(left); if(left<=0){ stopTimer(); finalizeTest(true);} },250); }
-    function stopTimer(){ if(test.timer){ clearInterval(test.timer); test.timer=null; } }
-
-    function persistTestState(){ saveJSON(TM_KEYS.STATE,{ deck:test.deck, i:test.i, answers:Array.from(test.answers.entries()), flags:Array.from(test.flags.values()), deadline:test.deadline }); }
+    function persistTestState(){
+      saveJSON(TM_KEYS.STATE,{
+        deck:test.deck, i:test.i,
+        answers:Array.from(test.answers.entries()),
+        flags:Array.from(test.flags.values())
+      });
+    }
     function restoreTestState(){
       const saved = loadJSON(TM_KEYS.STATE, null);
       if (!saved || !Array.isArray(saved.deck) || !saved.deck.length) return false;
@@ -460,18 +488,21 @@
       test.i = Number.isInteger(saved.i) ? Math.max(0, Math.min(saved.i, test.deck.length - 1)) : 0;
       test.answers = new Map(saved.answers || []);
       test.flags = new Set(saved.flags || []);
-      test.deadline = typeof saved.deadline === "number" ? saved.deadline : null;
-      if (test.deadline && Date.now() >= test.deadline) finalizeTest(true);
-      else if (test.deadline) { startTimer(); renderTestQuestion(); }
+      renderTestQuestion();
       return true;
     }
 
     function showTestView(){ $openPlayView.classList.add("hidden"); $testView.classList.remove("hidden"); }
+
     function startNewTest(){
-      const deck = sampleFromSelectedSets(test.config.count);
+      // read slider index → count
+      const idx = Number(document.getElementById("tmCountRange")?.value ?? 0);
+      const count = TM_COUNTS[idx] || 20;
+      test.config.count = count;
+
+      const deck = sampleFromSelectedSets(count);
       if (!deck.length) { alert("No cards available in your filter. Pick at least one set."); return; }
       test.deck=deck; test.i=0; test.answers.clear(); test.flags.clear();
-      const ms=test.config.minutes*60*1000; test.deadline=Date.now()+ms; $tmTimer.textContent=formatMMSS(ms); startTimer();
       persistTestState(); renderTestQuestion();
     }
 
@@ -491,9 +522,9 @@
     function tmToggleFlag(){ const card=test.deck[test.i]; if(!card) return; if(test.flags.has(card.id)) test.flags.delete(card.id); else test.flags.add(card.id); persistTestState(); }
 
     function gradeTest(){ let correct=0; const rows=test.deck.map((card,idx)=>{ const chosen=test.answers.get(card.id); const isCorrect=chosen===card.answer; if(isCorrect) correct++; return {idx,card,chosen,isCorrect}; }); return {correct,total:test.deck.length,rows}; }
-    function renderResults({correct,total,rows},dueToTimeUp=false){
+    function renderResults({correct,total,rows}){
       const pct = total ? Math.round((correct/total)*100) : 0;
-      $tmScore.textContent=`Score: ${correct} / ${total} (${pct}%)${dueToTimeUp?" — time up":""}`;
+      $tmScore.textContent=`Score: ${correct} / ${total} (${pct}%)`;
       const unanswered=rows.filter(r=>!r.chosen).length; const flagged=test.flags.size;
       $tmBreakdown.textContent=`${unanswered} unanswered • ${flagged} flagged`;
       $tmReview.innerHTML=rows.map(({idx,card,chosen,isCorrect})=>{
@@ -504,7 +535,7 @@
       }).join("");
       $tmResults.classList.remove("hidden");
     }
-    function finalizeTest(dueToTimeUp=false){ stopTimer(); const graded=gradeTest(); renderResults(graded, dueToTimeUp); localStorage.removeItem(TM_KEYS.STATE); }
+    function finalizeTest(){ const graded=gradeTest(); renderResults(graded); localStorage.removeItem(TM_KEYS.STATE); }
 
     function startTestFlow(){
       if (!loadedSets.length) { loadAll().then(()=>{ if (selectedSetIds.size===0){ alert("Pick at least one set in the Filter."); return; } showTestView(); if(!restoreTestState()) startNewTest(); }); return; }
@@ -516,7 +547,7 @@
     document.getElementById("tmPrev").addEventListener("click", tmPrev);
     document.getElementById("tmNext").addEventListener("click", tmNext);
     document.getElementById("tmFlag").addEventListener("change", tmToggleFlag);
-    document.getElementById("tmSubmitBtn").addEventListener("click", () => finalizeTest(false));
+    document.getElementById("tmSubmitBtn").addEventListener("click", () => finalizeTest());
     document.getElementById("tmRestart").addEventListener("click", () => { localStorage.removeItem(TM_KEYS.STATE); startNewTest(); });
     document.getElementById("tmBackToOpen").addEventListener("click", () => { $testView.classList.add("hidden"); $openPlayView.classList.remove("hidden"); });
 
