@@ -21,10 +21,23 @@
     </section>
 
     <!-- Top status + flattering summary -->
-    <section class="mt-8">
-      <div id="status" class="text-sm text-zinc-700">Loading datasets…</div>
-      <div id="error" class="hidden text-sm text-red-600 mt-2"></div>
-    </section>
+    <!-- Loading / error stays minimal -->
+<section class="mt-8">
+  <div id="status" class="text-sm text-zinc-700">Loading datasets…</div>
+  <div id="error" class="hidden text-sm text-red-600 mt-2"></div>
+</section>
+
+<!-- Filter bar -->
+<section id="app" class="mt-4 hidden">
+  <div class="flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-zinc-500">Filter:</span>
+      <div id="setPills" class="flex flex-wrap gap-2"></div>
+    </div>
+    <div id="statusSummary" class="text-sm text-zinc-700 whitespace-nowrap"></div>
+  </div>
+</section>
+
 
     <section id="app" class="mt-4 hidden">
       <div class="flex items-center justify-between">
@@ -160,61 +173,99 @@ async function loadAll() {
    2) PILL TOGGLES (UI/Logic)
 ========================== */
 function renderSetsSummary() {
+  // Right-side summary only (no duplicate list)
   const chosen = loadedSets.filter(s => selectedSetIds.has(s.id));
-  const totalSets = chosen.length;
   const totalCards = chosen.reduce((sum, s) => sum + s.cards.length, 0);
 
-  $status.textContent = `Ready: ${totalSets} ${totalSets === 1 ? "set" : "sets"} • ${totalCards} cards`;
-  $setsInfo.textContent = chosen.length
-    ? chosen.map(s => `${s.short} (${s.cards.length})`).join(" • ")
-    : "No sets selected";
+  // Examples: "Ready • 300 cards" or "Ready • 0 cards"
+  const $statusSummary = document.getElementById("statusSummary");
+  if ($statusSummary) {
+    $statusSummary.textContent = `Ready • ${totalCards} ${totalCards === 1 ? "card" : "cards"}`;
+  }
 
   updateShuffleAvailability();
 }
 
 function renderSetPills() {
-  $setPills.innerHTML = loadedSets.map(s => {
-    const active = selectedSetIds.has(s.id);
+  const totalSets = loadedSets.length;
+  const activeCount = loadedSets.reduce((n, s) => n + (selectedSetIds.has(s.id) ? 1 : 0), 0);
+  const allActive = activeCount === totalSets && totalSets > 0;
 
-    // Base pill style
-    const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors";
+  // Build "All" chip + one chip per set
+  const pillsHtml = [
+    // "All" chip
+    (() => {
+      const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors";
+      const on  = "bg-white text-zinc-900 border-black font-medium";
+      const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100";
+      return `
+        <button
+          class="set-pill ${base} ${allActive ? on : off}"
+          data-setid="__all__"
+          role="switch"
+          aria-pressed="${allActive ? "true" : "false"}"
+          title="Enable all sets"
+        >
+          All
+          <span class="text-xs opacity-80">(${loadedSets.reduce((s,x)=>s+x.cards.length,0)})</span>
+        </button>
+      `;
+    })(),
+    // Individual set chips
+    ...loadedSets.map(s => {
+      const active = selectedSetIds.has(s.id);
+      const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors";
+      const on  = "bg-white text-zinc-900 border-black font-medium"; // outlined when active
+      const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100";
+      return `
+        <button
+          class="set-pill ${base} ${active ? on : off}"
+          data-setid="${s.id}"
+          role="switch"
+          aria-pressed="${active ? "true" : "false"}"
+          title="${s.label}"
+        >
+          ${s.short}
+          <span class="text-xs opacity-80">(${s.cards.length})</span>
+        </button>
+      `;
+    })
+  ].join("");
 
-    // ACTIVE = outlined (to match Open Play), not filled
-    const on  = "bg-white text-zinc-900 border-black font-medium";
+  const $setPills = document.getElementById("setPills");
+  $setPills.innerHTML = pillsHtml;
 
-    // INACTIVE = subtle outline, soft hover
-    const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100";
-
-    return `
-      <button
-        class="set-pill ${base} ${active ? on : off}"
-        data-setid="${s.id}"
-        role="switch"
-        aria-pressed="${active ? "true" : "false"}"
-        title="${s.label}"
-      >
-        ${s.short}
-        <span class="text-xs opacity-80">(${s.cards.length})</span>
-      </button>
-    `;
-  }).join("");
-
-  // Re-bind click handlers after render
+  // Bind clicks (All + individual)
   Array.from($setPills.querySelectorAll(".set-pill")).forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-setid");
-      if (selectedSetIds.has(id)) selectedSetIds.delete(id);
-      else selectedSetIds.add(id);
 
+      if (id === "__all__") {
+        // Toggle: if all already active -> clear all; else -> select all
+        const allAreOn = loadedSets.every(s => selectedSetIds.has(s.id));
+        selectedSetIds.clear();
+        if (!allAreOn) loadedSets.forEach(s => selectedSetIds.add(s.id));
+      } else {
+        // Toggle a single set
+        if (selectedSetIds.has(id)) selectedSetIds.delete(id);
+        else selectedSetIds.add(id);
+
+        // If turning one on results in all selected, reflect that in the "All" chip on next render
+        // (Handled by recomputing allActive at top.)
+      }
+
+      // Update UI + summary
       renderSetsSummary();
-      renderSetPills();           // re-render pills with new styles
+      renderSetPills();
+
+      // If Open Play is visible, rebuild its deck immediately
       if (!document.getElementById("openPlayView").classList.contains("hidden")) {
-        opInjectFromSelection();  // refresh Open Play deck if visible
+        opInjectFromSelection();
       }
     });
   });
 
-  updateShuffleAvailability(); // keep shuffle rule in sync
+  updateShuffleAvailability();
 }
 
 
@@ -411,5 +462,6 @@ function updateShuffleAvailability() {
   </script>
 </body>
 </html>
+
 
 
