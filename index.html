@@ -72,50 +72,49 @@
 
       <p class="mt-3 text-xs text-neutral-500">Tip: Tap card to flip · ←/→ to navigate · Space/Enter to flip</p>
     </section>
+
+    <!-- TEST MODE VIEW (NOTE: outside of <script>) -->
+    <section id="testView" class="hidden max-w-xl mx-auto mt-8">
+      <div class="flex items-center justify-between mb-3">
+        <div id="tmProgress" class="text-sm text-neutral-600">Q 1 / 20</div>
+        <div class="flex items-center gap-2">
+          <span id="tmTimer" class="px-3 py-1.5 rounded-lg border text-sm">15:00</span>
+          <button id="tmSubmitBtn" class="px-3 py-1.5 rounded-lg border text-sm bg-black text-white">Submit</button>
+        </div>
+      </div>
+
+      <div id="tmCard" class="rounded-2xl border bg-white shadow p-6 min-h-[220px]">
+        <div id="tmQuestion" class="text-lg font-semibold mb-4">Question</div>
+        <div id="tmOptions" class="space-y-2"></div>
+        <div class="mt-3 flex items-center justify-between">
+          <label class="inline-flex items-center gap-2 text-sm">
+            <input id="tmFlag" type="checkbox" class="rounded" />
+            Flag for review
+          </label>
+          <div class="flex items-center gap-2">
+            <button id="tmPrev" class="px-3 py-1.5 rounded-lg border text-sm">◀ Prev</button>
+            <button id="tmNext" class="px-3 py-1.5 rounded-lg border text-sm">Next ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="tmResults" class="hidden mt-6">
+        <div id="tmScore" class="text-lg font-semibold mb-2"></div>
+        <div id="tmBreakdown" class="text-sm text-neutral-700 mb-4"></div>
+        <details class="rounded-xl border bg-white p-4">
+          <summary class="cursor-pointer font-medium">Review answers</summary>
+          <div id="tmReview" class="mt-3 space-y-4"></div>
+        </details>
+        <div class="mt-4 flex items-center gap-2">
+          <button id="tmRestart" class="px-4 py-2 rounded-xl border">Retake</button>
+          <button id="tmBackToOpen" class="px-4 py-2 rounded-xl border">Back to Open Play</button>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script>
-
-    <!-- TEST MODE VIEW -->
-<section id="testView" class="hidden max-w-xl mx-auto mt-8">
-  <div class="flex items-center justify-between mb-3">
-    <div id="tmProgress" class="text-sm text-neutral-600">Q 1 / 20</div>
-    <div class="flex items-center gap-2">
-      <span id="tmTimer" class="px-3 py-1.5 rounded-lg border text-sm">15:00</span>
-      <button id="tmSubmitBtn" class="px-3 py-1.5 rounded-lg border text-sm bg-black text-white">Submit</button>
-    </div>
-  </div>
-
-  <div id="tmCard" class="rounded-2xl border bg-white shadow p-6 min-h-[220px]">
-    <div id="tmQuestion" class="text-lg font-semibold mb-4">Question</div>
-    <div id="tmOptions" class="space-y-2"></div>
-    <div class="mt-3 flex items-center justify-between">
-      <label class="inline-flex items-center gap-2 text-sm">
-        <input id="tmFlag" type="checkbox" class="rounded" />
-        Flag for review
-      </label>
-      <div class="flex items-center gap-2">
-        <button id="tmPrev" class="px-3 py-1.5 rounded-lg border text-sm">◀ Prev</button>
-        <button id="tmNext" class="px-3 py-1.5 rounded-lg border text-sm">Next ▶</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Results -->
-  <div id="tmResults" class="hidden mt-6">
-    <div id="tmScore" class="text-lg font-semibold mb-2"></div>
-    <div id="tmBreakdown" class="text-sm text-neutral-700 mb-4"></div>
-    <details class="rounded-xl border bg-white p-4">
-      <summary class="cursor-pointer font-medium">Review answers</summary>
-      <div id="tmReview" class="mt-3 space-y-4"></div>
-    </details>
-    <div class="mt-4 flex items-center gap-2">
-      <button id="tmRestart" class="px-4 py-2 rounded-xl border">Retake</button>
-      <button id="tmBackToOpen" class="px-4 py-2 rounded-xl border">Back to Open Play</button>
-    </div>
-  </div>
-</section>
-
     /* =======================
        1) DATA LOADING + NAMES
     ======================= */
@@ -130,7 +129,7 @@
 
     const state = { cards: [], mode: null };
 
-    // DOM refs (declare early to avoid TDZ issues)
+    // DOM refs
     const $status          = document.getElementById("status");
     const $error           = document.getElementById("error");
     const $app             = document.getElementById("app");
@@ -153,118 +152,72 @@
     const $opFlipBtn       = document.getElementById("opFlipBtn");
 
     // Manage Sets state
-    let loadedSets = [];              // [{id, short, label, cards:[...] }]
-    const selectedSetIds = new Set(); // active set ids
+    let loadedSets = [];
+    const selectedSetIds = new Set();
 
-  // Keep this for comma CSV (handles quotes/commas)
-const csvSafeSplit = (line) => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g);
+    // CSV/TSV parser (supports correct_options)
+    const csvSafeSplit = (line) => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g);
+    function parseCSV(text) {
+      text = text.replace(/\r/g, "");
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      const firstNewline = text.indexOf("\n");
+      const headerLine = firstNewline === -1 ? text : text.slice(0, firstNewline);
+      const isTSV = headerLine.includes("\t");
 
-function parseCSV(text) {
-  // Normalize newlines and strip BOM
-  text = text.replace(/\r/g, "");
-  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      const rows = text.split("\n").filter(Boolean).map(line => {
+        const cells = isTSV ? line.split("\t") : csvSafeSplit(line);
+        return cells.map(s => s.replace(/^"(.*)"$/, "$1"));
+      });
 
-  const firstNewline = text.indexOf("\n");
-  const headerLine = firstNewline === -1 ? text : text.slice(0, firstNewline);
-  const isTSV = headerLine.includes("\t");
+      const [rawHeader, ...lines] = rows;
+      if (!rawHeader) return [];
+      const header = rawHeader.map(h => (h || "").trim().toLowerCase());
 
-  // Split into rows + cells
-  const rows = text
-    .split("\n")
-    .filter(Boolean)
-    .map(line => {
-      if (isTSV) {
-        // Simple TSV split (quotes are rare in TSV; good enough here)
-        return line.split("\t").map(s => s.replace(/^"(.*)"$/, "$1"));
-      } else {
-        // CSV with quotes
-        return csvSafeSplit(line).map(s => s.replace(/^"(.*)"$/, "$1"));
+      const findCol = (...names) => { for (const n of names) { const i = header.indexOf(n); if (i !== -1) return i; } return -1; };
+      const idxId  = findCol("id");
+      const idxQ   = findCol("question", "q", "prompt", "stem");
+      const idxA   = findCol("option_a", "a", "opt_a", "choice_a");
+      const idxB   = findCol("option_b", "b", "opt_b", "choice_b");
+      const idxC   = findCol("option_c", "c", "opt_c", "choice_c");
+      const idxD   = findCol("option_d", "d", "opt_d", "choice_d");
+      const idxAns = findCol("correct_options", "answer", "correct", "key", "ans");
+
+      function coerceAnswer({A,B,C,D,raw}) {
+        if (!raw) return "A";
+        let s = String(raw).trim();
+        const letters = s.toUpperCase().replace(/[^A-D,; ]/g, "").split(/[;, ]+/).filter(Boolean);
+        if (letters.length && ["A","B","C","D"].includes(letters[0])) return letters[0];
+        const up = s.toUpperCase();
+        if (up === String(A||"").toUpperCase()) return "A";
+        if (up === String(B||"").toUpperCase()) return "B";
+        if (up === String(C||"").toUpperCase()) return "C";
+        if (up === String(D||"").toUpperCase()) return "D";
+        return "A";
       }
-    });
 
-  const [rawHeader, ...lines] = rows;
-  if (!rawHeader) return [];
-
-  const header = rawHeader.map(h => (h || "").trim().toLowerCase());
-
-  // Flexible column lookup
-  const findCol = (...names) => {
-    for (const n of names) {
-      const idx = header.indexOf(n);
-      if (idx !== -1) return idx;
+      return lines.map((cols, i) => {
+        const q  = (idxQ >= 0 ? cols[idxQ] : "").trim();
+        if (!q) return null;
+        const A  = (idxA >= 0 ? cols[idxA] : "").trim();
+        const B  = (idxB >= 0 ? cols[idxB] : "").trim();
+        const C  = (idxC >= 0 ? cols[idxC] : "").trim();
+        const D  = (idxD >= 0 ? cols[idxD] : "").trim();
+        const rawAns = (idxAns >= 0 ? cols[idxAns] : "").trim();
+        const answer = coerceAnswer({A,B,C,D,raw:rawAns});
+        const uid = (idxId >= 0 && cols[idxId]) ? `id_${cols[idxId]}` : `c_${i}_${q.slice(0,16)}`;
+        return { id: uid, q, a:A, b:B, c:C, d:D, answer };
+      }).filter(Boolean);
     }
-    return -1;
-  };
-
-  const idxQ   = findCol("question", "q", "prompt", "stem");
-  const idxA   = findCol("option_a", "a", "opt_a", "choice_a");
-  const idxB   = findCol("option_b", "b", "opt_b", "choice_b");
-  const idxC   = findCol("option_c", "c", "opt_c", "choice_c");
-  const idxD   = findCol("option_d", "d", "opt_d", "choice_d");
-  const idxAns = findCol("correct_options", "answer", "correct", "key", "ans");
-  const idxId  = findCol("id"); // optional
-
-  // Helper to coerce "answer" to A/B/C/D
-  function coerceAnswer({A, B, C, D, raw}) {
-    if (!raw) return "A";
-    let s = String(raw).trim();
-
-    // If it's like "A", "b", "C;D", "a,c"
-    const letters = s
-      .toUpperCase()
-      .replace(/[^A-D,; ]/g, "")
-      .split(/[;, ]+/)
-      .filter(Boolean);
-    if (letters.length && ["A","B","C","D"].includes(letters[0])) {
-      return letters[0];
-    }
-
-    // Otherwise, maybe the full text was put in "correct_options"
-    const up = s.toUpperCase();
-    if (up && up === String(A || "").toUpperCase()) return "A";
-    if (up && up === String(B || "").toUpperCase()) return "B";
-    if (up && up === String(C || "").toUpperCase()) return "C";
-    if (up && up === String(D || "").toUpperCase()) return "D";
-
-    // Fallback
-    return "A";
-  }
-
-  const cards = lines.map((cols, i) => {
-    const q  = (idxQ   >= 0 ? cols[idxQ]   : "").trim();
-    const A  = (idxA   >= 0 ? cols[idxA]   : "").trim();
-    const B  = (idxB   >= 0 ? cols[idxB]   : "").trim();
-    const C  = (idxC   >= 0 ? cols[idxC]   : "").trim();
-    const D  = (idxD   >= 0 ? cols[idxD]   : "").trim();
-    const rawAns = (idxAns >= 0 ? cols[idxAns] : "").trim();
-
-    if (!q) return null;
-
-    const answer = coerceAnswer({A, B, C, D, raw: rawAns});
-    const uid = (idxId >= 0 && cols[idxId]) ? `id_${cols[idxId]}` : `c_${i}_${q.slice(0,16)}`;
-
-    return { id: uid, q, a: A, b: B, c: C, d: D, answer };
-  }).filter(Boolean);
-
-  return cards;
-}
-
-
 
     /* ==========================
        MEMORY (localStorage)
     ========================== */
     const MEM_KEYS = {
       SELECTED_SETS: "fj_selected_sets",
-      OPENPLAY_STATE: "fj_openplay_state" // { shuffle, starFilter, i }
+      OPENPLAY_STATE: "fj_openplay_state"
     };
-    function loadJSON(key, fallback) {
-      try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-      catch { return fallback; }
-    }
-    function saveJSON(key, val) {
-      try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-    }
+    const loadJSON = (k,f)=>{ try{const v=localStorage.getItem(k); return v?JSON.parse(v):f;}catch{return f;} };
+    const saveJSON = (k,v)=>{ try{localStorage.setItem(k, JSON.stringify(v));}catch{} };
 
     /* ==========================
        Fetch + Load
@@ -299,23 +252,19 @@ function parseCSV(text) {
         if (Array.isArray(savedSetIds) && savedSetIds.length) {
           const validIds = new Set(results.map(s => s.id));
           savedSetIds.forEach(id => { if (validIds.has(id)) selectedSetIds.add(id); });
-          if (selectedSetIds.size === 0) results.forEach(s => selectedSetIds.add(s.id)); // fallback
+          if (selectedSetIds.size === 0) results.forEach(s => selectedSetIds.add(s.id));
         } else {
           results.forEach(s => selectedSetIds.add(s.id));
         }
 
-        // Flat list (for any legacy paths)
         state.cards = results.flatMap(r => r.cards);
 
-        // Render UI
         $app.classList.remove("hidden");
         renderSetsSummary();
         renderSetPills();
         updateShuffleAvailability();
 
-        // Persist selection immediately
         saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
-
       } catch (e) {
         $status.textContent = "Couldn’t finish loading.";
         $error.classList.remove("hidden");
@@ -329,9 +278,7 @@ function parseCSV(text) {
     function renderSetsSummary() {
       const chosen = loadedSets.filter(s => selectedSetIds.has(s.id));
       const totalCards = chosen.reduce((sum, s) => sum + s.cards.length, 0);
-      if ($statusSummary) {
-        $statusSummary.textContent = `Ready • ${totalCards} ${totalCards === 1 ? "card" : "cards"}`;
-      }
+      if ($statusSummary) $statusSummary.textContent = `Ready • ${totalCards} ${totalCards === 1 ? "card" : "cards"}`;
       updateShuffleAvailability();
     }
 
@@ -340,65 +287,38 @@ function parseCSV(text) {
       const activeCount = loadedSets.reduce((n, s) => n + (selectedSetIds.has(s.id) ? 1 : 0), 0);
       const allActive = activeCount === totalSets && totalSets > 0;
 
-      // Save selection (in case we called this after a toggle)
       saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
 
-      // Build "All" chip + per-set chips (outlined when active)
       const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors";
       const on  = "bg-white text-zinc-900 border-black font-medium";
       const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100";
 
       const pillsHtml = [
-        `
-        <button
-          class="set-pill ${base} ${allActive ? on : off}"
-          data-setid="__all__"
-          role="switch"
-          aria-pressed="${allActive ? "true" : "false"}"
-          title="Enable all sets"
-        >
-          All
-          <span class="text-xs opacity-80">(${loadedSets.reduce((s,x)=>s+x.cards.length,0)})</span>
-        </button>
-        `,
+        `<button class="set-pill ${base} ${allActive ? on : off}" data-setid="__all__" role="switch" aria-pressed="${allActive}" title="Enable all sets">
+          All <span class="text-xs opacity-80">(${loadedSets.reduce((s,x)=>s+x.cards.length,0)})</span>
+        </button>`,
         ...loadedSets.map(s => `
-          <button
-            class="set-pill ${base} ${selectedSetIds.has(s.id) ? on : off}"
-            data-setid="${s.id}"
-            role="switch"
-            aria-pressed="${selectedSetIds.has(s.id) ? "true" : "false"}"
-            title="${s.label}"
-          >
-            ${s.short}
-            <span class="text-xs opacity-80">(${s.cards.length})</span>
+          <button class="set-pill ${base} ${selectedSetIds.has(s.id) ? on : off}" data-setid="${s.id}" role="switch" aria-pressed="${selectedSetIds.has(s.id)}" title="${s.label}">
+            ${s.short} <span class="text-xs opacity-80">(${s.cards.length})</span>
           </button>
         `)
       ].join("");
 
       $setPills.innerHTML = pillsHtml;
 
-      // Bind clicks (All + individual)
       Array.from($setPills.querySelectorAll(".set-pill")).forEach(btn => {
         btn.addEventListener("click", () => {
           const id = btn.getAttribute("data-setid");
-
           if (id === "__all__") {
             const allAreOn = loadedSets.every(s => selectedSetIds.has(s.id));
             selectedSetIds.clear();
             if (!allAreOn) loadedSets.forEach(s => selectedSetIds.add(s.id));
           } else {
-            if (selectedSetIds.has(id)) selectedSetIds.delete(id);
-            else selectedSetIds.add(id);
+            if (selectedSetIds.has(id)) selectedSetIds.delete(id); else selectedSetIds.add(id);
           }
-
           renderSetsSummary();
           renderSetPills();
-
-          // SAFE lookup to avoid TDZ; only rebuild if Open Play is visible
-          const view = document.getElementById("openPlayView");
-          if (view && !view.classList.contains("hidden")) {
-            opInjectFromSelection();
-          }
+          if ($openPlayView && !$openPlayView.classList.contains("hidden")) opInjectFromSelection();
         });
       });
 
@@ -411,190 +331,75 @@ function parseCSV(text) {
     function updateShuffleAvailability() {
       const btn = document.getElementById("opShuffleBtn");
       if (!btn) return;
-
       const activeSets = loadedSets.filter(s => selectedSetIds.has(s.id)).length;
-
       if (activeSets > 1) {
-        btn.disabled = false;
-        btn.classList.remove("opacity-50", "cursor-not-allowed");
+        btn.disabled = false; btn.classList.remove("opacity-50","cursor-not-allowed");
       } else {
-        btn.disabled = true;
-        btn.classList.add("opacity-50", "cursor-not-allowed");
-        // If shuffle was ON, force it OFF
-        if (op.shuffle) {
-          op.shuffle = false;
-          btn.textContent = "Shuffle: Off";
-          opBuildOrder();
-          opRenderCard();
-        }
+        btn.disabled = true; btn.classList.add("opacity-50","cursor-not-allowed");
+        if (op.shuffle) { op.shuffle = false; btn.textContent = "Shuffle: Off"; opBuildOrder(); opRenderCard(); }
       }
     }
 
     /* =======================
-       4) OPEN PLAY (no Again/Known)
+       4) OPEN PLAY
     ======================= */
     const OP_LOCAL_KEY = { STARS: "fj_op_stars" };
-    const opLoadSet = key => {
-      try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
-      catch { return new Set(); }
-    };
+    const opLoadSet = key => { try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); } catch { return new Set(); } };
     const opSaveSet = (key, set) => localStorage.setItem(key, JSON.stringify(Array.from(set)));
 
-    const op = {
-      all: [], deck: [], order: [],
-      i: 0, flipped: false,
-      shuffle: false, starFilter: false,
-      stars: opLoadSet(OP_LOCAL_KEY.STARS)
-    };
+    const op = { all: [], deck: [], order: [], i: 0, flipped: false, shuffle: false, starFilter: false, stars: opLoadSet(OP_LOCAL_KEY.STARS) };
 
     function opBuildOrder() {
       op.order = Array.from({length: op.deck.length}, (_, i) => i);
-      if (op.shuffle) {
-        for (let j = op.order.length - 1; j > 0; j--) {
-          const k = Math.floor(Math.random() * (j + 1));
-          [op.order[j], op.order[k]] = [op.order[k], op.order[j]];
-        }
-      }
+      if (op.shuffle) for (let j = op.order.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [op.order[j], op.order[k]] = [op.order[k], op.order[j]]; }
       op.i = 0;
     }
-    function opApplyFilters() {
-      op.deck = op.starFilter ? op.all.filter(c => op.stars.has(c.id)) : op.all.slice();
-      opBuildOrder();
-    }
+    function opApplyFilters() { op.deck = op.starFilter ? op.all.filter(c => op.stars.has(c.id)) : op.all.slice(); opBuildOrder(); }
     const opCurrent = () => (op.deck.length ? op.deck[op.order[op.i]] : null);
+    function opRenderProgress() { $opProgress.textContent = op.deck.length ? `${op.i + 1} / ${op.deck.length}` : "0 / 0"; }
+    function opRenderStarBtn(card) { $opStarBtn.textContent = card && op.stars.has(card.id) ? "★" : "☆"; }
 
-    function opRenderProgress() {
-      $opProgress.textContent = op.deck.length ? `${op.i + 1} / ${op.deck.length}` : "0 / 0";
-    }
-    function opRenderStarBtn(card) {
-      $opStarBtn.textContent = card && op.stars.has(card.id) ? "★" : "☆";
-    }
-
-    // Memory helpers for Open Play
-    function saveOpenPlayState() {
-      const i = Math.max(0, Math.min(op.i, Math.max(0, op.deck.length - 1)));
-      saveJSON(MEM_KEYS.OPENPLAY_STATE, { shuffle: op.shuffle, starFilter: op.starFilter, i });
-    }
-    function restoreOpenPlayState() {
-      const saved = loadJSON(MEM_KEYS.OPENPLAY_STATE, null);
-      if (!saved) return;
-      op.shuffle = !!saved.shuffle;
-      op.starFilter = !!saved.starFilter;
-      op.i = Number.isInteger(saved.i) ? saved.i : 0;
-    }
+    function saveOpenPlayState() { const i = Math.max(0, Math.min(op.i, Math.max(0, op.deck.length - 1))); saveJSON(MEM_KEYS.OPENPLAY_STATE, { shuffle: op.shuffle, starFilter: op.starFilter, i }); }
+    function restoreOpenPlayState() { const saved = loadJSON(MEM_KEYS.OPENPLAY_STATE, null); if (!saved) return; op.shuffle = !!saved.shuffle; op.starFilter = !!saved.starFilter; op.i = Number.isInteger(saved.i) ? saved.i : 0; }
 
     function opRenderCard() {
       const card = opCurrent();
       if (!card) {
-        $opFront.classList.remove("hidden");
-        $opBack.classList.add("hidden");
-        $opQuestion.textContent = selectedSetIds.size
-          ? (op.starFilter ? "No starred cards yet." : "No cards available in selection.")
-          : "No sets selected.";
-        $opOptions.innerHTML = "";
-        $opAnswer.textContent = "";
-        $opAnswerExplain.textContent = "";
-        opRenderStarBtn(null);
-        opRenderProgress();
-        return;
+        $opFront.classList.remove("hidden"); $opBack.classList.add("hidden");
+        $opQuestion.textContent = selectedSetIds.size ? (op.starFilter ? "No starred cards yet." : "No cards available in selection.") : "No sets selected.";
+        $opOptions.innerHTML = ""; $opAnswer.textContent = ""; $opAnswerExplain.textContent = "";
+        opRenderStarBtn(null); opRenderProgress(); return;
       }
-
-      // Front
       $opQuestion.textContent = card.q;
       const opts = [["A",card.a],["B",card.b],["C",card.c],["D",card.d]].filter(([_,v]) => v && v.trim().length);
-      $opOptions.innerHTML = opts.map(([k,v]) =>
-        `<li class="border rounded-lg px-3 py-2"><strong>${k}.</strong> ${v}</li>`
-      ).join("");
-
-      // Back
-      const ansKey = card.answer;
-      const ansText = ({A:card.a,B:card.b,C:card.c,D:card.d}[ansKey]) || "";
-      $opAnswer.textContent = `${ansKey}. ${ansText}`;
-      $opAnswerExplain.textContent = "Flip and continue.";
-
-      // Side
-      if (op.flipped) { $opFront.classList.add("hidden"); $opBack.classList.remove("hidden"); }
-      else { $opFront.classList.remove("hidden"); $opBack.classList.add("hidden"); }
-
-      opRenderStarBtn(card);
-      opRenderProgress();
+      $opOptions.innerHTML = opts.map(([k,v]) => `<li class="border rounded-lg px-3 py-2"><strong>${k}.</strong> ${v}</li>`).join("");
+      const ansKey = card.answer; const ansText = ({A:card.a,B:card.b,C:card.c,D:card.d}[ansKey]) || "";
+      $opAnswer.textContent = `${ansKey}. ${ansText}`; $opAnswerExplain.textContent = "Flip and continue.";
+      if (op.flipped) { $opFront.classList.add("hidden"); $opBack.classList.remove("hidden"); } else { $opFront.classList.remove("hidden"); $opBack.classList.add("hidden"); }
+      opRenderStarBtn(card); opRenderProgress();
     }
 
     const opFlip = () => { op.flipped = !op.flipped; opRenderCard(); };
+    const opNext = () => { if (!op.deck.length) return; op.i = (op.i + 1) % op.deck.length; op.flipped = false; opRenderCard(); saveOpenPlayState(); };
+    const opPrev = () => { if (!op.deck.length) return; op.i = (op.i - 1 + op.deck.length) % op.deck.length; op.flipped = false; opRenderCard(); saveOpenPlayState(); };
+    function opToggleShuffle() { op.shuffle = !op.shuffle; $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`; opBuildOrder(); op.flipped = false; opRenderCard(); saveOpenPlayState(); }
+    function opToggleStarFilter() { op.starFilter = !op.starFilter; $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`; opApplyFilters(); op.flipped = false; opRenderCard(); saveOpenPlayState(); }
+    function opToggleStar() { const card = opCurrent(); if (!card) return; if (op.stars.has(card.id)) op.stars.delete(card.id); else op.stars.add(card.id); opSaveSet(OP_LOCAL_KEY.STARS, op.stars); opRenderStarBtn(card); if (op.starFilter) { opApplyFilters(); opRenderCard(); } }
 
-    const opNext = () => {
-      if (!op.deck.length) return;
-      op.i = (op.i + 1) % op.deck.length;
-      op.flipped = false;
-      opRenderCard();
-      saveOpenPlayState();
-    };
-    const opPrev = () => {
-      if (!op.deck.length) return;
-      op.i = (op.i - 1 + op.deck.length) % op.deck.length;
-      op.flipped = false;
-      opRenderCard();
-      saveOpenPlayState();
-    };
-
-    function opToggleShuffle() {
-      op.shuffle = !op.shuffle;
-      $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
-      opBuildOrder();
-      op.flipped = false;
-      opRenderCard();
-      saveOpenPlayState();
-    }
-    function opToggleStarFilter() {
-      op.starFilter = !op.starFilter;
-      $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
-      opApplyFilters();
-      op.flipped = false;
-      opRenderCard();
-      saveOpenPlayState();
-    }
-    function opToggleStar() {
-      const card = opCurrent(); if (!card) return;
-      if (op.stars.has(card.id)) op.stars.delete(card.id); else op.stars.add(card.id);
-      opSaveSet(OP_LOCAL_KEY.STARS, op.stars);
-      opRenderStarBtn(card);
-      if (op.starFilter) { opApplyFilters(); opRenderCard(); }
-    }
-
-    // Build op.all from selected sets, then refresh deck (restore index)
     function opInjectFromSelection() {
-      op.all = loadedSets
-        .filter(s => selectedSetIds.has(s.id))
-        .flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
-
-      opApplyFilters(); // builds order based on shuffle
-
-      // After deck exists, restore index (clamp)
+      op.all = loadedSets.filter(s => selectedSetIds.has(s.id)).flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
+      opApplyFilters();
       const saved = loadJSON(MEM_KEYS.OPENPLAY_STATE, null);
-      if (saved && Number.isInteger(saved.i)) {
-        op.i = Math.max(0, Math.min(saved.i, Math.max(0, op.deck.length - 1)));
-      } else {
-        op.i = 0;
-      }
-
-      op.flipped = false;
-      opRenderCard();
-      saveOpenPlayState();
+      if (saved && Number.isInteger(saved.i)) op.i = Math.max(0, Math.min(saved.i, Math.max(0, op.deck.length - 1)));
+      else op.i = 0;
+      op.flipped = false; opRenderCard(); saveOpenPlayState();
     }
 
     async function showOpenPlay() {
-      state.mode = "open";
-      $openPlayView.classList.remove("hidden");
-
+      state.mode = "open"; $openPlayView.classList.remove("hidden");
       if (!loadedSets.length) await loadAll();
-
-      restoreOpenPlayState();
-      opInjectFromSelection();
-
-      $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
-      $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
-      updateShuffleAvailability();
-
+      restoreOpenPlayState(); opInjectFromSelection();
+      $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`; $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`; updateShuffleAvailability();
       if (!showOpenPlay._bound) {
         $opCard.addEventListener("click", opFlip);
         $opFlipBtn.addEventListener("click", opFlip);
@@ -603,295 +408,124 @@ function parseCSV(text) {
         $opShuffleBtn.addEventListener("click", opToggleShuffle);
         $opStarFilterBtn.addEventListener("click", opToggleStarFilter);
         $opStarBtn.addEventListener("click", (e) => { e.stopPropagation(); opToggleStar(); });
-
         document.addEventListener("keydown", (e) => {
           if ($openPlayView.classList.contains("hidden")) return;
           if (e.key === "ArrowRight") { e.preventDefault(); opNext(); }
           else if (e.key === "ArrowLeft") { e.preventDefault(); opPrev(); }
           else if (e.key === " " || e.key === "Enter") { e.preventDefault(); opFlip(); }
         });
-
         showOpenPlay._bound = true;
       }
     }
-/* =======================
-   5) TEST MODE
-======================= */
-const TM_KEYS = {
-  STATE: "fj_test_state" // { deck:[{q,a,b,c,d,answer,id}], i, answers:{id: "A"|...}, flags:Set, deadline:epoch_ms }
-};
 
-const $testView = document.getElementById("testView");
-const $tmProgress = document.getElementById("tmProgress");
-const $tmTimer = document.getElementById("tmTimer");
-const $tmQuestion = document.getElementById("tmQuestion");
-const $tmOptions = document.getElementById("tmOptions");
-const $tmFlag = document.getElementById("tmFlag");
-const $tmPrev = document.getElementById("tmPrev");
-const $tmNext = document.getElementById("tmNext");
-const $tmSubmitBtn = document.getElementById("tmSubmitBtn");
-const $tmResults = document.getElementById("tmResults");
-const $tmScore = document.getElementById("tmScore");
-const $tmBreakdown = document.getElementById("tmBreakdown");
-const $tmReview = document.getElementById("tmReview");
-const $tmRestart = document.getElementById("tmRestart");
-const $tmBackToOpen = document.getElementById("tmBackToOpen");
+    /* =======================
+       5) TEST MODE
+    ======================= */
+    const TM_KEYS = { STATE: "fj_test_state" };
 
-const test = {
-  deck: [],            // array of cards
-  i: 0,                // current index
-  answers: new Map(),  // id -> "A"/"B"/"C"/"D"
-  flags: new Set(),    // id -> flagged
-  timer: null,         // interval
-  deadline: null,      // epoch ms
-  config: { count: 20, minutes: 15 }
-};
+    const $testView = document.getElementById("testView");
+    const $tmProgress = document.getElementById("tmProgress");
+    const $tmTimer = document.getElementById("tmTimer");
+    const $tmQuestion = document.getElementById("tmQuestion");
+    const $tmOptions = document.getElementById("tmOptions");
+    const $tmFlag = document.getElementById("tmFlag");
+    const $tmPrev = document.getElementById("tmPrev");
+    const $tmNext = document.getElementById("tmNext");
+    const $tmSubmitBtn = document.getElementById("tmSubmitBtn");
+    const $tmResults = document.getElementById("tmResults");
+    const $tmScore = document.getElementById("tmScore");
+    const $tmBreakdown = document.getElementById("tmBreakdown");
+    const $tmReview = document.getElementById("tmReview");
+    const $tmRestart = document.getElementById("tmRestart");
+    const $tmBackToOpen = document.getElementById("tmBackToOpen");
 
-function sampleFromSelectedSets(n) {
-  const pool = loadedSets
-    .filter(s => selectedSetIds.has(s.id))
-    .flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
-  if (!pool.length) return [];
+    const test = { deck: [], i: 0, answers: new Map(), flags: new Set(), timer: null, deadline: null, config: { count: 20, minutes: 15 } };
 
-  // Shuffle pool (Fisher-Yates), then take n
-  for (let j = pool.length - 1; j > 0; j--) {
-    const k = Math.floor(Math.random() * (j + 1));
-    [pool[j], pool[k]] = [pool[k], pool[j]];
-  }
-  return pool.slice(0, Math.min(n, pool.length));
-}
-
-function formatMMSS(msLeft) {
-  const s = Math.max(0, Math.floor(msLeft / 1000));
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
-}
-
-function startTimer() {
-  stopTimer();
-  test.timer = setInterval(() => {
-    const now = Date.now();
-    const left = test.deadline - now;
-    $tmTimer.textContent = formatMMSS(left);
-    if (left <= 0) {
-      stopTimer();
-      finalizeTest(true); // time up
+    function sampleFromSelectedSets(n) {
+      const pool = loadedSets.filter(s => selectedSetIds.has(s.id)).flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
+      if (!pool.length) return [];
+      for (let j = pool.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [pool[j], pool[k]] = [pool[k], pool[j]]; }
+      return pool.slice(0, Math.min(n, pool.length));
     }
-  }, 250);
-}
-function stopTimer() {
-  if (test.timer) { clearInterval(test.timer); test.timer = null; }
-}
 
-function persistTestState() {
-  const obj = {
-    deck: test.deck,
-    i: test.i,
-    answers: Array.from(test.answers.entries()),
-    flags: Array.from(test.flags.values()),
-    deadline: test.deadline
-  };
-  saveJSON(TM_KEYS.STATE, obj);
-}
-function restoreTestState() {
-  const saved = loadJSON(TM_KEYS.STATE, null);
-  if (!saved) return false;
-  if (!Array.isArray(saved.deck) || !saved.deck.length) return false;
+    const formatMMSS = (msLeft) => { const s = Math.max(0, Math.floor(msLeft/1000)); const m = Math.floor(s/60); const sec = s%60; return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`; };
+    function startTimer(){ stopTimer(); test.timer=setInterval(()=>{ const left=test.deadline-Date.now(); $tmTimer.textContent=formatMMSS(left); if(left<=0){ stopTimer(); finalizeTest(true);} },250); }
+    function stopTimer(){ if(test.timer){ clearInterval(test.timer); test.timer=null; } }
 
-  test.deck = saved.deck;
-  test.i = Number.isInteger(saved.i) ? Math.max(0, Math.min(saved.i, test.deck.length - 1)) : 0;
-  test.answers = new Map(saved.answers || []);
-  test.flags = new Set(saved.flags || []);
-  test.deadline = typeof saved.deadline === "number" ? saved.deadline : null;
+    function persistTestState(){ saveJSON(TM_KEYS.STATE,{ deck:test.deck, i:test.i, answers:Array.from(test.answers.entries()), flags:Array.from(test.flags.values()), deadline:test.deadline }); }
+    function restoreTestState(){
+      const saved = loadJSON(TM_KEYS.STATE, null);
+      if (!saved || !Array.isArray(saved.deck) || !saved.deck.length) return false;
+      test.deck = saved.deck;
+      test.i = Number.isInteger(saved.i) ? Math.max(0, Math.min(saved.i, test.deck.length - 1)) : 0;
+      test.answers = new Map(saved.answers || []);
+      test.flags = new Set(saved.flags || []);
+      test.deadline = typeof saved.deadline === "number" ? saved.deadline : null;
+      if (test.deadline && Date.now() >= test.deadline) finalizeTest(true);
+      else if (test.deadline) { startTimer(); renderTestQuestion(); }
+      return true;
+    }
 
-  // If deadline in past, finish immediately
-  if (test.deadline && Date.now() >= test.deadline) {
-    finalizeTest(true);
-  } else if (test.deadline) {
-    startTimer();
-    renderTestQuestion();
-  }
-  return true;
-}
+    function showTestView(){ $openPlayView.classList.add("hidden"); $testView.classList.remove("hidden"); }
+    function startNewTest(){
+      const deck = sampleFromSelectedSets(test.config.count);
+      if (!deck.length) { alert("No cards available in your filter. Pick at least one set."); return; }
+      test.deck=deck; test.i=0; test.answers.clear(); test.flags.clear();
+      const ms=test.config.minutes*60*1000; test.deadline=Date.now()+ms; $tmTimer.textContent=formatMMSS(ms); startTimer();
+      persistTestState(); renderTestQuestion();
+    }
 
-function showTestView() {
-  // Hide open play
-  document.getElementById("openPlayView").classList.add("hidden");
-  // Show test
-  $testView.classList.remove("hidden");
-}
+    function renderTestQuestion(){
+      const total=test.deck.length; $tmResults.classList.add("hidden");
+      if(!total){ $tmProgress.textContent="No questions"; $tmQuestion.textContent="Add sets in the filter to create a test."; $tmOptions.innerHTML=""; return; }
+      const card=test.deck[test.i]; $tmProgress.textContent=`Q ${test.i+1} / ${total}`; $tmQuestion.textContent=card.q;
+      const options=[["A",card.a],["B",card.b],["C",card.c],["D",card.d]].filter(([k,v])=>v&&v.trim().length);
+      const chosen=test.answers.get(card.id) || null;
+      $tmOptions.innerHTML=options.map(([k,v])=>`<label class="flex items-center gap-3 border rounded-lg px-3 py-2 cursor-pointer"><input type="radio" name="tmOpt" value="${k}" ${chosen===k?"checked":""}/><span><strong>${k}.</strong> ${v}</span></label>`).join("");
+      $tmOptions.querySelectorAll('input[name="tmOpt"]').forEach(inp=>{ inp.addEventListener("change",()=>{ test.answers.set(card.id, inp.value); persistTestState(); }); });
+      $tmFlag.checked=test.flags.has(card.id);
+    }
 
-function startNewTest() {
-  // Build deck from filter
-  const deck = sampleFromSelectedSets(test.config.count);
-  if (!deck.length) {
-    alert("No cards available in your filter. Pick at least one set.");
-    return;
-  }
-  test.deck = deck;
-  test.i = 0;
-  test.answers.clear();
-  test.flags.clear();
+    const tmPrev = ()=>{ if(!test.deck.length) return; test.i=(test.i-1+test.deck.length)%test.deck.length; renderTestQuestion(); persistTestState(); };
+    const tmNext = ()=>{ if(!test.deck.length) return; test.i=(test.i+1)%test.deck.length; renderTestQuestion(); persistTestState(); };
+    function tmToggleFlag(){ const card=test.deck[test.i]; if(!card) return; if(test.flags.has(card.id)) test.flags.delete(card.id); else test.flags.add(card.id); persistTestState(); }
 
-  // Timer
-  const ms = test.config.minutes * 60 * 1000;
-  test.deadline = Date.now() + ms;
-  $tmTimer.textContent = formatMMSS(ms);
-  startTimer();
+    function gradeTest(){ let correct=0; const rows=test.deck.map((card,idx)=>{ const chosen=test.answers.get(card.id); const isCorrect=chosen===card.answer; if(isCorrect) correct++; return {idx,card,chosen,isCorrect}; }); return {correct,total:test.deck.length,rows}; }
+    function renderResults({correct,total,rows},dueToTimeUp=false){
+      const pct = total ? Math.round((correct/total)*100) : 0;
+      $tmScore.textContent=`Score: ${correct} / ${total} (${pct}%)${dueToTimeUp?" — time up":""}`;
+      const unanswered=rows.filter(r=>!r.chosen).length; const flagged=test.flags.size;
+      $tmBreakdown.textContent=`${unanswered} unanswered • ${flagged} flagged`;
+      $tmReview.innerHTML=rows.map(({idx,card,chosen,isCorrect})=>{
+        const ansKey=card.answer; const ansText=({A:card.a,B:card.b,C:card.c,D:card.d}[ansKey])||"";
+        const yourText=chosen ? (({A:card.a,B:card.b,C:card.c,D:card.d}[chosen])||"") : "—";
+        const badge=isCorrect?'<span class="text-green-700">Correct</span>':'<span class="text-red-700">Wrong</span>';
+        return `<div class="rounded-lg border p-3"><div class="text-sm text-neutral-500 mb-1">Q ${idx+1}</div><div class="font-medium mb-2">${card.q}</div><div class="text-sm"><strong>Correct:</strong> ${ansKey}. ${ansText}</div><div class="text-sm"><strong>Your answer:</strong> ${chosen ? chosen + ". " + yourText : "—"}</div><div class="text-sm mt-1">${badge}</div></div>`;
+      }).join("");
+      $tmResults.classList.remove("hidden");
+    }
+    function finalizeTest(dueToTimeUp=false){ stopTimer(); const graded=gradeTest(); renderResults(graded, dueToTimeUp); localStorage.removeItem(TM_KEYS.STATE); }
 
-  // Persist and render
-  persistTestState();
-  renderTestQuestion();
-}
+    function startTestFlow(){
+      if (!loadedSets.length) { loadAll().then(()=>{ if (selectedSetIds.size===0){ alert("Pick at least one set in the Filter."); return; } showTestView(); if(!restoreTestState()) startNewTest(); }); return; }
+      if (selectedSetIds.size===0){ alert("Pick at least one set in the Filter."); return; }
+      showTestView(); if(!restoreTestState()) startNewTest();
+    }
 
-function renderTestQuestion() {
-  const total = test.deck.length;
-  $tmResults.classList.add("hidden");
-  if (total === 0) {
-    $tmProgress.textContent = "No questions";
-    $tmQuestion.textContent = "Add sets in the filter to create a test.";
-    $tmOptions.innerHTML = "";
-    return;
-  }
-  const card = test.deck[test.i];
-  $tmProgress.textContent = `Q ${test.i + 1} / ${total}`;
-  $tmQuestion.textContent = card.q;
+    // Test bindings
+    document.getElementById("tmPrev").addEventListener("click", tmPrev);
+    document.getElementById("tmNext").addEventListener("click", tmNext);
+    document.getElementById("tmFlag").addEventListener("change", tmToggleFlag);
+    document.getElementById("tmSubmitBtn").addEventListener("click", () => finalizeTest(false));
+    document.getElementById("tmRestart").addEventListener("click", () => { localStorage.removeItem(TM_KEYS.STATE); startNewTest(); });
+    document.getElementById("tmBackToOpen").addEventListener("click", () => { $testView.classList.add("hidden"); $openPlayView.classList.remove("hidden"); });
 
-  const options = [
-    ["A", card.a], ["B", card.b], ["C", card.c], ["D", card.d]
-  ].filter(([k,v]) => v && v.trim().length);
-
-  const chosen = test.answers.get(card.id) || null;
-
-  $tmOptions.innerHTML = options.map(([k,v]) => `
-    <label class="flex items-center gap-3 border rounded-lg px-3 py-2 cursor-pointer">
-      <input type="radio" name="tmOpt" value="${k}" ${chosen === k ? "checked" : ""} />
-      <span><strong>${k}.</strong> ${v}</span>
-    </label>
-  `).join("");
-
-  // Bind change
-  $tmOptions.querySelectorAll('input[name="tmOpt"]').forEach(inp => {
-    inp.addEventListener("change", () => {
-      test.answers.set(card.id, inp.value);
-      persistTestState();
-    });
-  });
-
-  // Flag checkbox
-  $tmFlag.checked = test.flags.has(card.id);
-}
-
-function tmPrev() {
-  if (!test.deck.length) return;
-  test.i = (test.i - 1 + test.deck.length) % test.deck.length;
-  renderTestQuestion();
-  persistTestState();
-}
-function tmNext() {
-  if (!test.deck.length) return;
-  test.i = (test.i + 1) % test.deck.length;
-  renderTestQuestion();
-  persistTestState();
-}
-function tmToggleFlag() {
-  const card = test.deck[test.i];
-  if (!card) return;
-  if (test.flags.has(card.id)) test.flags.delete(card.id);
-  else test.flags.add(card.id);
-  persistTestState();
-}
-
-function gradeTest() {
-  let correct = 0;
-  const rows = test.deck.map((card, idx) => {
-    const chosen = test.answers.get(card.id);
-    const isCorrect = chosen === card.answer;
-    if (isCorrect) correct++;
-    return { idx, card, chosen, isCorrect };
-  });
-  return { correct, total: test.deck.length, rows };
-}
-
-function renderResults({ correct, total, rows }, dueToTimeUp=false) {
-  const pct = total ? Math.round((correct / total) * 100) : 0;
-  $tmScore.textContent = `Score: ${correct} / ${total} (${pct}%)${dueToTimeUp ? " — time up" : ""}`;
-  const unanswered = rows.filter(r => !r.chosen).length;
-  const flagged = test.flags.size;
-  $tmBreakdown.textContent = `${unanswered} unanswered • ${flagged} flagged`;
-
-  // Build review list
-  $tmReview.innerHTML = rows.map(({ idx, card, chosen, isCorrect }) => {
-    const ansKey = card.answer;
-    const ansText = ({A:card.a,B:card.b,C:card.c,D:card.d}[ansKey]) || "";
-    const yourText = chosen ? ({A:card.a,B:card.b,C:card.c,D:card.d}[chosen]) || "" : "—";
-    const badge = isCorrect ? '<span class="text-green-700">Correct</span>' : '<span class="text-red-700">Wrong</span>';
-    return `
-      <div class="rounded-lg border p-3">
-        <div class="text-sm text-neutral-500 mb-1">Q ${idx+1}</div>
-        <div class="font-medium mb-2">${card.q}</div>
-        <div class="text-sm"><strong>Correct:</strong> ${ansKey}. ${ansText}</div>
-        <div class="text-sm"><strong>Your answer:</strong> ${chosen ? chosen + ". " + yourText : "—"}</div>
-        <div class="text-sm mt-1">${badge}</div>
-      </div>
-    `;
-  }).join("");
-
-  $tmResults.classList.remove("hidden");
-}
-
-function finalizeTest(dueToTimeUp=false) {
-  stopTimer();
-  const graded = gradeTest();
-  renderResults(graded, dueToTimeUp);
-  // Clear persisted state so a fresh Start Test begins new
-  localStorage.removeItem(TM_KEYS.STATE);
-}
-
-function startTestFlow() {
-  // Ensure data loaded and at least 1 set selected
-  if (!loadedSets.length) {
-    loadAll().then(() => {
-      if (selectedSetIds.size === 0) { alert("Pick at least one set in the Filter."); return; }
-      showTestView();
-      if (!restoreTestState()) startNewTest();
-    });
-    return;
-  }
-  if (selectedSetIds.size === 0) {
-    alert("Pick at least one set in the Filter.");
-    return;
-  }
-  showTestView();
-  // Either restore unfinished test or start fresh
-  if (!restoreTestState()) startNewTest();
-}
-
-/* Bindings */
-$tmPrev.addEventListener("click", tmPrev);
-$tmNext.addEventListener("click", tmNext);
-$tmFlag.addEventListener("change", tmToggleFlag);
-$tmSubmitBtn.addEventListener("click", () => finalizeTest(false));
-$tmRestart.addEventListener("click", () => { localStorage.removeItem(TM_KEYS.STATE); startNewTest(); });
-$tmBackToOpen.addEventListener("click", () => {
-  $testView.classList.add("hidden");
-  document.getElementById("openPlayView").classList.remove("hidden");
-});
-
-    
     // Buttons
     document.getElementById("openPlayBtn").addEventListener("click", showOpenPlay);
-  document.getElementById("testModeBtn").addEventListener("click", () => {
-  state.mode = "test";
-  startTestFlow();
-});
+    document.getElementById("testModeBtn").addEventListener("click", () => { state.mode = "test"; startTestFlow(); });
 
     // Initial load
     loadAll();
   </script>
 </body>
 </html>
-
-
-
