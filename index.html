@@ -75,6 +75,47 @@
   </main>
 
   <script>
+
+    <!-- TEST MODE VIEW -->
+<section id="testView" class="hidden max-w-xl mx-auto mt-8">
+  <div class="flex items-center justify-between mb-3">
+    <div id="tmProgress" class="text-sm text-neutral-600">Q 1 / 20</div>
+    <div class="flex items-center gap-2">
+      <span id="tmTimer" class="px-3 py-1.5 rounded-lg border text-sm">15:00</span>
+      <button id="tmSubmitBtn" class="px-3 py-1.5 rounded-lg border text-sm bg-black text-white">Submit</button>
+    </div>
+  </div>
+
+  <div id="tmCard" class="rounded-2xl border bg-white shadow p-6 min-h-[220px]">
+    <div id="tmQuestion" class="text-lg font-semibold mb-4">Question</div>
+    <div id="tmOptions" class="space-y-2"></div>
+    <div class="mt-3 flex items-center justify-between">
+      <label class="inline-flex items-center gap-2 text-sm">
+        <input id="tmFlag" type="checkbox" class="rounded" />
+        Flag for review
+      </label>
+      <div class="flex items-center gap-2">
+        <button id="tmPrev" class="px-3 py-1.5 rounded-lg border text-sm">◀ Prev</button>
+        <button id="tmNext" class="px-3 py-1.5 rounded-lg border text-sm">Next ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="tmResults" class="hidden mt-6">
+    <div id="tmScore" class="text-lg font-semibold mb-2"></div>
+    <div id="tmBreakdown" class="text-sm text-neutral-700 mb-4"></div>
+    <details class="rounded-xl border bg-white p-4">
+      <summary class="cursor-pointer font-medium">Review answers</summary>
+      <div id="tmReview" class="mt-3 space-y-4"></div>
+    </details>
+    <div class="mt-4 flex items-center gap-2">
+      <button id="tmRestart" class="px-4 py-2 rounded-xl border">Retake</button>
+      <button id="tmBackToOpen" class="px-4 py-2 rounded-xl border">Back to Open Play</button>
+    </div>
+  </div>
+</section>
+
     /* =======================
        1) DATA LOADING + NAMES
     ======================= */
@@ -504,16 +545,282 @@
         showOpenPlay._bound = true;
       }
     }
+/* =======================
+   5) TEST MODE
+======================= */
+const TM_KEYS = {
+  STATE: "fj_test_state" // { deck:[{q,a,b,c,d,answer,id}], i, answers:{id: "A"|...}, flags:Set, deadline:epoch_ms }
+};
 
+const $testView = document.getElementById("testView");
+const $tmProgress = document.getElementById("tmProgress");
+const $tmTimer = document.getElementById("tmTimer");
+const $tmQuestion = document.getElementById("tmQuestion");
+const $tmOptions = document.getElementById("tmOptions");
+const $tmFlag = document.getElementById("tmFlag");
+const $tmPrev = document.getElementById("tmPrev");
+const $tmNext = document.getElementById("tmNext");
+const $tmSubmitBtn = document.getElementById("tmSubmitBtn");
+const $tmResults = document.getElementById("tmResults");
+const $tmScore = document.getElementById("tmScore");
+const $tmBreakdown = document.getElementById("tmBreakdown");
+const $tmReview = document.getElementById("tmReview");
+const $tmRestart = document.getElementById("tmRestart");
+const $tmBackToOpen = document.getElementById("tmBackToOpen");
+
+const test = {
+  deck: [],            // array of cards
+  i: 0,                // current index
+  answers: new Map(),  // id -> "A"/"B"/"C"/"D"
+  flags: new Set(),    // id -> flagged
+  timer: null,         // interval
+  deadline: null,      // epoch ms
+  config: { count: 20, minutes: 15 }
+};
+
+function sampleFromSelectedSets(n) {
+  const pool = loadedSets
+    .filter(s => selectedSetIds.has(s.id))
+    .flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
+  if (!pool.length) return [];
+
+  // Shuffle pool (Fisher-Yates), then take n
+  for (let j = pool.length - 1; j > 0; j--) {
+    const k = Math.floor(Math.random() * (j + 1));
+    [pool[j], pool[k]] = [pool[k], pool[j]];
+  }
+  return pool.slice(0, Math.min(n, pool.length));
+}
+
+function formatMMSS(msLeft) {
+  const s = Math.max(0, Math.floor(msLeft / 1000));
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+}
+
+function startTimer() {
+  stopTimer();
+  test.timer = setInterval(() => {
+    const now = Date.now();
+    const left = test.deadline - now;
+    $tmTimer.textContent = formatMMSS(left);
+    if (left <= 0) {
+      stopTimer();
+      finalizeTest(true); // time up
+    }
+  }, 250);
+}
+function stopTimer() {
+  if (test.timer) { clearInterval(test.timer); test.timer = null; }
+}
+
+function persistTestState() {
+  const obj = {
+    deck: test.deck,
+    i: test.i,
+    answers: Array.from(test.answers.entries()),
+    flags: Array.from(test.flags.values()),
+    deadline: test.deadline
+  };
+  saveJSON(TM_KEYS.STATE, obj);
+}
+function restoreTestState() {
+  const saved = loadJSON(TM_KEYS.STATE, null);
+  if (!saved) return false;
+  if (!Array.isArray(saved.deck) || !saved.deck.length) return false;
+
+  test.deck = saved.deck;
+  test.i = Number.isInteger(saved.i) ? Math.max(0, Math.min(saved.i, test.deck.length - 1)) : 0;
+  test.answers = new Map(saved.answers || []);
+  test.flags = new Set(saved.flags || []);
+  test.deadline = typeof saved.deadline === "number" ? saved.deadline : null;
+
+  // If deadline in past, finish immediately
+  if (test.deadline && Date.now() >= test.deadline) {
+    finalizeTest(true);
+  } else if (test.deadline) {
+    startTimer();
+    renderTestQuestion();
+  }
+  return true;
+}
+
+function showTestView() {
+  // Hide open play
+  document.getElementById("openPlayView").classList.add("hidden");
+  // Show test
+  $testView.classList.remove("hidden");
+}
+
+function startNewTest() {
+  // Build deck from filter
+  const deck = sampleFromSelectedSets(test.config.count);
+  if (!deck.length) {
+    alert("No cards available in your filter. Pick at least one set.");
+    return;
+  }
+  test.deck = deck;
+  test.i = 0;
+  test.answers.clear();
+  test.flags.clear();
+
+  // Timer
+  const ms = test.config.minutes * 60 * 1000;
+  test.deadline = Date.now() + ms;
+  $tmTimer.textContent = formatMMSS(ms);
+  startTimer();
+
+  // Persist and render
+  persistTestState();
+  renderTestQuestion();
+}
+
+function renderTestQuestion() {
+  const total = test.deck.length;
+  $tmResults.classList.add("hidden");
+  if (total === 0) {
+    $tmProgress.textContent = "No questions";
+    $tmQuestion.textContent = "Add sets in the filter to create a test.";
+    $tmOptions.innerHTML = "";
+    return;
+  }
+  const card = test.deck[test.i];
+  $tmProgress.textContent = `Q ${test.i + 1} / ${total}`;
+  $tmQuestion.textContent = card.q;
+
+  const options = [
+    ["A", card.a], ["B", card.b], ["C", card.c], ["D", card.d]
+  ].filter(([k,v]) => v && v.trim().length);
+
+  const chosen = test.answers.get(card.id) || null;
+
+  $tmOptions.innerHTML = options.map(([k,v]) => `
+    <label class="flex items-center gap-3 border rounded-lg px-3 py-2 cursor-pointer">
+      <input type="radio" name="tmOpt" value="${k}" ${chosen === k ? "checked" : ""} />
+      <span><strong>${k}.</strong> ${v}</span>
+    </label>
+  `).join("");
+
+  // Bind change
+  $tmOptions.querySelectorAll('input[name="tmOpt"]').forEach(inp => {
+    inp.addEventListener("change", () => {
+      test.answers.set(card.id, inp.value);
+      persistTestState();
+    });
+  });
+
+  // Flag checkbox
+  $tmFlag.checked = test.flags.has(card.id);
+}
+
+function tmPrev() {
+  if (!test.deck.length) return;
+  test.i = (test.i - 1 + test.deck.length) % test.deck.length;
+  renderTestQuestion();
+  persistTestState();
+}
+function tmNext() {
+  if (!test.deck.length) return;
+  test.i = (test.i + 1) % test.deck.length;
+  renderTestQuestion();
+  persistTestState();
+}
+function tmToggleFlag() {
+  const card = test.deck[test.i];
+  if (!card) return;
+  if (test.flags.has(card.id)) test.flags.delete(card.id);
+  else test.flags.add(card.id);
+  persistTestState();
+}
+
+function gradeTest() {
+  let correct = 0;
+  const rows = test.deck.map((card, idx) => {
+    const chosen = test.answers.get(card.id);
+    const isCorrect = chosen === card.answer;
+    if (isCorrect) correct++;
+    return { idx, card, chosen, isCorrect };
+  });
+  return { correct, total: test.deck.length, rows };
+}
+
+function renderResults({ correct, total, rows }, dueToTimeUp=false) {
+  const pct = total ? Math.round((correct / total) * 100) : 0;
+  $tmScore.textContent = `Score: ${correct} / ${total} (${pct}%)${dueToTimeUp ? " — time up" : ""}`;
+  const unanswered = rows.filter(r => !r.chosen).length;
+  const flagged = test.flags.size;
+  $tmBreakdown.textContent = `${unanswered} unanswered • ${flagged} flagged`;
+
+  // Build review list
+  $tmReview.innerHTML = rows.map(({ idx, card, chosen, isCorrect }) => {
+    const ansKey = card.answer;
+    const ansText = ({A:card.a,B:card.b,C:card.c,D:card.d}[ansKey]) || "";
+    const yourText = chosen ? ({A:card.a,B:card.b,C:card.c,D:card.d}[chosen]) || "" : "—";
+    const badge = isCorrect ? '<span class="text-green-700">Correct</span>' : '<span class="text-red-700">Wrong</span>';
+    return `
+      <div class="rounded-lg border p-3">
+        <div class="text-sm text-neutral-500 mb-1">Q ${idx+1}</div>
+        <div class="font-medium mb-2">${card.q}</div>
+        <div class="text-sm"><strong>Correct:</strong> ${ansKey}. ${ansText}</div>
+        <div class="text-sm"><strong>Your answer:</strong> ${chosen ? chosen + ". " + yourText : "—"}</div>
+        <div class="text-sm mt-1">${badge}</div>
+      </div>
+    `;
+  }).join("");
+
+  $tmResults.classList.remove("hidden");
+}
+
+function finalizeTest(dueToTimeUp=false) {
+  stopTimer();
+  const graded = gradeTest();
+  renderResults(graded, dueToTimeUp);
+  // Clear persisted state so a fresh Start Test begins new
+  localStorage.removeItem(TM_KEYS.STATE);
+}
+
+function startTestFlow() {
+  // Ensure data loaded and at least 1 set selected
+  if (!loadedSets.length) {
+    loadAll().then(() => {
+      if (selectedSetIds.size === 0) { alert("Pick at least one set in the Filter."); return; }
+      showTestView();
+      if (!restoreTestState()) startNewTest();
+    });
+    return;
+  }
+  if (selectedSetIds.size === 0) {
+    alert("Pick at least one set in the Filter.");
+    return;
+  }
+  showTestView();
+  // Either restore unfinished test or start fresh
+  if (!restoreTestState()) startNewTest();
+}
+
+/* Bindings */
+$tmPrev.addEventListener("click", tmPrev);
+$tmNext.addEventListener("click", tmNext);
+$tmFlag.addEventListener("change", tmToggleFlag);
+$tmSubmitBtn.addEventListener("click", () => finalizeTest(false));
+$tmRestart.addEventListener("click", () => { localStorage.removeItem(TM_KEYS.STATE); startNewTest(); });
+$tmBackToOpen.addEventListener("click", () => {
+  $testView.classList.add("hidden");
+  document.getElementById("openPlayView").classList.remove("hidden");
+});
+
+    
     // Buttons
     document.getElementById("openPlayBtn").addEventListener("click", showOpenPlay);
-    document.getElementById("testModeBtn").addEventListener("click", () => {
-      state.mode = "test";
-      alert("Test Mode coming next.");
-    });
+  document.getElementById("testModeBtn").addEventListener("click", () => {
+  state.mode = "test";
+  startTestFlow();
+});
 
     // Initial load
     loadAll();
   </script>
 </body>
 </html>
+
