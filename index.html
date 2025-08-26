@@ -111,103 +111,133 @@
         return { id: `c_${i}_${q.slice(0,16)}`, q, a:A, b:B, c:C, d:D, answer:ans };
       }).filter(c => c.q);
     }
-    async function fetchWithFallback(ds) {
-      try {
-        const r = await fetch(ds.path, { cache: "no-store" });
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return await r.text();
-      } catch {
-        const raw = RAW_FALLBACK[ds.id];
-        const r2 = await fetch(raw, { cache: "no-store" });
-        if (!r2.ok) throw new Error(`Fallback HTTP ${r2.status}`);
-        return await r2.text();
+   async function fetchWithFallback(ds) {
+  try {
+    const r = await fetch(ds.path, { cache: "no-store" });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.text();
+  } catch {
+    const raw = RAW_FALLBACK[ds.id];
+    const r2 = await fetch(raw, { cache: "no-store" });
+    if (!r2.ok) throw new Error(`Fallback HTTP ${r2.status}`);
+    return await r2.text();
+  }
+}
+
+async function loadAll() {
+  try {
+    const results = await Promise.all(DATASETS.map(async ds => {
+      const text = await fetchWithFallback(ds);
+      const cards = parseCSV(text);
+      if (!cards.length) throw new Error(`${ds.label} parsed 0 cards`);
+      return { id: ds.id, short: ds.short, label: ds.label, cards };
+    }));
+
+    loadedSets = results;
+
+    // Default: select all sets on first load
+    if (selectedSetIds.size === 0) {
+      results.forEach(s => selectedSetIds.add(s.id));
+    }
+
+    // Flat list (fallback for other code)
+    state.cards = results.flatMap(r => r.cards);
+
+    // Show flattering summary + pills + shuffle availability
+    $app.classList.remove("hidden");
+    renderSetsSummary();
+    renderSetPills();
+    updateShuffleAvailability();
+
+  } catch (e) {
+    $status.textContent = "Couldn’t finish loading.";
+    $error.classList.remove("hidden");
+    $error.textContent = String(e?.message || e);
+  }
+}
+
+/* ==========================
+   2) PILL TOGGLES (UI/Logic)
+========================== */
+function renderSetsSummary() {
+  const chosen = loadedSets.filter(s => selectedSetIds.has(s.id));
+  const totalSets = chosen.length;
+  const totalCards = chosen.reduce((sum, s) => sum + s.cards.length, 0);
+
+  $status.textContent = `Ready: ${totalSets} ${totalSets === 1 ? "set" : "sets"} • ${totalCards} cards`;
+  $setsInfo.textContent = chosen.length
+    ? chosen.map(s => `${s.short} (${s.cards.length})`).join(" • ")
+    : "No sets selected";
+
+  updateShuffleAvailability();
+}
+
+function renderSetPills() {
+  $setPills.innerHTML = loadedSets.map(s => {
+    const active = selectedSetIds.has(s.id);
+    const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm";
+    const on  = "bg-black text-white border-black";
+    const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100";
+    return `
+      <button
+        class="set-pill ${base} ${active ? on : off}"
+        data-setid="${s.id}"
+        role="switch"
+        aria-pressed="${active ? "true" : "false"}"
+        title="${s.label}"
+      >
+        ${s.short}
+        <span class="text-xs opacity-80">(${s.cards.length})</span>
+      </button>
+    `;
+  }).join("");
+
+  // Re-bind click handlers
+  Array.from($setPills.querySelectorAll(".set-pill")).forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-setid");
+      if (selectedSetIds.has(id)) selectedSetIds.delete(id);
+      else selectedSetIds.add(id);
+
+      renderSetsSummary();
+      renderSetPills();
+
+      // If Open Play visible, refresh deck
+      if (!document.getElementById("openPlayView").classList.contains("hidden")) {
+        opInjectFromSelection();
       }
+    });
+  });
+
+  updateShuffleAvailability();
+}
+
+/* ==========================
+   3) SHUFFLE AVAILABILITY
+========================== */
+function updateShuffleAvailability() {
+  const btn = document.getElementById("opShuffleBtn");
+  if (!btn) return;
+
+  const activeSets = loadedSets.filter(s => selectedSetIds.has(s.id)).length;
+
+  if (activeSets > 1) {
+    btn.disabled = false;
+    btn.classList.remove("opacity-50", "cursor-not-allowed");
+  } else {
+    btn.disabled = true;
+    btn.classList.add("opacity-50", "cursor-not-allowed");
+
+    // If shuffle was ON, force it OFF
+    if (op.shuffle) {
+      op.shuffle = false;
+      btn.textContent = "Shuffle: Off";
+      opBuildOrder();
+      opRenderCard();
     }
+  }
+}
 
-    async function loadAll() {
-      try {
-        const results = await Promise.all(DATASETS.map(async ds => {
-          const text = await fetchWithFallback(ds);
-          const cards = parseCSV(text);
-          if (!cards.length) throw new Error(`${ds.label} parsed 0 cards`);
-          return { id: ds.id, short: ds.short, label: ds.label, cards };
-        }));
-
-        loadedSets = results;
-
-        // default: select all sets on first load
-        if (selectedSetIds.size === 0) {
-          results.forEach(s => selectedSetIds.add(s.id));
-        }
-
-        // keep flat list for other code paths if needed
-        state.cards = results.flatMap(r => r.cards);
-
-        // show flattering summary + app row
-        $app.classList.remove("hidden");
-        renderSetsSummary();
-        renderSetPills(); // <- build the pills
-
-      } catch (e) {
-        $status.textContent = "Couldn’t finish loading.";
-        $error.classList.remove("hidden");
-        $error.textContent = String(e?.message || e);
-      }
-    }
-
-    /* ==========================
-       2) PILL TOGGLES (UI/Logic)
-    ========================== */
-    function renderSetsSummary() {
-      const chosen = loadedSets.filter(s => selectedSetIds.has(s.id));
-      const totalSets = chosen.length;
-      const totalCards = chosen.reduce((sum, s) => sum + s.cards.length, 0);
-
-      $status.textContent = `Ready: ${totalSets} ${totalSets === 1 ? "set" : "sets"} • ${totalCards} cards`;
-      $setsInfo.textContent = chosen.length
-        ? chosen.map(s => `${s.short} (${s.cards.length})`).join(" • ")
-        : "No sets selected";
-    }
-
-    function renderSetPills() {
-      $setPills.innerHTML = loadedSets.map(s => {
-        const active = selectedSetIds.has(s.id);
-        // Tailwind pill styles; aria-pressed for a11y
-        const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm";
-        const on  = "bg-black text-white border-black";
-        const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100";
-        return `
-          <button
-            class="set-pill ${base} ${active ? on : off}"
-            data-setid="${s.id}"
-            role="switch"
-            aria-pressed="${active ? "true" : "false"}"
-            title="${s.label}"
-          >
-            ${s.short}
-            <span class="text-xs opacity-80">(${s.cards.length})</span>
-          </button>
-        `;
-      }).join("");
-
-      // Bind click handlers (re-bind each render)
-      Array.from($setPills.querySelectorAll(".set-pill")).forEach(btn => {
-        btn.addEventListener("click", () => {
-          const id = btn.getAttribute("data-setid");
-          if (selectedSetIds.has(id)) selectedSetIds.delete(id);
-          else selectedSetIds.add(id);
-
-          // Update UI + summary
-          renderSetsSummary();
-          renderSetPills();
-
-          // If Open Play is visible, refresh its deck
-          if (!document.getElementById("openPlayView").classList.contains("hidden")) {
-            opInjectFromSelection();
-          }
-        });
-      });
-    }
 
     /* =======================
        3) OPEN PLAY (no Again/Known)
@@ -375,3 +405,4 @@
   </script>
 </body>
 </html>
+
