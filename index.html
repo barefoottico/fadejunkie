@@ -156,67 +156,99 @@
     let loadedSets = [];              // [{id, short, label, cards:[...] }]
     const selectedSetIds = new Set(); // active set ids
 
-   // CSV parsing (handles commas in quotes + flexible header names)
+  // Keep this for comma CSV (handles quotes/commas)
 const csvSafeSplit = (line) => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g);
 
 function parseCSV(text) {
+  // Normalize newlines and strip BOM
+  text = text.replace(/\r/g, "");
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+  const firstNewline = text.indexOf("\n");
+  const headerLine = firstNewline === -1 ? text : text.slice(0, firstNewline);
+  const isTSV = headerLine.includes("\t");
+
+  // Split into rows + cells
   const rows = text
-    .replace(/\r/g, "")
     .split("\n")
     .filter(Boolean)
-    .map(csvSafeSplit)
-    .map(cols => cols.map(s => s.replace(/^"(.*)"$/, "$1")));
+    .map(line => {
+      if (isTSV) {
+        // Simple TSV split (quotes are rare in TSV; good enough here)
+        return line.split("\t").map(s => s.replace(/^"(.*)"$/, "$1"));
+      } else {
+        // CSV with quotes
+        return csvSafeSplit(line).map(s => s.replace(/^"(.*)"$/, "$1"));
+      }
+    });
 
   const [rawHeader, ...lines] = rows;
   if (!rawHeader) return [];
 
-  // Strip BOM and normalize
-  if (rawHeader[0]) rawHeader[0] = rawHeader[0].replace(/^\uFEFF/, "");
-  const header = rawHeader.map(h => h.trim().toLowerCase());
+  const header = rawHeader.map(h => (h || "").trim().toLowerCase());
 
-  // Build a flexible lookup for common variants
-  const alias = (want) => {
-    const candidates = {
-      question: ["question", "q", "prompt", "stem"],
-      option_a: ["option_a", "a", "opt_a", "choice_a"],
-      option_b: ["option_b", "b", "opt_b", "choice_b"],
-      option_c: ["option_c", "c", "opt_c", "choice_c"],
-      option_d: ["option_d", "d", "opt_d", "choice_d"],
-      answer:   ["answer", "correct", "key", "ans"]
-    }[want];
-
-    for (const name of candidates) {
-      const idx = header.indexOf(name);
+  // Flexible column lookup
+  const findCol = (...names) => {
+    for (const n of names) {
+      const idx = header.indexOf(n);
       if (idx !== -1) return idx;
     }
     return -1;
   };
 
-  const idxQ = alias("question");
-  const idxA = alias("option_a");
-  const idxB = alias("option_b");
-  const idxC = alias("option_c");
-  const idxD = alias("option_d");
-  const idxAns = alias("answer");
+  const idxQ   = findCol("question", "q", "prompt", "stem");
+  const idxA   = findCol("option_a", "a", "opt_a", "choice_a");
+  const idxB   = findCol("option_b", "b", "opt_b", "choice_b");
+  const idxC   = findCol("option_c", "c", "opt_c", "choice_c");
+  const idxD   = findCol("option_d", "d", "opt_d", "choice_d");
+  const idxAns = findCol("correct_options", "answer", "correct", "key", "ans");
+  const idxId  = findCol("id"); // optional
 
-  return lines.map((cols, i) => {
-    const q  = (idxQ  >= 0 ? cols[idxQ]  : "").trim();
-    const A  = (idxA  >= 0 ? cols[idxA]  : "").trim();
-    const B  = (idxB  >= 0 ? cols[idxB]  : "").trim();
-    const C  = (idxC  >= 0 ? cols[idxC]  : "").trim();
-    const D  = (idxD  >= 0 ? cols[idxD]  : "").trim();
-    // Accept either a letter key (A/B/C/D) or the full answer text
-    let ans = (idxAns >= 0 ? (cols[idxAns] || "").trim() : "").toUpperCase();
-    if (!["A","B","C","D"].includes(ans)) {
-      if (ans && ans === A.toUpperCase()) ans = "A";
-      else if (ans && ans === B.toUpperCase()) ans = "B";
-      else if (ans && ans === C.toUpperCase()) ans = "C";
-      else if (ans && ans === D.toUpperCase()) ans = "D";
-      else ans = "A"; // safe default
+  // Helper to coerce "answer" to A/B/C/D
+  function coerceAnswer({A, B, C, D, raw}) {
+    if (!raw) return "A";
+    let s = String(raw).trim();
+
+    // If it's like "A", "b", "C;D", "a,c"
+    const letters = s
+      .toUpperCase()
+      .replace(/[^A-D,; ]/g, "")
+      .split(/[;, ]+/)
+      .filter(Boolean);
+    if (letters.length && ["A","B","C","D"].includes(letters[0])) {
+      return letters[0];
     }
-    return { id: `c_${i}_${q.slice(0,16)}`, q, a:A, b:B, c:C, d:D, answer:ans };
-  }).filter(c => c.q);
+
+    // Otherwise, maybe the full text was put in "correct_options"
+    const up = s.toUpperCase();
+    if (up && up === String(A || "").toUpperCase()) return "A";
+    if (up && up === String(B || "").toUpperCase()) return "B";
+    if (up && up === String(C || "").toUpperCase()) return "C";
+    if (up && up === String(D || "").toUpperCase()) return "D";
+
+    // Fallback
+    return "A";
+  }
+
+  const cards = lines.map((cols, i) => {
+    const q  = (idxQ   >= 0 ? cols[idxQ]   : "").trim();
+    const A  = (idxA   >= 0 ? cols[idxA]   : "").trim();
+    const B  = (idxB   >= 0 ? cols[idxB]   : "").trim();
+    const C  = (idxC   >= 0 ? cols[idxC]   : "").trim();
+    const D  = (idxD   >= 0 ? cols[idxD]   : "").trim();
+    const rawAns = (idxAns >= 0 ? cols[idxAns] : "").trim();
+
+    if (!q) return null;
+
+    const answer = coerceAnswer({A, B, C, D, raw: rawAns});
+    const uid = (idxId >= 0 && cols[idxId]) ? `id_${cols[idxId]}` : `c_${i}_${q.slice(0,16)}`;
+
+    return { id: uid, q, a: A, b: B, c: C, d: D, answer };
+  }).filter(Boolean);
+
+  return cards;
 }
+
 
 
     /* ==========================
@@ -860,5 +892,6 @@ $tmBackToOpen.addEventListener("click", () => {
   </script>
 </body>
 </html>
+
 
 
