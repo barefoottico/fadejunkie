@@ -20,31 +20,21 @@
       <button id="testModeBtn" class="px-4 py-2 rounded-xl shadow bg-black text-white hover:opacity-90">Start Test</button>
     </section>
 
-    <!-- Top status + flattering summary -->
-    <!-- Loading / error stays minimal -->
-<section class="mt-8">
-  <div id="status" class="text-sm text-zinc-700">Loading datasets…</div>
-  <div id="error" class="hidden text-sm text-red-600 mt-2"></div>
-</section>
+    <!-- Loading / error -->
+    <section class="mt-8">
+      <div id="status" class="text-sm text-zinc-700">Loading datasets…</div>
+      <div id="error" class="hidden text-sm text-red-600 mt-2"></div>
+    </section>
 
-<!-- Filter bar -->
-<section id="app" class="mt-4 hidden">
-  <div class="flex items-center justify-between gap-3">
-    <div class="flex items-center gap-2">
-      <span class="text-sm text-zinc-500">Filter:</span>
-      <div id="setPills" class="flex flex-wrap gap-2"></div>
-    </div>
-    <div id="statusSummary" class="text-sm text-zinc-700 whitespace-nowrap"></div>
-  </div>
-</section>
-
-
+    <!-- Filter bar -->
     <section id="app" class="mt-4 hidden">
-      <div class="flex items-center justify-between">
-        <div id="setsInfo" class="text-sm text-zinc-700"></div>
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-zinc-500">Filter:</span>
+          <div id="setPills" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div id="statusSummary" class="text-sm text-zinc-700 whitespace-nowrap"></div>
       </div>
-      <!-- Pills live here -->
-      <div id="setPills" class="mt-3 flex flex-wrap gap-2"></div>
     </section>
 
     <!-- OPEN PLAY VIEW -->
@@ -101,169 +91,139 @@
     const $status   = document.getElementById("status");
     const $error    = document.getElementById("error");
     const $app      = document.getElementById("app");
-    const $setsInfo = document.getElementById("setsInfo");
     const $setPills = document.getElementById("setPills");
+    const $statusSummary = document.getElementById("statusSummary");
 
-// Manage Sets state
-let loadedSets = [];              // [{id, short, label, cards:[...] }]
-const selectedSetIds = new Set(); // active set ids
+    // Manage Sets state
+    let loadedSets = [];              // [{id, short, label, cards:[...] }]
+    const selectedSetIds = new Set(); // active set ids
 
-// CSV parsing (handles commas inside quotes)
-const csvSafeSplit = (line) => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g);
-function parseCSV(text) {
-  const rows = text
-    .replace(/\r/g, "")
-    .split("\n")
-    .filter(Boolean)
-    .map(csvSafeSplit)
-    .map(cols => cols.map(s => s.replace(/^"(.*)"$/, "$1")));
+    // CSV parsing (handles commas inside quotes)
+    const csvSafeSplit = (line) => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g);
+    function parseCSV(text) {
+      const rows = text
+        .replace(/\r/g, "")
+        .split("\n")
+        .filter(Boolean)
+        .map(csvSafeSplit)
+        .map(cols => cols.map(s => s.replace(/^"(.*)"$/, "$1")));
 
-  const [rawHeader, ...lines] = rows;
-  if (!rawHeader) return [];
+      const [rawHeader, ...lines] = rows;
+      if (!rawHeader) return [];
+      if (rawHeader[0]) rawHeader[0] = rawHeader[0].replace(/^\uFEFF/, ""); // strip BOM
 
-  // Strip BOM if present on first header cell
-  if (rawHeader[0]) rawHeader[0] = rawHeader[0].replace(/^\uFEFF/, "");
-
-  const idx = Object.fromEntries(rawHeader.map((h, i) => [h.trim().toLowerCase(), i]));
-
-  return lines.map((cols, i) => {
-    const q  = (cols[idx["question"]]  || "").trim();
-    const A  = (cols[idx["option_a"]]  || "").trim();
-    const B  = (cols[idx["option_b"]]  || "").trim();
-    const C  = (cols[idx["option_c"]]  || "").trim();
-    const D  = (cols[idx["option_d"]]  || "").trim();
-    const ans = ((cols[idx["answer"]]  || "").trim() || "A").toUpperCase();
-    return { id: `c_${i}_${q.slice(0,16)}`, q, a: A, b: B, c: C, d: D, answer: ans };
-  }).filter(c => c.q);
-}
-
-/* ==========================
-   MEMORY (localStorage)
-========================== */
-const MEM_KEYS = {
-  SELECTED_SETS: "fj_selected_sets",
-  OPENPLAY_STATE: "fj_openplay_state" // { shuffle, starFilter, i }
-};
-
-function loadJSON(key, fallback) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-  catch { return fallback; }
-}
-function saveJSON(key, val) {
-  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
-}
-
-// (next) data loading helper
-   async function fetchWithFallback(ds) {
-  try {
-    const r = await fetch(ds.path, { cache: "no-store" });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return await r.text();
-  } catch {
-    const raw = RAW_FALLBACK[ds.id];
-    const r2 = await fetch(raw, { cache: "no-store" });
-    if (!r2.ok) throw new Error(`Fallback HTTP ${r2.status}`);
-    return await r2.text();
-  }
-}
-
-async function loadAll() {
-  try {
-    const results = await Promise.all(DATASETS.map(async ds => {
-      const text = await fetchWithFallback(ds);
-      const cards = parseCSV(text);
-      if (!cards.length) throw new Error(`${ds.label} parsed 0 cards`);
-      return { id: ds.id, short: ds.short, label: ds.label, cards };
-    }));
-
-    loadedSets = results;
-
-    // Restore selected sets from memory, else default to "all"
-    const savedSetIds = loadJSON(MEM_KEYS.SELECTED_SETS, null);
-    selectedSetIds.clear();
-    if (Array.isArray(savedSetIds) && savedSetIds.length) {
-      const validIds = new Set(results.map(s => s.id));
-      savedSetIds.forEach(id => { if (validIds.has(id)) selectedSetIds.add(id); });
-      if (selectedSetIds.size === 0) results.forEach(s => selectedSetIds.add(s.id)); // fallback to all
-    } else {
-      results.forEach(s => selectedSetIds.add(s.id));
-    }
-    // Keep flat list for any legacy paths
-    state.cards = results.flatMap(r => r.cards);
-
-    // Render UI
-    $app.classList.remove("hidden");
-    renderSetsSummary();
-    renderSetPills();
-    updateShuffleAvailability();
-
-    // Persist selection immediately
-    saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
-
-  } catch (e) {
-    $status.textContent = "Couldn’t finish loading.";
-    $error.classList.remove("hidden");
-    $error.textContent = String(e?.message || e);
-  }
-}
-
-
-    loadedSets = results;
-
-    // Default: select all sets on first load
-    if (selectedSetIds.size === 0) {
-      results.forEach(s => selectedSetIds.add(s.id));
+      const idx = Object.fromEntries(rawHeader.map((h, i) => [h.trim().toLowerCase(), i]));
+      return lines.map((cols, i) => {
+        const q  = (cols[idx["question"]]  || "").trim();
+        const A  = (cols[idx["option_a"]]  || "").trim();
+        const B  = (cols[idx["option_b"]]  || "").trim();
+        const C  = (cols[idx["option_c"]]  || "").trim();
+        const D  = (cols[idx["option_d"]]  || "").trim();
+        const ans = ((cols[idx["answer"]]  || "").trim() || "A").toUpperCase();
+        return { id: `c_${i}_${q.slice(0,16)}`, q, a: A, b: B, c: C, d: D, answer: ans };
+      }).filter(c => c.q);
     }
 
-    // Flat list (fallback for other code)
-    state.cards = results.flatMap(r => r.cards);
+    /* ==========================
+       MEMORY (localStorage)
+    ========================== */
+    const MEM_KEYS = {
+      SELECTED_SETS: "fj_selected_sets",
+      OPENPLAY_STATE: "fj_openplay_state" // { shuffle, starFilter, i }
+    };
+    function loadJSON(key, fallback) {
+      try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+      catch { return fallback; }
+    }
+    function saveJSON(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+    }
 
-    // Show flattering summary + pills + shuffle availability
-    $app.classList.remove("hidden");
-    renderSetsSummary();
-    renderSetPills();
-    updateShuffleAvailability();
+    /* ==========================
+       Fetch + Load
+    ========================== */
+    async function fetchWithFallback(ds) {
+      try {
+        const r = await fetch(ds.path, { cache: "no-store" });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return await r.text();
+      } catch {
+        const raw = RAW_FALLBACK[ds.id];
+        const r2 = await fetch(raw, { cache: "no-store" });
+        if (!r2.ok) throw new Error(`Fallback HTTP ${r2.status}`);
+        return await r2.text();
+      }
+    }
 
-  } catch (e) {
-    $status.textContent = "Couldn’t finish loading.";
-    $error.classList.remove("hidden");
-    $error.textContent = String(e?.message || e);
-  }
-}
+    async function loadAll() {
+      try {
+        const results = await Promise.all(DATASETS.map(async ds => {
+          const text = await fetchWithFallback(ds);
+          const cards = parseCSV(text);
+          if (!cards.length) throw new Error(`${ds.label} parsed 0 cards`);
+          return { id: ds.id, short: ds.short, label: ds.label, cards };
+        }));
 
-/* ==========================
-   2) PILL TOGGLES (UI/Logic)
-========================== */
-function renderSetsSummary() {
-  // Right-side summary only (no duplicate list)
-  const chosen = loadedSets.filter(s => selectedSetIds.has(s.id));
-  const totalCards = chosen.reduce((sum, s) => sum + s.cards.length, 0);
+        loadedSets = results;
 
-  // Examples: "Ready • 300 cards" or "Ready • 0 cards"
-  const $statusSummary = document.getElementById("statusSummary");
-  if ($statusSummary) {
-    $statusSummary.textContent = `Ready • ${totalCards} ${totalCards === 1 ? "card" : "cards"}`;
-  }
+        // Restore selected sets from memory, else default to "all"
+        const savedSetIds = loadJSON(MEM_KEYS.SELECTED_SETS, null);
+        selectedSetIds.clear();
+        if (Array.isArray(savedSetIds) && savedSetIds.length) {
+          const validIds = new Set(results.map(s => s.id));
+          savedSetIds.forEach(id => { if (validIds.has(id)) selectedSetIds.add(id); });
+          if (selectedSetIds.size === 0) results.forEach(s => selectedSetIds.add(s.id)); // fallback
+        } else {
+          results.forEach(s => selectedSetIds.add(s.id));
+        }
 
-  updateShuffleAvailability();
-}
+        // Flat list (for any legacy paths)
+        state.cards = results.flatMap(r => r.cards);
 
-function renderSetPills() {
-  const totalSets = loadedSets.length;
-  const activeCount = loadedSets.reduce((n, s) => n + (selectedSetIds.has(s.id) ? 1 : 0), 0);
-  const allActive = activeCount === totalSets && totalSets > 0;
+        // Render UI
+        $app.classList.remove("hidden");
+        renderSetsSummary();
+        renderSetPills();
+        updateShuffleAvailability();
 
-  saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
+        // Persist selection immediately
+        saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
 
+      } catch (e) {
+        $status.textContent = "Couldn’t finish loading.";
+        $error.classList.remove("hidden");
+        $error.textContent = String(e?.message || e);
+      }
+    }
 
-  // Build "All" chip + one chip per set
-  const pillsHtml = [
-    // "All" chip
-    (() => {
+    /* ==========================
+       2) PILL TOGGLES (UI/Logic)
+    ========================== */
+    function renderSetsSummary() {
+      const chosen = loadedSets.filter(s => selectedSetIds.has(s.id));
+      const totalCards = chosen.reduce((sum, s) => sum + s.cards.length, 0);
+      if ($statusSummary) {
+        $statusSummary.textContent = `Ready • ${totalCards} ${totalCards === 1 ? "card" : "cards"}`;
+      }
+      updateShuffleAvailability();
+    }
+
+    function renderSetPills() {
+      const totalSets = loadedSets.length;
+      const activeCount = loadedSets.reduce((n, s) => n + (selectedSetIds.has(s.id) ? 1 : 0), 0);
+      const allActive = activeCount === totalSets && totalSets > 0;
+
+      // Save selection (in case we called this after a toggle)
+      saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
+
+      // Build "All" chip + per-set chips (outlined when active)
       const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors";
       const on  = "bg-white text-zinc-900 border-black font-medium";
       const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100";
-      return `
+
+      const pillsHtml = [
+        // "All" chip
+        `
         <button
           class="set-pill ${base} ${allActive ? on : off}"
           data-setid="__all__"
@@ -274,95 +234,78 @@ function renderSetPills() {
           All
           <span class="text-xs opacity-80">(${loadedSets.reduce((s,x)=>s+x.cards.length,0)})</span>
         </button>
-      `;
-    })(),
-    // Individual set chips
-    ...loadedSets.map(s => {
-      const active = selectedSetIds.has(s.id);
-      const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors";
-      const on  = "bg-white text-zinc-900 border-black font-medium"; // outlined when active
-      const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100";
-      return `
-        <button
-          class="set-pill ${base} ${active ? on : off}"
-          data-setid="${s.id}"
-          role="switch"
-          aria-pressed="${active ? "true" : "false"}"
-          title="${s.label}"
-        >
-          ${s.short}
-          <span class="text-xs opacity-80">(${s.cards.length})</span>
-        </button>
-      `;
-    })
-  ].join("");
+        `,
+        // Individual set chips
+        ...loadedSets.map(s => `
+          <button
+            class="set-pill ${base} ${selectedSetIds.has(s.id) ? on : off}"
+            data-setid="${s.id}"
+            role="switch"
+            aria-pressed="${selectedSetIds.has(s.id) ? "true" : "false"}"
+            title="${s.label}"
+          >
+            ${s.short}
+            <span class="text-xs opacity-80">(${s.cards.length})</span>
+          </button>
+        `)
+      ].join("");
 
-  const $setPills = document.getElementById("setPills");
-  $setPills.innerHTML = pillsHtml;
+      $setPills.innerHTML = pillsHtml;
 
-  // Bind clicks (All + individual)
-  Array.from($setPills.querySelectorAll(".set-pill")).forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.getAttribute("data-setid");
+      // Bind clicks (All + individual)
+      Array.from($setPills.querySelectorAll(".set-pill")).forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-setid");
 
-      if (id === "__all__") {
-        // Toggle: if all already active -> clear all; else -> select all
-        const allAreOn = loadedSets.every(s => selectedSetIds.has(s.id));
-        selectedSetIds.clear();
-        if (!allAreOn) loadedSets.forEach(s => selectedSetIds.add(s.id));
-      } else {
-        // Toggle a single set
-        if (selectedSetIds.has(id)) selectedSetIds.delete(id);
-        else selectedSetIds.add(id);
+          if (id === "__all__") {
+            const allAreOn = loadedSets.every(s => selectedSetIds.has(s.id));
+            selectedSetIds.clear();
+            if (!allAreOn) loadedSets.forEach(s => selectedSetIds.add(s.id));
+          } else {
+            if (selectedSetIds.has(id)) selectedSetIds.delete(id);
+            else selectedSetIds.add(id);
+          }
 
-        // If turning one on results in all selected, reflect that in the "All" chip on next render
-        // (Handled by recomputing allActive at top.)
-      }
+          renderSetsSummary();
+          renderSetPills();
 
-      // Update UI + summary
-      renderSetsSummary();
-      renderSetPills();
+          // If Open Play is visible, rebuild its deck immediately
+          if (!$openPlayView.classList.contains("hidden")) {
+            opInjectFromSelection();
+          }
+        });
+      });
 
-      // If Open Play is visible, rebuild its deck immediately
-      if (!document.getElementById("openPlayView").classList.contains("hidden")) {
-        opInjectFromSelection();
-      }
-    });
-  });
-
-  updateShuffleAvailability();
-}
-
-
-/* ==========================
-   3) SHUFFLE AVAILABILITY
-========================== */
-function updateShuffleAvailability() {
-  const btn = document.getElementById("opShuffleBtn");
-  if (!btn) return;
-
-  const activeSets = loadedSets.filter(s => selectedSetIds.has(s.id)).length;
-
-  if (activeSets > 1) {
-    btn.disabled = false;
-    btn.classList.remove("opacity-50", "cursor-not-allowed");
-  } else {
-    btn.disabled = true;
-    btn.classList.add("opacity-50", "cursor-not-allowed");
-
-    // If shuffle was ON, force it OFF
-    if (op.shuffle) {
-      op.shuffle = false;
-      btn.textContent = "Shuffle: Off";
-      opBuildOrder();
-      opRenderCard();
+      updateShuffleAvailability();
     }
-  }
-}
 
+    /* ==========================
+       3) SHUFFLE AVAILABILITY
+    ========================== */
+    function updateShuffleAvailability() {
+      const btn = document.getElementById("opShuffleBtn");
+      if (!btn) return;
+
+      const activeSets = loadedSets.filter(s => selectedSetIds.has(s.id)).length;
+
+      if (activeSets > 1) {
+        btn.disabled = false;
+        btn.classList.remove("opacity-50", "cursor-not-allowed");
+      } else {
+        btn.disabled = true;
+        btn.classList.add("opacity-50", "cursor-not-allowed");
+        // If shuffle was ON, force it OFF
+        if (op.shuffle) {
+          op.shuffle = false;
+          btn.textContent = "Shuffle: Off";
+          opBuildOrder();
+          opRenderCard();
+        }
+      }
+    }
 
     /* =======================
-       3) OPEN PLAY (no Again/Known)
+       4) OPEN PLAY (no Again/Known)
     ======================= */
     const OP_LOCAL_KEY = { STARS: "fj_op_stars" };
     const opLoadSet = key => {
@@ -374,216 +317,4 @@ function updateShuffleAvailability() {
     const op = {
       all: [], deck: [], order: [],
       i: 0, flipped: false,
-      shuffle: false, starFilter: false,
-      stars: opLoadSet(OP_LOCAL_KEY.STARS)
-    };
-
-    // UI refs
-    const $openPlayView    = document.getElementById("openPlayView");
-    const $opCard          = document.getElementById("opCard");
-    const $opFront         = document.getElementById("opFront");
-    const $opBack          = document.getElementById("opBack");
-    const $opQuestion      = document.getElementById("opQuestion");
-    const $opOptions       = document.getElementById("opOptions");
-    const $opAnswer        = document.getElementById("opAnswer");
-    const $opAnswerExplain = document.getElementById("opAnswerExplain");
-    const $opProgress      = document.getElementById("opProgress");
-    const $opShuffleBtn    = document.getElementById("opShuffleBtn");
-    const $opStarFilterBtn = document.getElementById("opStarFilterBtn");
-    const $opStarBtn       = document.getElementById("opStarBtn");
-    const $opPrevBtn       = document.getElementById("opPrevBtn");
-    const $opNextBtn       = document.getElementById("opNextBtn");
-    const $opFlipBtn       = document.getElementById("opFlipBtn");
-
-    function opBuildOrder() {
-      op.order = Array.from({length: op.deck.length}, (_, i) => i);
-      if (op.shuffle) {
-        for (let j = op.order.length - 1; j > 0; j--) {
-          const k = Math.floor(Math.random() * (j + 1));
-          [op.order[j], op.order[k]] = [op.order[k], op.order[j]];
-        }
-      }
-      op.i = 0;
-    }
-    function opApplyFilters() {
-      op.deck = op.starFilter ? op.all.filter(c => op.stars.has(c.id)) : op.all.slice();
-      opBuildOrder();
-    }
-    const opCurrent = () => (op.deck.length ? op.deck[op.order[op.i]] : null);
-
-    function opRenderProgress() {
-      $opProgress.textContent = op.deck.length ? `${op.i + 1} / ${op.deck.length}` : "0 / 0";
-    }
-    
-    function opRenderStarBtn(card) {
-      $opStarBtn.textContent = card && op.stars.has(card.id) ? "★" : "☆";
-    }
-
-    function opRenderCard() {
-      const card = opCurrent();
-      if (!card) {
-        $opFront.classList.remove("hidden");
-        $opBack.classList.add("hidden");
-        $opQuestion.textContent = selectedSetIds.size
-          ? (op.starFilter ? "No starred cards yet." : "No cards available in selection.")
-          : "No sets selected.";
-        $opOptions.innerHTML = "";
-        $opAnswer.textContent = "";
-        $opAnswerExplain.textContent = "";
-        opRenderStarBtn(null);
-        opRenderProgress();
-        return;
-      }
-function saveOpenPlayState() {
-  // Clamp i just in case deck changed
-  const i = Math.max(0, Math.min(op.i, Math.max(0, op.deck.length - 1)));
-  saveJSON(MEM_KEYS.OPENPLAY_STATE, {
-    shuffle: op.shuffle,
-    starFilter: op.starFilter,
-    i
-  });
-}
-function restoreOpenPlayState() {
-  const saved = loadJSON(MEM_KEYS.OPENPLAY_STATE, null);
-  if (!saved) return;
-  op.shuffle = !!saved.shuffle;
-  op.starFilter = !!saved.starFilter;
-  // i will be clamped after deck is built
-  op.i = Number.isInteger(saved.i) ? saved.i : 0;
-}
-
-      
-      // Front
-      $opQuestion.textContent = card.q;
-      const opts = [["A",card.a],["B",card.b],["C",card.c],["D",card.d]]
-        .filter(([_,v]) => v && v.trim().length);
-      $opOptions.innerHTML = opts.map(([k,v]) =>
-        `<li class="border rounded-lg px-3 py-2"><strong>${k}.</strong> ${v}</li>`
-      ).join("");
-      // Back
-      const ansKey = card.answer;
-      const ansText = ({A:card.a,B:card.b,C:card.c,D:card.d}[ansKey]) || "";
-      $opAnswer.textContent = `${ansKey}. ${ansText}`;
-      $opAnswerExplain.textContent = "Flip and continue.";
-      // Side
-      if (op.flipped) { $opFront.classList.add("hidden"); $opBack.classList.remove("hidden"); }
-      else { $opFront.classList.remove("hidden"); $opBack.classList.add("hidden"); }
-      opRenderStarBtn(card);
-      opRenderProgress();
-    }
-
-    const opFlip = () => { op.flipped = !op.flipped; opRenderCard(); };
- const opNext = () => {
-  if (!op.deck.length) return;
-  op.i = (op.i + 1) % op.deck.length;
-  op.flipped = false;
-  opRenderCard();
-  saveOpenPlayState();
-};
-
-const opPrev = () => {
-  if (!op.deck.length) return;
-  op.i = (op.i - 1 + op.deck.length) % op.deck.length;
-  op.flipped = false;
-  opRenderCard();
-  saveOpenPlayState();
-};
-
-function opToggleShuffle() {
-  op.shuffle = !op.shuffle;
-  $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
-  opBuildOrder();
-  op.flipped = false;
-  opRenderCard();
-  saveOpenPlayState();
-}
-
-function opToggleStarFilter() {
-  op.starFilter = !op.starFilter;
-  $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
-  opApplyFilters();
-  op.flipped = false;
-  opRenderCard();
-  saveOpenPlayState();
-}
-
-    function opToggleStar() {
-      const card = opCurrent(); if (!card) return;
-      if (op.stars.has(card.id)) op.stars.delete(card.id); else op.stars.add(card.id);
-      opSaveSet(OP_LOCAL_KEY.STARS, op.stars);
-      opRenderStarBtn(card);
-      if (op.starFilter) { opApplyFilters(); opRenderCard(); }
-    }
-
-    // Build op.all from selected sets, then refresh deck
-    function opInjectFromSelection() {
-  op.all = loadedSets
-    .filter(s => selectedSetIds.has(s.id))
-    .flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
-
-  opApplyFilters(); // builds order from op.deck and op.shuffle
-
-  // After deck exists, restore index (clamp to bounds)
-  const saved = loadJSON(MEM_KEYS.OPENPLAY_STATE, null);
-  if (saved && Number.isInteger(saved.i)) {
-    op.i = Math.max(0, Math.min(saved.i, Math.max(0, op.deck.length - 1)));
-  } else {
-    op.i = 0;
-  }
-
-  op.flipped = false;
-  opRenderCard();
-
-  // Persist the (possibly clamped) position
-  saveOpenPlayState();
-}
-
-
-    async function showOpenPlay() {
-      state.mode = "open";
-      $openPlayView.classList.remove("hidden");
-
-      if (!loadedSets.length) await loadAll();
-      // Always reflect current selection
-      restoreOpenPlayState();  
-      opInjectFromSelection();
-
-      $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
-      $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
-
-      if (!showOpenPlay._bound) {
-        $opCard.addEventListener("click", opFlip);
-        $opFlipBtn.addEventListener("click", opFlip);
-        $opNextBtn.addEventListener("click", opNext);
-        $opPrevBtn.addEventListener("click", opPrev);
-        $opShuffleBtn.addEventListener("click", opToggleShuffle);
-        $opStarFilterBtn.addEventListener("click", opToggleStarFilter);
-        $opStarBtn.addEventListener("click", (e) => { e.stopPropagation(); opToggleStar(); });
-
-        document.addEventListener("keydown", (e) => {
-          if ($openPlayView.classList.contains("hidden")) return;
-          if (e.key === "ArrowRight") { e.preventDefault(); opNext(); }
-          else if (e.key === "ArrowLeft") { e.preventDefault(); opPrev(); }
-          else if (e.key === " " || e.key === "Enter") { e.preventDefault(); opFlip(); }
-        });
-
-        showOpenPlay._bound = true;
-      }
-    }
-
-    // Button hooks
-    document.getElementById("openPlayBtn").addEventListener("click", showOpenPlay);
-    document.getElementById("testModeBtn").addEventListener("click", () => {
-      state.mode = "test";
-      alert("Test Mode coming next.");
-    });
-
-    // Initial load
-    loadAll();
-  </script>
-</body>
-</html>
-
-
-
-
+      shuffle: false, starFi
