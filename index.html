@@ -175,9 +175,16 @@ function renderSetsSummary() {
 function renderSetPills() {
   $setPills.innerHTML = loadedSets.map(s => {
     const active = selectedSetIds.has(s.id);
-    const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm";
-    const on  = "bg-black text-white border-black";
+
+    // Base pill style
+    const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors";
+
+    // ACTIVE = outlined (to match Open Play), not filled
+    const on  = "bg-white text-zinc-900 border-black font-medium";
+
+    // INACTIVE = subtle outline, soft hover
     const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100";
+
     return `
       <button
         class="set-pill ${base} ${active ? on : off}"
@@ -192,7 +199,7 @@ function renderSetPills() {
     `;
   }).join("");
 
-  // Re-bind click handlers
+  // Re-bind click handlers after render
   Array.from($setPills.querySelectorAll(".set-pill")).forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-setid");
@@ -200,17 +207,16 @@ function renderSetPills() {
       else selectedSetIds.add(id);
 
       renderSetsSummary();
-      renderSetPills();
-
-      // If Open Play visible, refresh deck
+      renderSetPills();           // re-render pills with new styles
       if (!document.getElementById("openPlayView").classList.contains("hidden")) {
-        opInjectFromSelection();
+        opInjectFromSelection();  // refresh Open Play deck if visible
       }
     });
   });
 
-  updateShuffleAvailability();
+  updateShuffleAvailability(); // keep shuffle rule in sync
 }
+
 
 /* ==========================
    3) SHUFFLE AVAILABILITY
@@ -405,4 +411,5 @@ function updateShuffleAvailability() {
   </script>
 </body>
 </html>
+
 
