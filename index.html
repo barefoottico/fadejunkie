@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Milady Barber Test Prep</title>
-  <!-- Tailwind (cdn) -->
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-zinc-50 text-zinc-900">
@@ -29,13 +28,11 @@
     </section>
 
     <section id="app" class="mt-8 hidden">
-      <!-- The app will populate here -->
       <div class="text-sm text-zinc-600" id="setsInfo"></div>
     </section>
 
-    <!-- ===== OPEN PLAY VIEW (NEW) ===== -->
+    <!-- OPEN PLAY VIEW -->
     <section id="openPlayView" class="hidden max-w-xl mx-auto mt-8">
-      <!-- Top bar -->
       <div class="flex items-center justify-between mb-3">
         <div id="opProgress" class="text-sm text-neutral-600">0 / 0</div>
         <div class="flex items-center gap-2">
@@ -44,86 +41,88 @@
         </div>
       </div>
 
-      <!-- Card -->
       <div id="opCard"
            class="relative rounded-2xl border bg-white shadow p-6 min-h-[220px] cursor-pointer select-none"
            tabindex="0" aria-live="polite">
-        <!-- Front (question/options) -->
         <div id="opFront" class="block">
           <div id="opQuestion" class="text-lg font-semibold mb-4">Question will appear here</div>
           <ul id="opOptions" class="space-y-2 text-base"></ul>
         </div>
-        <!-- Back (answer revealed) -->
         <div id="opBack" class="hidden">
           <div class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Answer</div>
           <div id="opAnswer" class="text-lg font-semibold"></div>
           <div id="opAnswerExplain" class="text-sm text-neutral-600 mt-2"></div>
         </div>
 
-        <!-- Star icon -->
         <button id="opStarBtn" title="Star this card"
                 class="absolute top-3 right-3 text-xl leading-none">☆</button>
       </div>
 
-      <!-- Controls -->
       <div class="mt-5 flex items-center justify-between">
         <button id="opPrevBtn" class="px-4 py-2 rounded-xl border">◀ Prev</button>
-
-        <div class="flex items-center gap-2">
-          <button id="opFlipBtn" class="px-4 py-2 rounded-xl border">Flip</button>
-          <button id="opAgainBtn" class="px-3 py-2 rounded-xl border text-sm">Again</button>
-          <button id="opKnownBtn" class="px-3 py-2 rounded-xl border text-sm">Known</button>
-        </div>
-
+        <button id="opFlipBtn" class="px-4 py-2 rounded-xl border">Flip</button>
         <button id="opNextBtn" class="px-4 py-2 rounded-xl border">Next ▶</button>
       </div>
 
-      <!-- Tiny help -->
       <p class="mt-3 text-xs text-neutral-500">Tip: Tap card to flip · ←/→ to navigate · Space/Enter to flip</p>
     </section>
-    <!-- ===== /OPEN PLAY VIEW ===== -->
   </main>
 
   <script>
-    // Keep CSV files next to this HTML (same folder)
+    /* =======================
+       1) DATA LOADING
+    ======================= */
     const DATASETS = [
       { id: "exam1", label: "MBF Exam 1", path: "./mbf_exam_1.csv" },
       { id: "exam2", label: "MBF Exam 2", path: "./mbf_exam_2.csv" },
     ];
+    const RAW_FALLBACK = {
+      exam1: "https://raw.githubusercontent.com/barefoottico/milady-flashcards/main/mbf_exam_1.csv",
+      exam2: "https://raw.githubusercontent.com/barefoottico/milady-flashcards/main/mbf_exam_2.csv",
+    };
 
     const state = { cards: [], mode: null };
-
     const $status = document.getElementById("status");
-    const $error = document.getElementById("error");
-    const $app = document.getElementById("app");
+    const $error  = document.getElementById("error");
+    const $app    = document.getElementById("app");
     const $setsInfo = document.getElementById("setsInfo");
 
-    // Tiny CSV parser (no external libs): expects header row: question,option_a,option_b,option_c,option_d,answer
+    const csvSafeSplit = (line) => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g);
     function parseCSV(text) {
-      const rows = text.trim().split(/\r?\n/).map(r => r.split(","));
-      const [header, ...lines] = rows;
+      const rows = text.replace(/\r/g, "").split("\n").filter(Boolean)
+        .map(csvSafeSplit).map(cols => cols.map(s => s.replace(/^"(.*)"$/, "$1")));
+      const [header, ...lines] = rows; if (!header) return [];
       const idx = Object.fromEntries(header.map((h,i)=>[h.trim().toLowerCase(), i]));
-      return lines.map((cols, i) => ({
-        id: `c_${i}_${(cols[idx["question"]]||"").slice(0,16)}`,
-        q: cols[idx["question"]] || "",
-        a: cols[idx["option_a"]] || "",
-        b: cols[idx["option_b"]] || "",
-        c: cols[idx["option_c"]] || "",
-        d: cols[idx["option_d"]] || "",
-        answer: (cols[idx["answer"]] || "").trim().toUpperCase()
-      })).filter(card => card.q);
+      return lines.map((cols, i) => {
+        const q = (cols[idx["question"]] || "").trim();
+        const A = (cols[idx["option_a"]] || "").trim();
+        const B = (cols[idx["option_b"]] || "").trim();
+        const C = (cols[idx["option_c"]] || "").trim();
+        const D = (cols[idx["option_d"]] || "").trim();
+        const ans = ((cols[idx["answer"]] || "").trim() || "A").toUpperCase();
+        return { id: `c_${i}_${q.slice(0,16)}`, q, a:A, b:B, c:C, d:D, answer:ans };
+      }).filter(c => c.q);
     }
-
+    async function fetchWithFallback(ds) {
+      try {
+        const r = await fetch(ds.path, { cache: "no-store" });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return await r.text();
+      } catch {
+        const raw = RAW_FALLBACK[ds.id];
+        const r2 = await fetch(raw, { cache: "no-store" });
+        if (!r2.ok) throw new Error(`Fallback HTTP ${r2.status}`);
+        return await r2.text();
+      }
+    }
     async function loadAll() {
       try {
         const results = await Promise.all(DATASETS.map(async ds => {
-          const res = await fetch(ds.path, { cache: "no-store" });
-          if (!res.ok) throw new Error(`${ds.label} not found at ${ds.path}`);
-          const text = await res.text();
+          const text = await fetchWithFallback(ds);
           const cards = parseCSV(text);
+          if (!cards.length) throw new Error(`${ds.label} parsed 0 cards`);
           return { ...ds, cards };
         }));
-
         state.cards = results.flatMap(r => r.cards);
         $status.textContent = `Loaded ${state.cards.length} cards from ${results.length} set(s).`;
         $app.classList.remove("hidden");
@@ -131,40 +130,28 @@
       } catch (e) {
         $status.textContent = "Couldn’t finish loading.";
         $error.classList.remove("hidden");
-        $error.textContent = e.message;
+        $error.textContent = String(e?.message || e);
       }
     }
 
-    /* ==========================
-       OPEN PLAY LOGIC (NEW)
-    ========================== */
-    const OP_LOCAL_KEY = {
-      STARS: "fj_op_stars",
-      KNOWN: "fj_op_known"
-    };
-
-    function opLoadSet(key) {
+    /* =======================
+       2) OPEN PLAY (no Again/Known)
+    ======================= */
+    const OP_LOCAL_KEY = { STARS: "fj_op_stars" }; // removed KNOWN
+    const opLoadSet = key => {
       try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
       catch { return new Set(); }
-    }
-    function opSaveSet(key, set) {
-      localStorage.setItem(key, JSON.stringify(Array.from(set)));
-    }
+    };
+    const opSaveSet = (key, set) => localStorage.setItem(key, JSON.stringify(Array.from(set)));
 
-    // Open Play state
     const op = {
-      all: [],        // all cards (from state.cards)
-      deck: [],       // filtered (star toggle)
-      order: [],      // index order into deck
-      i: 0,
-      flipped: false,
-      shuffle: false,
-      starFilter: false, // false = all, true = only starred
-      stars: opLoadSet(OP_LOCAL_KEY.STARS),
-      known: opLoadSet(OP_LOCAL_KEY.KNOWN),
+      all: [], deck: [], order: [],
+      i: 0, flipped: false,
+      shuffle: false, starFilter: false,
+      stars: opLoadSet(OP_LOCAL_KEY.STARS)
     };
 
-    // UI nodes
+    // UI refs
     const $openPlayView    = document.getElementById("openPlayView");
     const $opCard          = document.getElementById("opCard");
     const $opFront         = document.getElementById("opFront");
@@ -180,8 +167,6 @@
     const $opPrevBtn       = document.getElementById("opPrevBtn");
     const $opNextBtn       = document.getElementById("opNextBtn");
     const $opFlipBtn       = document.getElementById("opFlipBtn");
-    const $opAgainBtn      = document.getElementById("opAgainBtn");
-    const $opKnownBtn      = document.getElementById("opKnownBtn");
 
     function opBuildOrder() {
       op.order = Array.from({length: op.deck.length}, (_, i) => i);
@@ -193,23 +178,15 @@
       }
       op.i = 0;
     }
-
     function opApplyFilters() {
-      op.deck = op.starFilter
-        ? op.all.filter(c => op.stars.has(c.id))
-        : op.all.slice();
+      op.deck = op.starFilter ? op.all.filter(c => op.stars.has(c.id)) : op.all.slice();
       opBuildOrder();
     }
-
-    function opCurrent() {
-      if (!op.deck.length) return null;
-      return op.deck[op.order[op.i]];
-    }
+    const opCurrent = () => (op.deck.length ? op.deck[op.order[op.i]] : null);
 
     function opRenderProgress() {
       $opProgress.textContent = op.deck.length ? `${op.i + 1} / ${op.deck.length}` : "0 / 0";
     }
-
     function opRenderStarBtn(card) {
       $opStarBtn.textContent = card && op.stars.has(card.id) ? "★" : "☆";
     }
@@ -223,104 +200,63 @@
         $opOptions.innerHTML = "";
         $opAnswer.textContent = "";
         $opAnswerExplain.textContent = "";
-        opRenderProgress();
         opRenderStarBtn(null);
+        opRenderProgress();
         return;
       }
-
-      // FRONT
+      // Front
       $opQuestion.textContent = card.q;
-      const opts = [
-        ["A", card.a], ["B", card.b], ["C", card.c], ["D", card.d]
-      ].filter(([_, v]) => v && v.trim().length);
-      $opOptions.innerHTML = opts.map(([k, v]) =>
+      const opts = [["A",card.a],["B",card.b],["C",card.c],["D",card.d]]
+        .filter(([_,v]) => v && v.trim().length);
+      $opOptions.innerHTML = opts.map(([k,v]) =>
         `<li class="border rounded-lg px-3 py-2"><strong>${k}.</strong> ${v}</li>`
       ).join("");
-
-      // BACK
+      // Back
       const ansKey = card.answer;
-      const ansText = ({A:card.a, B:card.b, C:card.c, D:card.d}[ansKey]) || "";
+      const ansText = ({A:card.a,B:card.b,C:card.c,D:card.d}[ansKey]) || "";
       $opAnswer.textContent = `${ansKey}. ${ansText}`;
-      $opAnswerExplain.textContent = "Review and move on. (Use Known/Again to track yourself.)";
-
-      if (op.flipped) {
-        $opFront.classList.add("hidden");
-        $opBack.classList.remove("hidden");
-      } else {
-        $opFront.classList.remove("hidden");
-        $opBack.classList.add("hidden");
-      }
-
-      opRenderProgress();
+      $opAnswerExplain.textContent = "Flip and continue.";
+      // Side
+      if (op.flipped) { $opFront.classList.add("hidden"); $opBack.classList.remove("hidden"); }
+      else { $opFront.classList.remove("hidden"); $opBack.classList.add("hidden"); }
       opRenderStarBtn(card);
+      opRenderProgress();
     }
 
-    function opFlip() { op.flipped = !op.flipped; opRenderCard(); }
-    function opNext() {
-      if (!op.deck.length) return;
-      op.i = (op.i + 1) % op.deck.length;
-      op.flipped = false;
-      opRenderCard();
-    }
-    function opPrev() {
-      if (!op.deck.length) return;
-      op.i = (op.i - 1 + op.deck.length) % op.deck.length;
-      op.flipped = false;
-      opRenderCard();
-    }
+    const opFlip = () => { op.flipped = !op.flipped; opRenderCard(); };
+    const opNext = () => { if (!op.deck.length) return; op.i = (op.i + 1) % op.deck.length; op.flipped = false; opRenderCard(); };
+    const opPrev = () => { if (!op.deck.length) return; op.i = (op.i - 1 + op.deck.length) % op.deck.length; op.flipped = false; opRenderCard(); };
     function opToggleShuffle() {
       op.shuffle = !op.shuffle;
       $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
-      opBuildOrder();
-      op.flipped = false;
-      opRenderCard();
+      opBuildOrder(); op.flipped = false; opRenderCard();
     }
     function opToggleStarFilter() {
       op.starFilter = !op.starFilter;
       $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
-      opApplyFilters();
-      op.flipped = false;
-      opRenderCard();
+      opApplyFilters(); op.flipped = false; opRenderCard();
     }
     function opToggleStar() {
       const card = opCurrent(); if (!card) return;
-      if (op.stars.has(card.id)) op.stars.delete(card.id);
-      else op.stars.add(card.id);
+      if (op.stars.has(card.id)) op.stars.delete(card.id); else op.stars.add(card.id);
       opSaveSet(OP_LOCAL_KEY.STARS, op.stars);
       opRenderStarBtn(card);
       if (op.starFilter) { opApplyFilters(); opRenderCard(); }
-    }
-    function opMark(known) {
-      const card = opCurrent(); if (!card) return;
-      if (known) op.known.add(card.id); else op.known.delete(card.id);
-      opSaveSet(OP_LOCAL_KEY.KNOWN, op.known);
-      opNext();
     }
 
     async function showOpenPlay() {
       state.mode = "open";
       document.getElementById("openPlayView").classList.remove("hidden");
 
-      // load (or reuse) data
-      if (!op.all.length) {
-        // prefer already-loaded state.cards
-        if (!state.cards.length) {
-          // if not loaded yet, await the loader to fill state.cards
-          await loadAll();
-        }
-        op.all = state.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}` }));
-        opApplyFilters();
-      }
+      if (!state.cards.length) await loadAll();
+      if (!op.all.length) op.all = state.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}` }));
 
-      // set initial control labels
+      opApplyFilters();
       $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
       $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
-
-      // initial render
       op.flipped = false;
       opRenderCard();
 
-      // bind events once
       if (!showOpenPlay._bound) {
         $opCard.addEventListener("click", opFlip);
         $opFlipBtn.addEventListener("click", opFlip);
@@ -329,10 +265,7 @@
         $opShuffleBtn.addEventListener("click", opToggleShuffle);
         $opStarFilterBtn.addEventListener("click", opToggleStarFilter);
         $opStarBtn.addEventListener("click", (e) => { e.stopPropagation(); opToggleStar(); });
-        $opAgainBtn.addEventListener("click", () => opMark(false));
-        $opKnownBtn.addEventListener("click", () => opMark(true));
 
-        // keyboard shortcuts
         document.addEventListener("keydown", (e) => {
           if ($openPlayView.classList.contains("hidden")) return;
           if (e.key === "ArrowRight") { e.preventDefault(); opNext(); }
@@ -344,14 +277,12 @@
       }
     }
 
-    // Hook the buttons
     document.getElementById("openPlayBtn").addEventListener("click", showOpenPlay);
     document.getElementById("testModeBtn").addEventListener("click", () => {
       state.mode = "test";
-      alert("Test Mode coming next: reveal after choice + scoring.");
+      alert("Test Mode coming next.");
     });
 
-    // Initial data load
     loadAll();
   </script>
 </body>
