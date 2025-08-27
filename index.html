@@ -6,10 +6,9 @@
   <title>Milady Barber Test Prep</title>
 
   <!-- Tailwind config: use 'class' strategy for dark mode -->
-  <script>
-    window.tailwind = window.tailwind || {};
-    window.tailwind.config = { darkMode: 'class' };
-  </script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
 
   <!-- Set theme class ASAP to avoid flash -->
   <script>
@@ -23,7 +22,12 @@
     })();
   </script>
 
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>  
+  
+  <style>
+    html, body { transition: background-color .2s linear, color .2s linear; }
+  </style>
+ 
 </head>
 
 <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
@@ -766,4 +770,5 @@
   </script>
 </body>
 </html>
+
 
