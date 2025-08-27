@@ -4,75 +4,126 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Milady Barber Test Prep</title>
+
+  <!-- Tailwind config: use 'class' strategy for dark mode -->
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = { darkMode: 'class' };
+  </script>
+
+  <!-- Set theme class ASAP to avoid flash -->
+  <script>
+    (function () {
+      const KEY = 'fj_theme';
+      const saved = localStorage.getItem(KEY);         // 'light' | 'dark' | null
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = saved || (prefersDark ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+    })();
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-zinc-50 text-zinc-900">
+
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
   <main class="max-w-xl mx-auto px-6 py-12">
-    <header class="mb-6">
-      <h1 class="text-2xl font-bold">Study smarter, not longer</h1>
-      <p class="text-zinc-600 mt-2">
-        Tap <strong>Open Play</strong> for quick reps. Tap <strong>Test Mode</strong> for a chapter-based check.
-      </p>
+    <header class="mb-6 flex items-start justify-between gap-3">
+      <div>
+        <h1 class="text-2xl font-bold">Study smarter, not longer</h1>
+        <p class="text-zinc-600 dark:text-zinc-300 mt-2">
+          Tap <strong>Open Play</strong> for quick reps. Tap <strong>Test Mode</strong> for a chapter-based check.
+        </p>
+      </div>
+
+      <!-- Theme toggle -->
+      <button id="themeToggle"
+        class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+               dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700"
+        aria-pressed="false" title="Toggle light/dark">
+        🌙 Dark
+      </button>
     </header>
 
-    <!-- Landing CTA: shown on first load only -->
+    <!-- Landing CTA -->
     <section id="cta" class="flex gap-3">
-      <button id="openPlayBtn" class="px-4 py-2 rounded-xl shadow bg-white border border-zinc-200 hover:bg-zinc-100">Open Play</button>
-      <button id="testModeBtn" class="px-4 py-2 rounded-xl shadow bg-black text-white hover:opacity-90">Start Test</button>
+      <button id="openPlayBtn"
+        class="px-4 py-2 rounded-xl shadow bg-white border border-zinc-200 hover:bg-zinc-100
+               dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+        Open Play
+      </button>
+      <button id="testModeBtn"
+        class="px-4 py-2 rounded-xl shadow bg-black text-white hover:opacity-90
+               dark:bg-zinc-100 dark:text-zinc-900">
+        Start Test
+      </button>
     </section>
 
     <!-- Test config (hidden until Test Mode) -->
     <section id="testConfig" class="mt-4 hidden">
-      <label for="tmCountRange" class="block text-sm text-zinc-600 mb-1">Questions per test</label>
+      <label for="tmCountRange" class="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Questions per test</label>
       <div class="flex items-center gap-3">
         <input id="tmCountRange" type="range" min="0" max="3" step="1" value="0" class="w-full" />
         <span id="tmCountLabel" class="text-sm font-medium w-12 text-right">20</span>
-        <button id="tmApplyCount" class="px-3 py-1.5 rounded-lg border text-sm">Apply</button>
+        <button id="tmApplyCount"
+          class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+          Apply
+        </button>
       </div>
-      <p class="text-xs text-zinc-500 mt-1">
+      <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
         20 • 50 • 100 • 150 — press <kbd>Enter</kbd> on the slider or click Apply.
         <span class="text-amber-700">Changing the number will restart any in-progress test.</span>
       </p>
     </section>
 
     <!-- Loading / error (hidden until a mode is chosen) -->
-  <section id="loadWrap" class="mt-8">
-  <div id="status" class="text-sm text-zinc-700">Loading datasets…</div>
-  <div id="error" class="hidden text-sm text-red-600 mt-2"></div>
-</section>
+    <section id="loadWrap" class="mt-8 hidden">
+      <div id="status" class="text-sm text-zinc-700 dark:text-zinc-300">Loading datasets…</div>
+      <div id="error" class="hidden text-sm text-red-600 mt-2 dark:text-red-400"></div>
+    </section>
 
     <!-- Filter bar (hidden until a mode is chosen) -->
     <section id="app" class="mt-4 hidden">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2">
-          <span class="text-sm text-zinc-500">Filter:</span>
+          <span class="text-sm text-zinc-500 dark:text-zinc-400">Filter:</span>
           <div id="setPills" class="flex flex-wrap gap-2"></div>
         </div>
-        <div id="statusSummary" class="text-sm text-zinc-700 whitespace-nowrap"></div>
+        <div id="statusSummary" class="text-sm text-zinc-700 whitespace-nowrap dark:text-zinc-300"></div>
       </div>
     </section>
 
     <!-- OPEN PLAY VIEW -->
     <section id="openPlayView" class="hidden max-w-xl mx-auto mt-8">
       <div class="flex items-center justify-between mb-3">
-        <div id="opProgress" class="text-sm text-neutral-600">0 / 0</div>
+        <div id="opProgress" class="text-sm text-neutral-600 dark:text-zinc-300">0 / 0</div>
         <div class="flex items-center gap-2">
-          <button id="opShuffleBtn" class="px-3 py-1.5 rounded-lg border text-sm">Shuffle: Off</button>
-          <button id="opStarFilterBtn" class="px-3 py-1.5 rounded-lg border text-sm">Starred: All</button>
+          <button id="opShuffleBtn"
+            class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+            Shuffle: Off
+          </button>
+          <button id="opStarFilterBtn"
+            class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+            Starred: All
+          </button>
         </div>
       </div>
 
       <div id="opCard"
-           class="relative rounded-2xl border bg-white shadow p-6 min-h-[220px] cursor-pointer select-none"
+           class="relative rounded-2xl border bg-white shadow p-6 min-h-[220px] cursor-pointer select-none
+                  dark:bg-zinc-900 dark:border-zinc-800"
            tabindex="0" aria-live="polite">
         <div id="opFront" class="block">
           <div id="opQuestion" class="text-lg font-semibold mb-4">Question will appear here</div>
           <ul id="opOptions" class="space-y-2 text-base"></ul>
         </div>
         <div id="opBack" class="hidden">
-          <div class="text-xs uppercase tracking-wide text-neutral-500 mb-2">Answer</div>
+          <div class="text-xs uppercase tracking-wide text-neutral-500 dark:text-zinc-400 mb-2">Answer</div>
           <div id="opAnswer" class="text-lg font-semibold"></div>
-          <div id="opAnswerExplain" class="text-sm text-neutral-600 mt-2"></div>
+          <div id="opAnswerExplain" class="text-sm text-neutral-600 dark:text-zinc-300 mt-2"></div>
         </div>
 
         <button id="opStarBtn" title="Star this card"
@@ -80,22 +131,42 @@
       </div>
 
       <div class="mt-5 flex items-center justify-between">
-        <button id="opPrevBtn" class="px-4 py-2 rounded-xl border">◀ Prev</button>
-        <button id="opFlipBtn" class="px-4 py-2 rounded-xl border">Flip</button>
-        <button id="opNextBtn" class="px-4 py-2 rounded-xl border">Next ▶</button>
+        <button id="opPrevBtn"
+          class="px-4 py-2 rounded-xl border bg-white hover:bg-zinc-100
+                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+          ◀ Prev
+        </button>
+        <button id="opFlipBtn"
+          class="px-4 py-2 rounded-xl border bg-white hover:bg-zinc-100
+                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+          Flip
+        </button>
+        <button id="opNextBtn"
+          class="px-4 py-2 rounded-xl border bg-white hover:bg-zinc-100
+                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+          Next ▶
+        </button>
       </div>
 
-      <p class="mt-3 text-xs text-neutral-500">Tip: Tap card to flip · ←/→ to navigate · Space/Enter to flip</p>
+      <p class="mt-3 text-xs text-neutral-500 dark:text-zinc-400">
+        Tip: Tap card to flip · ←/→ to navigate · Space/Enter to flip
+      </p>
     </section>
 
     <!-- TEST MODE VIEW -->
     <section id="testView" class="hidden max-w-xl mx-auto mt-8">
       <div class="flex items-center justify-between mb-3">
-        <div id="tmProgress" class="text-sm text-neutral-600">Q 1 / 20</div>
-        <button id="tmSubmitBtn" class="px-3 py-1.5 rounded-lg border text-sm bg-black text-white">Submit</button>
+        <div id="tmProgress" class="text-sm text-neutral-600 dark:text-zinc-300">Q 1 / 20</div>
+        <button id="tmSubmitBtn"
+          class="px-3 py-1.5 rounded-lg border text-sm bg-black text-white hover:opacity-90
+                 dark:bg-zinc-100 dark:text-zinc-900">
+          Submit
+        </button>
       </div>
 
-      <div id="tmCard" class="rounded-2xl border bg-white shadow p-6 min-h-[220px]">
+      <div id="tmCard"
+           class="rounded-2xl border bg-white shadow p-6 min-h-[220px]
+                  dark:bg-zinc-900 dark:border-zinc-800">
         <div id="tmQuestion" class="text-lg font-semibold mb-4">Question</div>
         <div id="tmOptions" class="space-y-2"></div>
         <div class="mt-3 flex items-center justify-between">
@@ -104,8 +175,16 @@
             Flag for review
           </label>
           <div class="flex items-center gap-2">
-            <button id="tmPrev" class="px-3 py-1.5 rounded-lg border text-sm">◀ Prev</button>
-            <button id="tmNext" class="px-3 py-1.5 rounded-lg border text-sm">Next ▶</button>
+            <button id="tmPrev"
+              class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+                     dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+              ◀ Prev
+            </button>
+            <button id="tmNext"
+              class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+                     dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+              Next ▶
+            </button>
           </div>
         </div>
       </div>
@@ -113,14 +192,22 @@
       <!-- Results -->
       <div id="tmResults" class="hidden mt-6">
         <div id="tmScore" class="text-lg font-semibold mb-2"></div>
-        <div id="tmBreakdown" class="text-sm text-neutral-700 mb-4"></div>
-        <details class="rounded-xl border bg-white p-4">
+        <div id="tmBreakdown" class="text-sm text-neutral-700 dark:text-zinc-300 mb-4"></div>
+        <details class="rounded-xl border bg-white p-4 dark:bg-zinc-900 dark:border-zinc-800">
           <summary class="cursor-pointer font-medium">Review answers</summary>
           <div id="tmReview" class="mt-3 space-y-4"></div>
         </details>
         <div class="mt-4 flex items-center gap-2">
-          <button id="tmRestart" class="px-4 py-2 rounded-xl border">Retake</button>
-          <button id="tmBackToOpen" class="px-4 py-2 rounded-xl border">Back to Open Play</button>
+          <button id="tmRestart"
+            class="px-4 py-2 rounded-xl border bg-white hover:bg-zinc-100
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+            Retake
+          </button>
+          <button id="tmBackToOpen"
+            class="px-4 py-2 rounded-xl border bg-white hover:bg-zinc-100
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+            Back to Open Play
+          </button>
         </div>
       </div>
     </section>
@@ -164,6 +251,32 @@
     const $opPrevBtn       = document.getElementById("opPrevBtn");
     const $opNextBtn       = document.getElementById("opNextBtn");
     const $opFlipBtn       = document.getElementById("opFlipBtn");
+
+    // === Theme toggle ===
+    (function setupThemeToggle(){
+      const KEY = 'fj_theme';
+      const btn = document.getElementById('themeToggle');
+
+      function currentTheme() {
+        return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      }
+      function renderButton() {
+        const t = currentTheme();
+        btn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+        btn.textContent = t === 'dark' ? '☀️ Light' : '🌙 Dark';
+      }
+      function setTheme(t) {
+        if (t === 'dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+        localStorage.setItem(KEY, t);
+        renderButton();
+      }
+
+      renderButton();
+      btn.addEventListener('click', () => {
+        setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+      });
+    })();
 
     // Manage Sets state
     let loadedSets = [];
@@ -291,7 +404,8 @@
     function renderSetsSummary() {
       const chosen = loadedSets.filter(s => selectedSetIds.has(s.id));
       const totalCards = chosen.reduce((sum, s) => sum + s.cards.length, 0);
-      if ($statusSummary) $statusSummary.textContent = `Ready • ${totalCards} ${totalCards === 1 ? "card" : "cards"}`;
+      if ($statusSummary) $statusSummary.textContent =
+        `Ready • ${totalCards} ${totalCards === 1 ? "card" : "cards"}`;
       updateShuffleAvailability();
     }
 
@@ -303,8 +417,8 @@
       saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
 
       const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors";
-      const on  = "bg-white text-zinc-900 border-black font-medium";
-      const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100";
+      const on  = "bg-white text-zinc-900 border-black font-medium dark:bg-zinc-100 dark:text-zinc-900";
+      const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-700";
 
       const pillsHtml = [
         `<button class="set-pill ${base} ${allActive ? on : off}" data-setid="__all__" role="switch" aria-pressed="${allActive}" title="Enable all sets">
@@ -429,62 +543,53 @@
       op.flipped = false; opRenderCard(); saveOpenPlayState();
     }
 
-async function showOpenPlay() {
-  state.mode = "open";
+    async function showOpenPlay() {
+      state.mode = "open";
 
-  // 1) Show loader while datasets fetch (only if you have a loader wrap)
-  const $loadWrap = document.getElementById("loadWrap");
-  if ($loadWrap) {
-    $loadWrap.classList.remove("hidden");
-    $status.textContent = "Loading datasets…";
-  }
+      // Loader during fetch
+      if ($loadWrap) {
+        $loadWrap.classList.remove("hidden");
+        $status.textContent = "Loading datasets…";
+      }
+      if (!loadedSets.length) await loadAll();
+      if ($loadWrap) $loadWrap.classList.add("hidden");
 
-  if (!loadedSets.length) {
-    await loadAll();
-  }
+      // Show Open Play only
+      document.getElementById("testView")?.classList.add("hidden");
+      document.getElementById("testConfig")?.classList.add("hidden");
+      $openPlayView.classList.remove("hidden");
+      $app.classList.remove("hidden");
 
-  // 2) Hide loader
-  if ($loadWrap) $loadWrap.classList.add("hidden");
+      // Inject + restore
+      restoreOpenPlayState();
+      opInjectFromSelection();
 
-  // 3) Make sure only Open Play UI is visible
-  document.getElementById("testView")?.classList.add("hidden");       // hide Test
-  document.getElementById("testConfig")?.classList.add("hidden");     // hide test-only controls
-  $openPlayView.classList.remove("hidden");                            // show Open Play
-  $app.classList.remove("hidden");                                     // show filter bar
+      document.getElementById("opShuffleBtn").textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
+      document.getElementById("opStarFilterBtn").textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
+      updateShuffleAvailability();
 
-  // 4) Inject cards based on current filter and restore Open Play state
-  restoreOpenPlayState();
-  opInjectFromSelection();
+      // One-time bindings
+      if (!showOpenPlay._bound) {
+        $opCard.addEventListener("click", opFlip);
+        $opFlipBtn.addEventListener("click", opFlip);
+        $opNextBtn.addEventListener("click", opNext);
+        $opPrevBtn.addEventListener("click", opPrev);
+        $opShuffleBtn.addEventListener("click", opToggleShuffle);
+        $opStarFilterBtn.addEventListener("click", opToggleStarFilter);
+        $opStarBtn.addEventListener("click", (e) => { e.stopPropagation(); opToggleStar(); });
 
-  // 5) Buttons reflect current toggles + shuffle eligibility
-  document.getElementById("opShuffleBtn").textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
-  document.getElementById("opStarFilterBtn").textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
-  updateShuffleAvailability();
+        document.addEventListener("keydown", (e) => {
+          if ($openPlayView.classList.contains("hidden")) return;
+          if (e.key === "ArrowRight") { e.preventDefault(); opNext(); }
+          else if (e.key === "ArrowLeft") { e.preventDefault(); opPrev(); }
+          else if (e.key === " " || e.key === "Enter") { e.preventDefault(); opFlip(); }
+        });
 
-  // 6) One-time bindings
-  if (!showOpenPlay._bound) {
-    $opCard.addEventListener("click", opFlip);
-    $opFlipBtn.addEventListener("click", opFlip);
-    $opNextBtn.addEventListener("click", opNext);
-    $opPrevBtn.addEventListener("click", opPrev);
-    $opShuffleBtn.addEventListener("click", opToggleShuffle);
-    $opStarFilterBtn.addEventListener("click", opToggleStarFilter);
-    $opStarBtn.addEventListener("click", (e) => { e.stopPropagation(); opToggleStar(); });
+        showOpenPlay._bound = true;
+      }
 
-    document.addEventListener("keydown", (e) => {
-      if ($openPlayView.classList.contains("hidden")) return;
-      if (e.key === "ArrowRight") { e.preventDefault(); opNext(); }
-      else if (e.key === "ArrowLeft") { e.preventDefault(); opPrev(); }
-      else if (e.key === " " || e.key === "Enter") { e.preventDefault(); opFlip(); }
-    });
-
-    showOpenPlay._bound = true;
-  }
-
-  // Optional: scroll to top so the card is in view
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
     /* =======================
        5) TEST MODE (no timer)
@@ -511,7 +616,6 @@ async function showOpenPlay() {
     function sampleFromSelectedSets(n) {
       const pool = loadedSets.filter(s => selectedSetIds.has(s.id)).flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
       if (!pool.length) return [];
-      // Shuffle pool and take first n
       for (let j = pool.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [pool[j], pool[k]] = [pool[k], pool[j]]; }
       return pool.slice(0, Math.min(n, pool.length));
     }
@@ -537,7 +641,6 @@ async function showOpenPlay() {
     function showTestView(){ $openPlayView.classList.add("hidden"); $testView.classList.remove("hidden"); }
 
     function startNewTest(){
-      // read slider index → count
       const idx = Number(document.getElementById("tmCountRange")?.value ?? 0);
       const count = TM_COUNTS[idx] || 20;
       test.config.count = count;
@@ -573,86 +676,81 @@ async function showOpenPlay() {
         const ansKey=card.answer; const ansText=({A:card.a,B:card.b,C:card.c,D:card.d}[ansKey])||"";
         const yourText=chosen ? (({A:card.a,B:card.b,C:card.c,D:card.d}[chosen])||"") : "—";
         const badge=isCorrect?'<span class="text-green-700">Correct</span>':'<span class="text-red-700">Wrong</span>';
-        return `<div class="rounded-lg border p-3"><div class="text-sm text-neutral-500 mb-1">Q ${idx+1}</div><div class="font-medium mb-2">${card.q}</div><div class="text-sm"><strong>Correct:</strong> ${ansKey}. ${ansText}</div><div class="text-sm"><strong>Your answer:</strong> ${chosen ? chosen + ". " + yourText : "—"}</div><div class="text-sm mt-1">${badge}</div></div>`;
+        return `<div class="rounded-lg border p-3"><div class="text-sm text-neutral-500 dark:text-zinc-400 mb-1">Q ${idx+1}</div><div class="font-medium mb-2">${card.q}</div><div class="text-sm"><strong>Correct:</strong> ${ansKey}. ${ansText}</div><div class="text-sm"><strong>Your answer:</strong> ${chosen ? chosen + ". " + yourText : "—"}</div><div class="text-sm mt-1">${badge}</div></div>`;
       }).join("");
       $tmResults.classList.remove("hidden");
     }
     function finalizeTest(){ const graded=gradeTest(); renderResults(graded); localStorage.removeItem(TM_KEYS.STATE); }
 
-  // ---------- TEST FLOW (single-view, no stacking) ----------
-function startTestFlow() {
-  state.mode = "test";
+    // ---------- TEST FLOW (separate view) ----------
+    function startTestFlow() {
+      state.mode = "test";
 
-  const go = async () => {
-    // show loader while datasets load (first visit)
-    $loadWrap.classList.remove("hidden");
-    $status.textContent = "Loading datasets…";
+      const go = async () => {
+        $loadWrap.classList.remove("hidden");
+        $status.textContent = "Loading datasets…";
 
-    if (!loadedSets.length) await loadAll();
+        if (!loadedSets.length) await loadAll();
 
-    // reveal filter + test config, hide Open Play, show Test
-    $loadWrap.classList.add("hidden");
-    $app.classList.remove("hidden");
-    document.getElementById("testConfig").classList.remove("hidden");
-    document.getElementById("openPlayView").classList.add("hidden");
-    showTestView(); // ensures #testView is visible and focused
+        $loadWrap.classList.add("hidden");
+        $app.classList.remove("hidden");
+        document.getElementById("testConfig").classList.remove("hidden");
+        document.getElementById("openPlayView").classList.add("hidden");
+        showTestView();
 
-    // restore deck only if it matches selected question count
-    const saved = loadJSON(TM_KEYS.STATE, null);
-    const idx = Number(localStorage.getItem(TM_CFG_KEYS.COUNT_IDX)) || 0;
-    const targetCount = TM_COUNTS[idx] || 20;
+        const saved = loadJSON(TM_KEYS.STATE, null);
+        const idx = Number(localStorage.getItem(TM_CFG_KEYS.COUNT_IDX)) || 0;
+        const targetCount = TM_COUNTS[idx] || 20;
 
-    const canRestore = saved && Array.isArray(saved.deck) && saved.deck.length > 0;
-    const sameSize   = canRestore && saved.deck.length === targetCount;
-    const hasAnswers = canRestore && Array.isArray(saved.answers) && saved.answers.length > 0;
+        const canRestore = saved && Array.isArray(saved.deck) && saved.deck.length > 0;
+        const sameSize   = canRestore && saved.deck.length === targetCount;
+        const hasAnswers = canRestore && Array.isArray(saved.answers) && saved.answers.length > 0;
 
-    if (canRestore && sameSize) {
-      restoreTestState();
-    } else {
-      if (hasAnswers) {
+        if (canRestore && sameSize) {
+          restoreTestState();
+        } else {
+          if (hasAnswers) {
+            const ok = confirm(
+              "You have an in-progress test saved with a different question count. " +
+              "Starting a new test will discard your answers.\n\nStart a new test now?"
+            );
+            if (!ok) return;
+          }
+          localStorage.removeItem(TM_KEYS.STATE);
+          startNewTest();
+        }
+      };
+
+      go();
+    }
+
+    // ---------- Question count Apply/Enter (with warning) ----------
+    function hasInProgressAnswers() {
+      if (test && test.answers && test.answers.size > 0) return true;
+      const saved = loadJSON(TM_KEYS.STATE, null);
+      if (saved && Array.isArray(saved.answers) && saved.answers.length > 0) return true;
+      return false;
+    }
+
+    function applyQuestionCount() {
+      const idx = Number($tmCountRange.value);
+      if (hasInProgressAnswers()) {
         const ok = confirm(
-          "You have an in-progress test saved with a different question count. " +
-          "Starting a new test will discard your answers.\n\nStart a new test now?"
+          "You have an in-progress test. Changing the question count will restart it and your answers will be lost.\n\nContinue?"
         );
         if (!ok) return;
       }
+      localStorage.setItem(TM_CFG_KEYS.COUNT_IDX, String(idx));
       localStorage.removeItem(TM_KEYS.STATE);
-      startNewTest();
+      if (!document.getElementById("testView").classList.contains("hidden")) {
+        startNewTest();
+      }
     }
-  };
 
-  // allow zero selected sets; user can pick in filter now
-  go();
-}
-
-// ---------- Question count Apply/Enter (with warning) ----------
-function hasInProgressAnswers() {
-  if (test && test.answers && test.answers.size > 0) return true;
-  const saved = loadJSON(TM_KEYS.STATE, null);
-  if (saved && Array.isArray(saved.answers) && saved.answers.length > 0) return true;
-  return false;
-}
-
-function applyQuestionCount() {
-  const idx = Number($tmCountRange.value);
-  if (hasInProgressAnswers()) {
-    const ok = confirm(
-      "You have an in-progress test. Changing the question count will restart it and your answers will be lost.\n\nContinue?"
-    );
-    if (!ok) return;
-  }
-  localStorage.setItem(TM_CFG_KEYS.COUNT_IDX, String(idx));
-  localStorage.removeItem(TM_KEYS.STATE);
-  if (!document.getElementById("testView").classList.contains("hidden")) {
-    startNewTest();
-  }
-}
-
-// re-bind listeners (if not already bound)
-document.getElementById("tmApplyCount")?.addEventListener("click", applyQuestionCount);
-document.getElementById("tmCountRange")?.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") { e.preventDefault(); applyQuestionCount(); }
-});
+    document.getElementById("tmApplyCount")?.addEventListener("click", applyQuestionCount);
+    document.getElementById("tmCountRange")?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); applyQuestionCount(); }
+    });
 
     // Test bindings
     document.getElementById("tmPrev").addEventListener("click", tmPrev);
@@ -663,15 +761,14 @@ document.getElementById("tmCountRange")?.addEventListener("keydown", (e) => {
     document.getElementById("tmBackToOpen").addEventListener("click", () => {
       $testView.classList.add("hidden");
       document.getElementById("testConfig").classList.add("hidden");
-      $openPlayView.classList.remove("hidden");
+      showOpenPlay();
     });
 
-    // CTA buttons
+    // CTA buttons (separate views; no stacking)
     document.getElementById("openPlayBtn").addEventListener("click", showOpenPlay);
-    document.getElementById("testModeBtn").addEventListener("click", () => { state.mode = "test"; startTestFlow(); });
+    document.getElementById("testModeBtn").addEventListener("click", startTestFlow);
 
-    // NOTE: no initial load — data loads after a mode is chosen
+    // NOTE: no initial dataset load here — happens after choosing a mode
   </script>
 </body>
 </html>
-
