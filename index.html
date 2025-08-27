@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Milady Barber Test Prep</title>
 
-  <!-- Tailwind config: use 'class' strategy for dark mode -->
-<script>
-  tailwind.config = { darkMode: 'class' };
-</script>
+  <!-- Tell Tailwind CDN to use 'class' dark mode -->
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
 
   <!-- Set theme class ASAP to avoid flash -->
   <script>
     (function () {
       const KEY = 'fj_theme';
-      const saved = localStorage.getItem(KEY); // 'light' | 'dark' | null
+      const saved = localStorage.getItem(KEY);
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const theme = saved || (prefersDark ? 'dark' : 'light');
       if (theme === 'dark') document.documentElement.classList.add('dark');
@@ -22,13 +22,9 @@
     })();
   </script>
 
-  <script src="https://cdn.tailwindcss.com"></script>  
-  
-  <style>
-    html, body { transition: background-color .2s linear, color .2s linear; }
-  </style>
- 
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 
 <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
   <main class="max-w-xl mx-auto px-6 py-12">
@@ -770,5 +766,6 @@
   </script>
 </body>
 </html>
+
 
 
