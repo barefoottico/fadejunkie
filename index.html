@@ -15,13 +15,14 @@
       </p>
     </header>
 
+    <!-- Landing CTA: shown on first load only -->
     <section id="cta" class="flex gap-3">
       <button id="openPlayBtn" class="px-4 py-2 rounded-xl shadow bg-white border border-zinc-200 hover:bg-zinc-100">Open Play</button>
       <button id="testModeBtn" class="px-4 py-2 rounded-xl shadow bg-black text-white hover:opacity-90">Start Test</button>
     </section>
 
-    <!-- Test config (slider for question count + Apply) -->
-    <section id="testConfig" class="mt-4">
+    <!-- Test config (hidden until Test Mode) -->
+    <section id="testConfig" class="mt-4 hidden">
       <label for="tmCountRange" class="block text-sm text-zinc-600 mb-1">Questions per test</label>
       <div class="flex items-center gap-3">
         <input id="tmCountRange" type="range" min="0" max="3" step="1" value="0" class="w-full" />
@@ -34,13 +35,13 @@
       </p>
     </section>
 
-    <!-- Loading / error -->
-    <section class="mt-8">
+    <!-- Loading / error (hidden until a mode is chosen) -->
+    <section id="loadWrap" class="mt-8 hidden">
       <div id="status" class="text-sm text-zinc-700">Loading datasets…</div>
       <div id="error" class="hidden text-sm text-red-600 mt-2"></div>
     </section>
 
-    <!-- Filter bar -->
+    <!-- Filter bar (hidden until a mode is chosen) -->
     <section id="app" class="mt-4 hidden">
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2">
@@ -141,11 +142,13 @@
     const state = { cards: [], mode: null };
 
     // DOM refs
+    const $loadWrap        = document.getElementById("loadWrap");
     const $status          = document.getElementById("status");
     const $error           = document.getElementById("error");
     const $app             = document.getElementById("app");
     const $setPills        = document.getElementById("setPills");
     const $statusSummary   = document.getElementById("statusSummary");
+
     const $openPlayView    = document.getElementById("openPlayView");
     const $opCard          = document.getElementById("opCard");
     const $opFront         = document.getElementById("opFront");
@@ -270,14 +273,13 @@
 
         state.cards = results.flatMap(r => r.cards);
 
-        $app.classList.remove("hidden");
+        // Render (container visibility is handled by flows)
         renderSetsSummary();
         renderSetPills();
         updateShuffleAvailability();
 
-        saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
       } catch (e) {
-        $status.textContent = "Couldn’t finish loading.";
+        if ($status) $status.textContent = "Couldn’t finish loading.";
         $error.classList.remove("hidden");
         $error.textContent = String(e?.message || e);
       }
@@ -366,36 +368,10 @@
     if ($tmCountRange) $tmCountRange.value = String(savedIdx);
     if ($tmCountLabel) $tmCountLabel.textContent = String(TM_COUNTS[savedIdx]);
 
-    // live update + persist (label only; does not restart a test until Apply/Enter)
     $tmCountRange?.addEventListener("input", () => {
       const idx = Number($tmCountRange.value);
       $tmCountLabel.textContent = String(TM_COUNTS[idx]);
       localStorage.setItem(TM_CFG_KEYS.COUNT_IDX, String(idx));
-    });
-
-    // progress warning helper
-    const TM_KEYS = { STATE: "fj_test_state" }; // needed by the functions below
-    function hasInProgressAnswers() {
-      if (test && test.answers && test.answers.size > 0) return true;
-      const saved = loadJSON(TM_KEYS.STATE, null);
-      if (saved && Array.isArray(saved.answers) && saved.answers.length > 0) return true;
-      return false;
-    }
-    function applyQuestionCount() {
-      const idx = Number($tmCountRange.value);
-      if (hasInProgressAnswers()) {
-        const ok = confirm("You have an in-progress test. Changing the question count will restart it and your answers will be lost.\n\nContinue?");
-        if (!ok) return;
-      }
-      localStorage.setItem(TM_CFG_KEYS.COUNT_IDX, String(idx));
-      localStorage.removeItem(TM_KEYS.STATE);
-      if (!document.getElementById("testView").classList.contains("hidden")) {
-        startNewTest();
-      }
-    }
-    $tmApplyCount?.addEventListener("click", applyQuestionCount);
-    $tmCountRange?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") { e.preventDefault(); applyQuestionCount(); }
     });
 
     /* =======================
@@ -440,8 +416,8 @@
     const opFlip = () => { op.flipped = !op.flipped; opRenderCard(); };
     const opNext = () => { if (!op.deck.length) return; op.i = (op.i + 1) % op.deck.length; op.flipped = false; opRenderCard(); saveOpenPlayState(); };
     const opPrev = () => { if (!op.deck.length) return; op.i = (op.i - 1 + op.deck.length) % op.deck.length; op.flipped = false; opRenderCard(); saveOpenPlayState(); };
-    function opToggleShuffle() { op.shuffle = !op.shuffle; $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`; opBuildOrder(); op.flipped = false; opRenderCard(); saveOpenPlayState(); }
-    function opToggleStarFilter() { op.starFilter = !op.starFilter; $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`; opApplyFilters(); op.flipped = false; opRenderCard(); saveOpenPlayState(); }
+    function opToggleShuffle() { op.shuffle = !op.shuffle; document.getElementById("opShuffleBtn").textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`; opBuildOrder(); op.flipped = false; opRenderCard(); saveOpenPlayState(); }
+    function opToggleStarFilter() { op.starFilter = !op.starFilter; document.getElementById("opStarFilterBtn").textContent = `Starred: ${op.starFilter ? "Only" : "All"}`; opApplyFilters(); op.flipped = false; opRenderCard(); saveOpenPlayState(); }
     function opToggleStar() { const card = opCurrent(); if (!card) return; if (op.stars.has(card.id)) op.stars.delete(card.id); else op.stars.add(card.id); opSaveSet(OP_LOCAL_KEY.STARS, op.stars); opRenderStarBtn(card); if (op.starFilter) { opApplyFilters(); opRenderCard(); } }
 
     function opInjectFromSelection() {
@@ -454,10 +430,28 @@
     }
 
     async function showOpenPlay() {
-      state.mode = "open"; $openPlayView.classList.remove("hidden");
+      state.mode = "open";
+
+      // Show loader while we fetch
+      $loadWrap.classList.remove("hidden");
+      $status.textContent = "Loading datasets…";
+
       if (!loadedSets.length) await loadAll();
-      restoreOpenPlayState(); opInjectFromSelection();
-      $opShuffleBtn.textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`; $opStarFilterBtn.textContent = `Starred: ${op.starFilter ? "Only" : "All"}`; updateShuffleAvailability();
+
+      // Hide loader, reveal filter + view
+      $loadWrap.classList.add("hidden");
+      $app.classList.remove("hidden");
+      document.getElementById("testConfig").classList.add("hidden"); // test-only controls hidden
+      $openPlayView.classList.remove("hidden");
+      document.getElementById("testView").classList.add("hidden");
+
+      restoreOpenPlayState();
+      opInjectFromSelection();
+
+      document.getElementById("opShuffleBtn").textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
+      document.getElementById("opStarFilterBtn").textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
+      updateShuffleAvailability();
+
       if (!showOpenPlay._bound) {
         $opCard.addEventListener("click", opFlip);
         $opFlipBtn.addEventListener("click", opFlip);
@@ -479,7 +473,8 @@
     /* =======================
        5) TEST MODE (no timer)
     ======================= */
-    const TM_KEYS2 = TM_KEYS; // alias just to avoid confusion; TM_KEYS is already defined above
+    const TM_KEYS = { STATE: "fj_test_state" };
+
     const $testView = document.getElementById("testView");
     const $tmProgress = document.getElementById("tmProgress");
     const $tmQuestion = document.getElementById("tmQuestion");
@@ -500,19 +495,20 @@
     function sampleFromSelectedSets(n) {
       const pool = loadedSets.filter(s => selectedSetIds.has(s.id)).flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
       if (!pool.length) return [];
+      // Shuffle pool and take first n
       for (let j = pool.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [pool[j], pool[k]] = [pool[k], pool[j]]; }
       return pool.slice(0, Math.min(n, pool.length));
     }
 
     function persistTestState(){
-      saveJSON(TM_KEYS2.STATE,{
+      saveJSON(TM_KEYS.STATE,{
         deck:test.deck, i:test.i,
         answers:Array.from(test.answers.entries()),
         flags:Array.from(test.flags.values())
       });
     }
     function restoreTestState(){
-      const saved = loadJSON(TM_KEYS2.STATE, null);
+      const saved = loadJSON(TM_KEYS.STATE, null);
       if (!saved || !Array.isArray(saved.deck) || !saved.deck.length) return false;
       test.deck = saved.deck;
       test.i = Number.isInteger(saved.i) ? Math.max(0, Math.min(saved.i, test.deck.length - 1)) : 0;
@@ -525,6 +521,7 @@
     function showTestView(){ $openPlayView.classList.add("hidden"); $testView.classList.remove("hidden"); }
 
     function startNewTest(){
+      // read slider index → count
       const idx = Number(document.getElementById("tmCountRange")?.value ?? 0);
       const count = TM_COUNTS[idx] || 20;
       test.config.count = count;
@@ -564,17 +561,25 @@
       }).join("");
       $tmResults.classList.remove("hidden");
     }
-    function finalizeTest(){ const graded=gradeTest(); renderResults(graded); localStorage.removeItem(TM_KEYS2.STATE); }
+    function finalizeTest(){ const graded=gradeTest(); renderResults(graded); localStorage.removeItem(TM_KEYS.STATE); }
 
     function startTestFlow(){
-      const go = () => {
-        if (selectedSetIds.size === 0) {
-          alert("Pick at least one set in the Filter.");
-          return;
-        }
+      const go = async () => {
+        // Show loader while loading (if first time)
+        $loadWrap.classList.remove("hidden");
+        $status.textContent = "Loading datasets…";
+
+        if (!loadedSets.length) await loadAll();
+
+        // Reveal filter + test config + test view
+        $loadWrap.classList.add("hidden");
+        $app.classList.remove("hidden");
+        document.getElementById("testConfig").classList.remove("hidden");
+        $openPlayView.classList.add("hidden");
         showTestView();
 
-        const saved = loadJSON(TM_KEYS2.STATE, null);
+        // Use saved deck only if it matches selected question count
+        const saved = loadJSON(TM_KEYS.STATE, null);
         const idx = Number(localStorage.getItem(TM_CFG_KEYS.COUNT_IDX)) || 0;
         const targetCount = TM_COUNTS[idx] || 20;
 
@@ -592,32 +597,58 @@
             );
             if (!ok) return;
           }
-          localStorage.removeItem(TM_KEYS2.STATE);
+          localStorage.removeItem(TM_KEYS.STATE);
           startNewTest();
         }
       };
 
-      if (!loadedSets.length) {
-        loadAll().then(go);
-      } else {
-        go();
+      if (selectedSetIds.size === 0 && loadedSets.length) {
+        // still allow; user can pick sets now
       }
+      go();
     }
+
+    // Change question count Apply / Enter handlers (with warning)
+    function hasInProgressAnswers() {
+      if (test && test.answers && test.answers.size > 0) return true;
+      const saved = loadJSON(TM_KEYS.STATE, null);
+      if (saved && Array.isArray(saved.answers) && saved.answers.length > 0) return true;
+      return false;
+    }
+    function applyQuestionCount() {
+      const idx = Number($tmCountRange.value);
+      if (hasInProgressAnswers()) {
+        const ok = confirm(
+          "You have an in-progress test. Changing the question count will restart it and your answers will be lost.\n\nContinue?"
+        );
+        if (!ok) return;
+      }
+      localStorage.setItem(TM_CFG_KEYS.COUNT_IDX, String(idx));
+      localStorage.removeItem(TM_KEYS.STATE);
+      if (!$testView.classList.contains("hidden")) startNewTest();
+    }
+    document.getElementById("tmApplyCount")?.addEventListener("click", applyQuestionCount);
+    document.getElementById("tmCountRange")?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); applyQuestionCount(); }
+    });
 
     // Test bindings
     document.getElementById("tmPrev").addEventListener("click", tmPrev);
     document.getElementById("tmNext").addEventListener("click", tmNext);
     document.getElementById("tmFlag").addEventListener("change", tmToggleFlag);
     document.getElementById("tmSubmitBtn").addEventListener("click", () => finalizeTest());
-    document.getElementById("tmRestart").addEventListener("click", () => { localStorage.removeItem(TM_KEYS2.STATE); startNewTest(); });
-    document.getElementById("tmBackToOpen").addEventListener("click", () => { $testView.classList.add("hidden"); $openPlayView.classList.remove("hidden"); });
+    document.getElementById("tmRestart").addEventListener("click", () => { localStorage.removeItem(TM_KEYS.STATE); startNewTest(); });
+    document.getElementById("tmBackToOpen").addEventListener("click", () => {
+      $testView.classList.add("hidden");
+      document.getElementById("testConfig").classList.add("hidden");
+      $openPlayView.classList.remove("hidden");
+    });
 
-    // Buttons
+    // CTA buttons
     document.getElementById("openPlayBtn").addEventListener("click", showOpenPlay);
     document.getElementById("testModeBtn").addEventListener("click", () => { state.mode = "test"; startTestFlow(); });
 
-    // Initial load
-    loadAll();
+    // NOTE: no initial load — data loads after a mode is chosen
   </script>
 </body>
 </html>
