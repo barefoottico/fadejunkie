@@ -6,9 +6,13 @@
   <title>Milady Barber Test Prep</title>
 
   <!-- Tell Tailwind CDN to use 'class' dark mode -->
-  <script>
-    tailwind.config = { darkMode: 'class' };
-  </script>
+<!-- Tell Tailwind CDN to use 'class' dark mode -->
+<script>
+  window.tailwind = window.tailwind || {};
+  window.tailwind.config = { darkMode: 'class' };
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+
 
   <!-- Set theme class ASAP to avoid flash -->
   <script>
@@ -766,6 +770,7 @@
   </script>
 </body>
 </html>
+
 
 
 
