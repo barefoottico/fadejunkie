@@ -5,28 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Milady Barber Test Prep</title>
 
-  <!-- Tell Tailwind CDN to use 'class' dark mode -->
-<!-- Tell Tailwind CDN to use 'class' dark mode -->
-<script>
-  window.tailwind = window.tailwind || {};
-  window.tailwind.config = { darkMode: 'class' };
-</script>
+ <!-- 1) Load Tailwind CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 
+<!-- 2) Tell the CDN to use class-based dark mode -->
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
 
-  <!-- Set theme class ASAP to avoid flash -->
-  <script>
-    (function () {
-      const KEY = 'fj_theme';
-      const saved = localStorage.getItem(KEY);
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = saved || (prefersDark ? 'dark' : 'light');
-      if (theme === 'dark') document.documentElement.classList.add('dark');
-      else document.documentElement.classList.remove('dark');
-    })();
-  </script>
-
-  <script src="https://cdn.tailwindcss.com"></script>
+<!-- 3) Set initial theme ASAP to avoid flash -->
+<script>
+  (function () {
+    const KEY = 'fj_theme';
+    const saved = localStorage.getItem(KEY);
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    if (theme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  })();
+</script>
 </head>
 
 
@@ -770,6 +767,7 @@
   </script>
 </body>
 </html>
+
 
 
 
