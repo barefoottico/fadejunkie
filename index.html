@@ -37,9 +37,9 @@
     aria-pressed="false" title="Toggle dark mode">🌙 Dark</button>
 
   <!-- Centered logo above header -->
-  <img src="./fadejunkie_logo.png" alt="FadeJunkie logo"
-       class="mx-auto h-16 w-auto mb-3 select-none pointer-events-none
-              dark:invert-0" />
+ <img src="./fadejunkie_logo.png" alt="FadeJunkie logo"
+     class="mx-auto h-16 w-auto mb-3 select-none pointer-events-none dark:invert" />
+
 
   <header class="text-center">
     <h1 class="text-2xl font-bold">Study smarter, not longer</h1>
@@ -50,7 +50,7 @@
 </section>
 
     <!-- Landing CTA: shown on first load only -->
-    <section id="cta" class="flex gap-3">
+   <section id="cta" class="mt-2 flex gap-3 flex-wrap justify-center">
       <button id="openPlayBtn"
         class="px-4 py-2 rounded-xl shadow bg-white border border-zinc-200 hover:bg-zinc-100
                dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
@@ -130,8 +130,9 @@
           <div id="opAnswerExplain" class="text-sm text-neutral-600 dark:text-zinc-300 mt-2"></div>
         </div>
 
-        <button id="opStarBtn" title="Star this card"
-                class="absolute top-3 right-3 text-xl leading-none">☆</button>
+      <button id="opStarBtn" title="Star this card"
+  class="absolute top-3 right-3 text-xl leading-none dark:text-zinc-100">☆</button>
+
       </div>
 
       <div class="mt-5 flex items-center justify-between">
@@ -765,3 +766,4 @@
   </script>
 </body>
 </html>
+
