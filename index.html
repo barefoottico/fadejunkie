@@ -26,8 +26,11 @@
 </script>
 </head>
 
-<!-- Top logo + header -->
-<section class="relative mb-6">
+  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+  <main class="max-w-xl mx-auto px-6 py-12">
+    
+<!-- Top logo + header (INSIDE <main>) -->
+<section class="relative mb-6 py-4 min-h-[72px]">
   <!-- Theme toggle -->
   <button id="themeToggle"
     class="absolute left-4 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
@@ -45,14 +48,9 @@
     </svg>
   </a>
 
-  <!-- your centered logo + title stays the same -->
-</section>
-
-
-
-  <!-- Centered logo -->
+  <!-- Centered logo + title -->
   <img src="./fadejunkie_logo.png" alt="FadeJunkie logo"
-       class="mx-auto h-16 w-auto mb-3 select-none pointer-events-none dark:invert" />
+       class="mx-auto h-16 w-auto mb-3 select-none dark:invert" />
 
   <header class="text-center">
     <h1 class="text-2xl font-bold">Study smarter, not longer</h1>
@@ -61,6 +59,7 @@
     </p>
   </header>
 </section>
+
 
 
 
@@ -828,6 +827,7 @@ function hideResources() {
   </script>
 </body>
 </html>
+
 
 
 
