@@ -30,23 +30,21 @@
   <main class="max-w-xl mx-auto px-6 py-12">
     
 <!-- Top bar: buttons only -->
-<div class="flex justify-between items-center mb-4">
-  
-  <!-- Theme toggle (icon swap) -->
+<div class="flex justify-between items-center mb-6">
+  <!-- Theme toggle (icon swap, bigger, no bg) -->
   <button id="themeToggle"
-    class="p-2 rounded-lg border bg-white hover:bg-zinc-100
-           dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700"
+    class="p-0 border-none bg-transparent hover:opacity-80 transition"
     aria-pressed="false" title="Toggle dark mode">
-    <img id="themeIcon" src="./dark.icon.png" alt="Toggle theme" class="h-5 w-5" />
+    <img id="themeIcon" src="./dark.icon.png" alt="Toggle theme" class="h-10 w-10" />
   </button>
 
-  <!-- Back to Student Resources (icon) -->
+  <!-- Back to Student Resources (icon only, bigger, no bg) -->
   <a href="./student.html" aria-label="Back to Student Resources" title="Back to Student Resources"
-     class="p-2 rounded-lg border bg-white hover:bg-zinc-100
-            dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
-    <img src="./right_hand.icon.png" alt="Back" class="h-5 w-5" />
+     class="p-0 border-none bg-transparent hover:opacity-80 transition">
+    <img src="./right_hand.icon.png" alt="Back" class="h-10 w-10" />
   </a>
 </div>
+
 
 
 <!-- Centered logo + title -->
@@ -820,6 +818,7 @@ function hideResources() {
   </script>
 </body>
 </html>
+
 
 
 
