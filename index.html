@@ -26,24 +26,28 @@
 </script>
 </head>
 
-
-<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
-  <main class="max-w-xl mx-auto px-6 py-12">
 <!-- Top logo + header -->
 <section class="relative mb-6">
-  <!-- Theme toggle (keep this so the JS still finds #themeToggle) -->
+  <!-- Theme toggle: moved to top-left -->
   <button id="themeToggle"
-    class="absolute right-0 top-0 px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+    class="absolute left-0 top-0 px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
            dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700"
     aria-pressed="false" title="Toggle dark mode">🌙 Dark</button>
 
-  <!-- Centered logo above header -->
-<a href="./index.html">
+  <!-- Back to Student Resources: top-right -->
+  <a href="./student.html" aria-label="Back to Student Resources" title="Back to Student Resources"
+     class="absolute right-0 top-0 p-2 rounded-lg border bg-white hover:bg-zinc-100
+            dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+    <!-- left arrow icon -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.5">
+      <path d="M15 19l-7-7 7-7"/>
+    </svg>
+  </a>
+
+  <!-- Centered logo -->
   <img src="./fadejunkie_logo.png" alt="FadeJunkie logo"
-       class="mx-auto h-16 w-auto mb-3 select-none dark:invert" />
-</a>
-
-
+       class="mx-auto h-16 w-auto mb-3 select-none pointer-events-none dark:invert" />
 
   <header class="text-center">
     <h1 class="text-2xl font-bold">Study smarter, not longer</h1>
@@ -52,6 +56,8 @@
     </p>
   </header>
 </section>
+
+
 
     <!-- Landing CTA: shown on first load only -->
    <section id="cta" class="mt-2 flex gap-3 flex-wrap justify-center">
@@ -820,6 +826,7 @@ function hideResources() {
   </script>
 </body>
 </html>
+
 
 
 
