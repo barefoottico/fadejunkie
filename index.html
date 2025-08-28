@@ -29,36 +29,37 @@
   <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
   <main class="max-w-xl mx-auto px-6 py-12">
     
-<!-- Top logo + header (INSIDE <main>) -->
-<section class="relative mb-6 py-4 min-h-[72px]">
+<!-- Top bar: buttons only -->
+<div class="flex justify-between items-center mb-4">
   <!-- Theme toggle -->
   <button id="themeToggle"
-    class="absolute left-4 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+    class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
            dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
     🌙 Dark
   </button>
 
   <!-- Back to Student Resources -->
   <a href="./student.html" aria-label="Back to Student Resources" title="Back to Student Resources"
-     class="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg border bg-white hover:bg-zinc-100
+     class="p-2 rounded-lg border bg-white hover:bg-zinc-100
             dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
          stroke="currentColor" stroke-width="1.5">
       <path d="M15 19l-7-7 7-7"/>
     </svg>
   </a>
+</div>
 
-  <!-- Centered logo + title -->
-  <img src="./fadejunkie_logo.png" alt="FadeJunkie logo"
-       class="mx-auto h-16 w-auto mb-3 select-none dark:invert" />
+<!-- Centered logo + title -->
+<img src="./fadejunkie_logo.png" alt="FadeJunkie logo"
+     class="mx-auto h-16 w-auto mb-3 select-none dark:invert" />
 
-  <header class="text-center">
-    <h1 class="text-2xl font-bold">Study smarter, not longer</h1>
-    <p class="text-zinc-600 dark:text-zinc-300 mt-2">
-      Tap <strong>Open Play</strong> for quick reps. Tap <strong>Test Mode</strong> for a chapter-based check.
-    </p>
-  </header>
-</section>
+<header class="text-center">
+  <h1 class="text-2xl font-bold">Study smarter, not longer</h1>
+  <p class="text-zinc-600 dark:text-zinc-300 mt-2">
+    Tap <strong>Open Play</strong> for quick reps. Tap <strong>Test Mode</strong> for a chapter-based check.
+  </p>
+</header>
+
 
 
 
@@ -827,6 +828,7 @@ function hideResources() {
   </script>
 </body>
 </html>
+
 
 
 
