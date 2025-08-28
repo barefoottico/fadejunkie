@@ -24,15 +24,13 @@
 <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
   <main class="max-w-6xl mx-auto px-6 py-10">
     
-<!-- Top bar: buttons only -->
-<div class="flex justify-between items-center mb-4">
-  <!-- Theme toggle -->
-  <button id="themeToggle"
-    class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
-           dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
-    🌙 Dark
-  </button>
-
+<!-- Top bar -->
+<button id="themeToggle"
+  class="absolute left-0 top-0 p-2 rounded-lg border bg-white hover:bg-zinc-100
+         dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700"
+  aria-pressed="false" title="Toggle dark mode">
+  <img id="themeIcon" src="./dark.icon.png" alt="toggle theme" class="h-5 w-5" />
+</button>
   <!-- Back to Student Resources -->
   <a href="./student.html" aria-label="Back to Student Resources" title="Back to Student Resources"
      class="p-2 rounded-lg border bg-white hover:bg-zinc-100
@@ -127,24 +125,33 @@
   <script>
     // Theme toggle (same behavior as index.html)
     (function setupThemeToggle(){
-      const KEY = 'fj_theme';
-      const btn = document.getElementById('themeToggle');
-      if (!btn) return;
-      const currentTheme = () => document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-      const renderButton = () => {
-        const t = currentTheme();
-        btn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
-        btn.textContent = t === 'dark' ? '☀️ Light' : '🌙 Dark';
-      };
-      const setTheme = (t) => {
-        if (t === 'dark') document.documentElement.classList.add('dark');
-        else document.documentElement.classList.remove('dark');
-        localStorage.setItem(KEY, t);
-        renderButton();
-      };
-      renderButton();
-      btn.addEventListener('click', () => setTheme(currentTheme() === 'dark' ? 'light' : 'dark'));
-    })();
+  const KEY = 'fj_theme';
+  const btn = document.getElementById('themeToggle');
+  const icon = document.getElementById('themeIcon');
+  if (!btn || !icon) return;
+
+  const currentTheme = () =>
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+
+  const renderButton = () => {
+    const t = currentTheme();
+    btn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+    icon.src = t === 'dark' ? './light.icon.png' : './dark.icon.png';
+  };
+
+  const setTheme = (t) => {
+    if (t === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+    localStorage.setItem(KEY, t);
+    renderButton();
+  };
+
+  renderButton();
+  btn.addEventListener('click', () =>
+    setTheme(currentTheme() === 'dark' ? 'light' : 'dark')
+  );
+})();
+
 
     // Resource data (expandable)
     const RESOURCES = [
