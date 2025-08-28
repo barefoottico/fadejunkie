@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FadeJunkie • Student Resources</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script> tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- Keep the exact same theme boot script so UI matches index.html -->
+  <script>
+    (function () {
+      const KEY = 'fj_theme';
+      const saved = localStorage.getItem(KEY);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = saved || (prefersDark ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+    })();
+  </script>
+</head>
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+  <main class="max-w-6xl mx-auto px-6 py-10">
+    <!-- Top bar -->
+    <section class="relative mb-8">
+      <button id="themeToggle"
+        class="absolute right-0 top-0 px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+               dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700"
+        aria-pressed="false" title="Toggle dark mode">🌙 Dark</button>
+
+      <!-- Logo -->
+      <a href="./index.html" title="Home" class="block w-fit mx-auto">
+        <img src="./fadejunkie_logo.png" alt="FadeJunkie logo"
+             class="mx-auto h-16 w-auto mb-3 select-none pointer-events-auto dark:invert" />
+      </a>
+
+      <header class="text-center">
+        <h1 class="text-3xl font-extrabold tracking-tight">Student Resources</h1>
+        <p class="text-zinc-600 dark:text-zinc-300 mt-2 max-w-2xl mx-auto">
+          A growing hub for all things school + state board. Study tools, practical checklists, downloads, and more.
+        </p>
+        <div class="mt-4 flex items-center justify-center gap-3 text-sm">
+          <a href="./index.html"
+             class="px-3 py-1.5 rounded-lg border bg-white hover:bg-zinc-100
+                    dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+            ← Back to Study Tool
+          </a>
+        </div>
+      </header>
+    </section>
+
+    <!-- Featured strip: show the main study tool as one of many resources -->
+    <section aria-labelledby="featured" class="mb-10">
+      <h2 id="featured" class="text-xl font-bold mb-3">Featured</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Feature 1: Study Guide Tool (links to index.html) -->
+        <a href="./index.html" class="group block rounded-2xl border overflow-hidden bg-white
+                                     dark:bg-zinc-800 dark:border-zinc-700">
+          <div class="p-5 flex items-start gap-4">
+            <div class="shrink-0 p-3 rounded-xl bg-zinc-100 dark:bg-zinc-700">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </div>
+            <div>
+              <div class="text-sm text-zinc-500 dark:text-zinc-400">Tools</div>
+              <h3 class="text-lg font-semibold group-hover:underline">Milady Barber Test Prep</h3>
+              <p class="text-sm text-zinc-700 dark:text-zinc-300 mt-1">
+                Open Play flashcards + Test Mode exams built from MBF datasets.
+              </p>
+            </div>
+          </div>
+        </a>
+
+        <!-- Feature 2: Practical Exam Guide (external) -->
+        <a href="https://fadejunkietdlrprep.my.canva.site/tbba" target="_blank" rel="noopener"
+           class="group block rounded-2xl border overflow-hidden bg-white
+                  dark:bg-zinc-800 dark:border-zinc-700">
+          <div class="p-5 flex items-start gap-4">
+            <div class="shrink-0 p-3 rounded-xl bg-zinc-100 dark:bg-zinc-700">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path d="M12 5v14m7-7H5" />
+              </svg>
+            </div>
+            <div>
+              <div class="text-sm text-zinc-500 dark:text-zinc-400">Guides</div>
+              <h3 class="text-lg font-semibold group-hover:underline">TDLR Barber Practical Exam Guide</h3>
+              <p class="text-sm text-zinc-700 dark:text-zinc-300 mt-1">
+                Kit checklist, timing, grading criteria, step-by-step. Opens in a new tab.
+              </p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Categories -->
+    <section aria-labelledby="categories" class="mb-3">
+      <h2 id="categories" class="text-xl font-bold">Browse by category</h2>
+      <div class="mt-3 flex flex-wrap gap-2 text-sm">
+        <button data-filter="all"
+                class="res-chip px-3 py-1.5 rounded-full border bg-white dark:bg-zinc-800 dark:border-zinc-700">
+          All
+        </button>
+        <button data-filter="tools"
+                class="res-chip px-3 py-1.5 rounded-full border bg-white dark:bg-zinc-800 dark:border-zinc-700">
+          Tools
+        </button>
+        <button data-filter="guides"
+                class="res-chip px-3 py-1.5 rounded-full border bg-white dark:bg-zinc-800 dark:border-zinc-700">
+          Guides
+        </button>
+        <button data-filter="downloads"
+                class="res-chip px-3 py-1.5 rounded-full border bg-white dark:bg-zinc-800 dark:border-zinc-700">
+          Downloads
+        </button>
+        <button data-filter="checklists"
+                class="res-chip px-3 py-1.5 rounded-full border bg-white dark:bg-zinc-800 dark:border-zinc-700">
+          Checklists
+        </button>
+      </div>
+    </section>
+
+    <!-- Resources Grid -->
+    <section aria-labelledby="resources" class="mt-4">
+      <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+  </main>
+
+  <script>
+    // Theme toggle (same behavior as index.html)
+    (function setupThemeToggle(){
+      const KEY = 'fj_theme';
+      const btn = document.getElementById('themeToggle');
+      if (!btn) return;
+      const currentTheme = () => document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      const renderButton = () => {
+        const t = currentTheme();
+        btn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+        btn.textContent = t === 'dark' ? '☀️ Light' : '🌙 Dark';
+      };
+      const setTheme = (t) => {
+        if (t === 'dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+        localStorage.setItem(KEY, t);
+        renderButton();
+      };
+      renderButton();
+      btn.addEventListener('click', () => setTheme(currentTheme() === 'dark' ? 'light' : 'dark'));
+    })();
+
+    // Resource data (expandable)
+    const RESOURCES = [
+      {
+        title: "Milady Barber Test Prep",
+        desc: "Flashcards and chapter-based exams (Open Play + Test Mode).",
+        href: "./index.html",
+        tag: "tools"
+      },
+      {
+        title: "TDLR Barber Practical Exam Guide",
+        desc: "Kit checklist, timing, grading criteria, step-by-step flow.",
+        href: "https://fadejunkietdlrprep.my.canva.site/tbba",
+        external: true,
+        tag: "guides"
+      },
+      {
+        title: "Sanitation & Disinfection Quick Sheet (PDF)",
+        desc: "One-page reference for salon disinfection standards (printable).",
+        href: "#",
+        tag: "downloads"
+      },
+      {
+        title: "State Board Kit Checklist",
+        desc: "Everything to pack and how to label it for exam day.",
+        href: "#",
+        tag: "checklists"
+      },
+      {
+        title: "Clipper & Trimmer Maintenance",
+        desc: "Oil frequency, blade care, and storage tips.",
+        href: "#",
+        tag: "guides"
+      },
+      {
+        title: "Practice Timers",
+        desc: "Use preset timers to simulate exam pacing.",
+        href: "#",
+        tag: "tools"
+      }
+    ];
+
+    // Render resource grid
+    const grid = document.getElementById("grid");
+    const chips = Array.from(document.querySelectorAll(".res-chip"));
+
+    function card(r){
+      const ext = r.external ? `target="_blank" rel="noopener"` : "";
+      return `
+        <a href="${r.href}" ${ext}
+           class="block rounded-2xl border bg-white p-5 hover:bg-zinc-50
+                  dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
+          <div class="text-xs uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-1">${r.tag}</div>
+          <h3 class="text-lg font-semibold">${r.title}</h3>
+          <p class="text-sm text-zinc-700 dark:text-zinc-300 mt-1">${r.desc}</p>
+        </a>
+      `;
+    }
+
+    function render(filter="all"){
+      const items = filter==="all" ? RESOURCES : RESOURCES.filter(r => r.tag === filter);
+      grid.innerHTML = items.map(card).join("");
+      chips.forEach(c => {
+        const active = c.getAttribute("data-filter") === filter;
+        c.classList.toggle("ring-1", active);
+        c.classList.toggle("ring-black", active);
+        c.classList.toggle("dark:ring-zinc-100", active);
+      });
+    }
+
+    chips.forEach(c => c.addEventListener("click", () => render(c.getAttribute("data-filter"))));
+    render("all");
+  </script>
+</body>
+</html>
