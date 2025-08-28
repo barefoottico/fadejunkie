@@ -24,21 +24,19 @@
 <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
   <main class="max-w-6xl mx-auto px-6 py-10">
     
-<!-- Top bar -->
-<button id="themeToggle"
-  class="absolute left-0 top-0 p-2 rounded-lg border bg-white hover:bg-zinc-100
-         dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700"
-  aria-pressed="false" title="Toggle dark mode">
-  <img id="themeIcon" src="./dark.icon.png" alt="toggle theme" class="h-5 w-5" />
-</button>
-  <!-- Back to Student Resources -->
+<!-- Top bar: buttons only -->
+<div class="flex justify-between items-center mb-6">
+  <!-- Theme toggle (icon swap, bigger, no bg) -->
+  <button id="themeToggle"
+    class="p-0 border-none bg-transparent hover:opacity-80 transition"
+    aria-pressed="false" title="Toggle dark mode">
+    <img id="themeIcon" src="./dark.icon.png" alt="Toggle theme" class="h-10 w-10" />
+  </button>
+
+  <!-- Back to Student Resources (icon only, bigger, no bg) -->
   <a href="./student.html" aria-label="Back to Student Resources" title="Back to Student Resources"
-     class="p-2 rounded-lg border bg-white hover:bg-zinc-100
-            dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="1.5">
-      <path d="M15 19l-7-7 7-7"/>
-    </svg>
+     class="p-0 border-none bg-transparent hover:opacity-80 transition">
+    <img src="./right_hand.icon.png" alt="Back" class="h-10 w-10" />
   </a>
 </div>
       <!-- Logo -->
