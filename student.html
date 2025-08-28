@@ -23,13 +23,26 @@
 </head>
 <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
   <main class="max-w-6xl mx-auto px-6 py-10">
-    <!-- Top bar -->
-    <section class="relative mb-8">
-      <button id="themeToggle"
-        class="absolute right-0 top-0 px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
-               dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700"
-        aria-pressed="false" title="Toggle dark mode">🌙 Dark</button>
+    
+<!-- Top bar: buttons only -->
+<div class="flex justify-between items-center mb-4">
+  <!-- Theme toggle -->
+  <button id="themeToggle"
+    class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+           dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+    🌙 Dark
+  </button>
 
+  <!-- Back to Student Resources -->
+  <a href="./student.html" aria-label="Back to Student Resources" title="Back to Student Resources"
+     class="p-2 rounded-lg border bg-white hover:bg-zinc-100
+            dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.5">
+      <path d="M15 19l-7-7 7-7"/>
+    </svg>
+  </a>
+</div>
       <!-- Logo -->
       <a href="./index.html" title="Home" class="block w-fit mx-auto">
         <img src="./fadejunkie_logo.png" alt="FadeJunkie logo"
