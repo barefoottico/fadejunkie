@@ -28,22 +28,26 @@
 
 <!-- Top logo + header -->
 <section class="relative mb-6">
-  <!-- Theme toggle: moved to top-left -->
+  <!-- Theme toggle -->
   <button id="themeToggle"
-    class="absolute left-0 top-0 px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
-           dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700"
-    aria-pressed="false" title="Toggle dark mode">🌙 Dark</button>
+    class="absolute left-4 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+           dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+    🌙 Dark
+  </button>
 
-  <!-- Back to Student Resources: top-right -->
+  <!-- Back to Student Resources -->
   <a href="./student.html" aria-label="Back to Student Resources" title="Back to Student Resources"
-     class="absolute right-0 top-0 p-2 rounded-lg border bg-white hover:bg-zinc-100
+     class="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg border bg-white hover:bg-zinc-100
             dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
-    <!-- left arrow icon -->
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
          stroke="currentColor" stroke-width="1.5">
       <path d="M15 19l-7-7 7-7"/>
     </svg>
   </a>
+
+  <!-- your centered logo + title stays the same -->
+</section>
+
 
   <!-- Centered logo -->
   <img src="./fadejunkie_logo.png" alt="FadeJunkie logo"
@@ -823,6 +827,7 @@ function hideResources() {
   </script>
 </body>
 </html>
+
 
 
 
