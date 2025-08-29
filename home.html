@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FadeJunkie — Find your lane</title>
-  
-  <!-- Tailwind CDN -->
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -13,8 +13,6 @@
       theme: { extend: { colors: { fj: { 50:'#f8fafc', 900:'#0b0b0c' } } } }
     }
   </script>
-  
-  <!-- Set initial theme before paint -->
   <script>
     (function(){
       const KEY='fj_theme';
@@ -24,423 +22,105 @@
       if(theme==='dark') document.documentElement.classList.add('dark');
     })();
   </script>
-  
-  <link rel="icon" href="/favicon.ico" />
-  <meta name="description" content="FadeJunkie — the hub for student barbers, licensed barbers, and clients. Study tools, profiles, and local discovery." />
 </head>
 
 <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
-  <!-- ===== NAV ===== -->
+
+  <!-- NAV -->
   <header class="border-b border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-700">
     <div class="max-w-xl mx-auto px-6 h-16 flex items-center justify-between">
-      <a href="#home" class="flex items-center gap-3">
-        <img src="./fadejunkie_logo.png" alt="FadeJunkie" class="h-8 w-auto" />
-        <span class="sr-only">FadeJunkie</span>
-      </a>
+      <img src="./fadejunkie_logo.png" alt="FadeJunkie" class="h-8 w-auto" />
       <nav class="hidden sm:flex items-center gap-6 text-sm">
-        <a href="#home" class="hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg px-2 py-1">Home</a>
-        <a href="#students" class="hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg px-2 py-1">Students</a>
-        <a href="#barbers" class="hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg px-2 py-1">Barbers</a>
-        <a href="#clients" class="hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg px-2 py-1">Clients</a>
-        <a href="#about" class="hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg px-2 py-1">About</a>
+        <a href="#home">Home</a>
+        <a href="#students">Students</a>
+        <a href="#barbers">Barbers</a>
+        <a href="#clients">Clients</a>
+        <a href="#about">About</a>
       </nav>
-      <div class="flex items-center gap-2">
-        <!-- Icon-based theme toggle for consistency -->
-        <button id="themeToggle" class="p-0 border-none bg-transparent hover:opacity-80 transition" aria-pressed="false" title="Toggle dark mode">
-          <img id="themeIcon" src="./dark.icon.png" alt="Toggle theme" class="h-6 w-6" />
-        </button>
-      </div>
+      <button id="themeToggle" class="px-3 py-1.5 rounded-lg border text-sm">🌙 Dark</button>
     </div>
   </header>
 
-  <!-- ===== HERO ===== -->
-  <section id="view-home" class="relative overflow-hidden">
-    <div class="relative max-w-xl mx-auto px-6 py-12">
-      <div class="max-w-3xl">
-        <h1 class="text-4xl sm:text-5xl font-black leading-tight">One community. Three paths. <span class="text-zinc-500 dark:text-zinc-300">Find your lane.</span></h1>
-        <p class="mt-4 text-lg text-zinc-600 dark:text-zinc-300">Whether you're studying for boards, building a book, or booking a clean fade — FadeJunkie points you in the right direction.</p>
-        <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <a href="#students" class="group rounded-2xl border p-5 bg-white hover:bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700 transition">
-            <div class="text-3xl">📚</div>
-            <div class="mt-2 font-semibold">I'm a Student</div>
-            <div class="text-sm text-zinc-600 dark:text-zinc-300">Study tools • Schools • Blogs</div>
-          </a>
-          <a href="#barbers" class="group rounded-2xl border p-5 bg-white hover:bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700 transition">
-            <div class="text-3xl">💈</div>
-            <div class="mt-2 font-semibold">I'm a Barber</div>
-            <div class="text-sm text-zinc-600 dark:text-zinc-300">Profiles • Vendors • Events</div>
-          </a>
-          <a href="#clients" class="group rounded-2xl border p-5 bg-white hover:bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700 transition">
-            <div class="text-3xl">🧑‍🦱</div>
-            <div class="mt-2 font-semibold">I'm a Client</div>
-            <div class="text-sm text-zinc-600 dark:text-zinc-300">Find a FadeJunkie • Products</div>
-          </a>
-        </div>
-      </div>
+  <!-- HERO -->
+  <section id="view-home" class="relative max-w-xl mx-auto px-6 py-12">
+    <h1 class="text-4xl font-black">One community. Three paths. <span class="text-zinc-500 dark:text-zinc-300">Find your lane.</span></h1>
+    <p class="mt-4 text-lg text-zinc-600 dark:text-zinc-300">Whether you're studying for boards, building a book, or booking a fade — FadeJunkie points you in the right direction.</p>
+    <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <a href="#students" class="group rounded-2xl border p-5 bg-white dark:bg-zinc-800">📚 <div class="font-semibold">I'm a Student</div></a>
+      <a href="#barbers" class="group rounded-2xl border p-5 bg-white dark:bg-zinc-800">💈 <div class="font-semibold">I'm a Barber</div></a>
+      <a href="#clients" class="group rounded-2xl border p-5 bg-white dark:bg-zinc-800">🧑‍🦱 <div class="font-semibold">I'm a Client</div></a>
     </div>
   </section>
 
-  <!-- ===== PATHS ===== -->
-  <main class="max-w-xl mx-auto px-6">
-    <!-- Students -->
-    <section id="students" data-group="students" class="scroll-mt-24 py-14 border-t border-zinc-200 dark:border-zinc-800 hidden">
-      <div class="mb-4"><a href="#home" class="text-sm underline">← Back</a></div>
-      <div class="grid lg:grid-cols-2 gap-8 items-center">
-        <div>
-          <h2 class="text-2xl sm:text-3xl font-bold">Students</h2>
-          <p class="mt-2 text-zinc-600 dark:text-zinc-300">Hit your exams with confidence. Use our flashcards + test mode, read contextual blogs, and explore schools near you.</p>
-          <div class="mt-6 flex flex-wrap gap-3">
-            <a href="./index.html" class="px-4 py-2 rounded-xl bg-black text-white hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-900">Launch Test Prep</a>
-            <a href="#schools" class="px-4 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 dark:bg-zinc-800 dark:border-zinc-700">Find schools near me</a>
-            <a href="#blogs" class="px-4 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 dark:bg-zinc-800 dark:border-zinc-700">Read study blogs</a>
-          </div>
-        </div>
-        <div class="rounded-2xl border border-zinc-200 bg-white shadow dark:bg-zinc-800 dark:border-zinc-700 p-6">
-          <div class="text-sm uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">Preview</div>
-          <ul class="space-y-2 text-sm list-disc pl-5 text-zinc-700 dark:text-zinc-200">
-            <li>Open Play flashcards (shuffle, star, keyboard nav)</li>
-            <li>Test Mode with scoring & review</li>
-            <li>Chapter filtering and progress memory</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- Barbers -->
-    <section id="barbers" data-group="barbers" class="scroll-mt-24 py-14 border-t border-zinc-200 dark:border-zinc-800 hidden">
-      <div class="mb-4"><a href="#home" class="text-sm underline">← Back</a></div>
-      <div class="grid lg:grid-cols-2 gap-8 items-center">
-        <div>
-          <h2 class="text-2xl sm:text-3xl font-bold">Barbers</h2>
-          <p class="mt-2 text-zinc-600 dark:text-zinc-300">Grow your brand and book clients. Create a FadeJunkie profile, connect with vendors, and post to the events board.</p>
-          <div class="mt-6 flex flex-wrap gap-3">
-            <a href="#become" class="px-4 py-2 rounded-xl bg-black text-white hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-900">Become a FadeJunkie</a>
-            <a href="#vendors" class="px-4 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 dark:bg-zinc-800 dark:border-zinc-700">Vendor partners</a>
-            <a href="#events" class="px-4 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 dark:bg-zinc-800 dark:border-zinc-700">Events board</a>
-          </div>
-        </div>
-        <div class="rounded-2xl border border-zinc-200 bg-white shadow dark:bg-zinc-800 dark:border-zinc-700 p-6">
-          <div class="text-sm uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">What you'll set up</div>
-          <ol class="space-y-2 text-sm list-decimal pl-5 text-zinc-700 dark:text-zinc-200">
-            <li>Public profile: photos, specialties, pricing</li>
-            <li>Booking link + calendar connection</li>
-            <li>Badges: education, vendor collabs, events</li>
-          </ol>
-        </div>
-      </div>
-    </section>
-
-    <!-- Clients -->
-    <section id="clients" data-group="clients" class="scroll-mt-24 py-14 border-t border-zinc-200 dark:border-zinc-800 hidden">
-      <div class="mb-4"><a href="#home" class="text-sm underline">← Back</a></div>
-      <div class="grid lg:grid-cols-2 gap-8 items-center">
-        <div>
-          <h2 class="text-2xl sm:text-3xl font-bold">Clients</h2>
-          <p class="mt-2 text-zinc-600 dark:text-zinc-300">Find a FadeJunkie near you, compare styles, and book.</p>
-          <div class="mt-6 flex flex-wrap gap-3">
-            <a href="#find" class="px-4 py-2 rounded-xl bg-black text-white hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-900">Find a FadeJunkie near me</a>
-            <a href="#shop" class="px-4 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-100 dark:bg-zinc-800 dark:border-zinc-700">Shop products & merch</a>
-          </div>
-        </div>
-        <div class="rounded-2xl border border-zinc-200 bg-white shadow dark:bg-zinc-800 dark:border-zinc-700 p-6">
-          <div class="text-sm uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">How search will work</div>
-          <p class="text-sm text-zinc-700 dark:text-zinc-200">Zip code or location → show nearby barbers with ratings, specialties, and available times. (Placeholder UI for now.)</p>
-          <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div class="p-3 rounded-lg border dark:border-zinc-700">
-              <div class="text-xs text-zinc-500 dark:text-zinc-400">Example result</div>
-              <div class="font-medium">Jay • Skin Fade • 1.2 mi</div>
-              <div class="text-xs">Next slot: Today 4:30p</div>
-            </div>
-            <div class="p-3 rounded-lg border dark:border-zinc-700">
-              <div class="text-xs text-zinc-500 dark:text-zinc-400">Example result</div>
-              <div class="font-medium">Mia • Tapers • 2.0 mi</div>
-              <div class="text-xs">Next slot: Tomorrow 10:00a</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Utility sections / placeholders to wire later -->
-    <section id="schools" data-group="students" class="scroll-mt-24 py-10 border-t border-zinc-200 dark:border-zinc-800">
-  <h3 class="text-xl font-semibold mb-2">Schools Near Me</h3>
-  <p class="text-sm text-zinc-600 dark:text-zinc-300">
-    Search the directory or use your location. We’ll add distance sorting once lat/lng are saved for each school.
-  </p>
-
-  <!-- Controls -->
-  <div class="mt-4 flex flex-col sm:flex-row gap-3 max-w-2xl">
-    <input id="schoolQuery" class="flex-1 px-3 py-2 rounded-lg border dark:bg-zinc-900 dark:border-zinc-700"
-           placeholder="Search by name, city, or ZIP..." />
-    <div class="flex items-center gap-2">
-      <button id="useLocation"
-        class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-sm
-               dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
-        Use my location
-      </button>
-      <button id="resetSchoolFilters"
-        class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-sm
-               dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
-        Reset
-      </button>
+  <!-- STUDENTS -->
+  <section id="students" data-group="students" class="hidden max-w-xl mx-auto px-6 py-14">
+    <h2 class="text-2xl font-bold">Students</h2>
+    <p class="mt-2">Hit your exams with confidence. Use our flashcards + test mode, explore schools, and more.</p>
+    <div class="mt-6 flex gap-3">
+      <a href="./index.html" class="px-4 py-2 rounded-xl bg-black text-white">Launch Test Prep</a>
+      <a href="#schools" class="px-4 py-2 rounded-xl border">Find schools near me</a>
     </div>
-  </div>
+  </section>
 
-  <!-- Results -->
-  <div id="schoolCount" class="mt-3 text-xs text-zinc-500 dark:text-zinc-400">0 results</div>
-  <div id="schoolGrid" class="mt-4 grid sm:grid-cols-2 gap-3"></div>
+  <!-- SCHOOLS -->
+  <section id="schools" data-group="students" class="hidden max-w-xl mx-auto px-6 py-10">
+    <h3 class="text-xl font-semibold mb-3">Schools Near Me</h3>
+    <ul id="schoolsList" class="space-y-3"></ul>
+  </section>
 
-  <!-- Empty state -->
-  <div id="schoolEmpty" class="hidden mt-6 text-sm text-zinc-600 dark:text-zinc-300">
-    No schools match your search yet. Try a different term.
-  </div>
-</section>
+  <!-- BARBERS -->
+  <section id="barbers" data-group="barbers" class="hidden max-w-xl mx-auto px-6 py-14">
+    <h2 class="text-2xl font-bold">Barbers</h2>
+    <p>Grow your brand and book clients. Profiles, vendors, events.</p>
+  </section>
 
+  <!-- CLIENTS -->
+  <section id="clients" data-group="clients" class="hidden max-w-xl mx-auto px-6 py-14">
+    <h2 class="text-2xl font-bold">Clients</h2>
+    <p>Find a FadeJunkie near you.</p>
+  </section>
 
-    <section id="vendors" data-group="barbers" class="scroll-mt-24 py-10 border-t border-zinc-200 dark:border-zinc-800 hidden">
-      <h3 class="text-xl font-semibold mb-2">Vendor Partners</h3>
-      <p class="text-sm text-zinc-600 dark:text-zinc-300">List clippers, products, apparel, and education partners here.</p>
-    </section>
-
-    <section id="events" data-group="barbers" class="scroll-mt-24 py-10 border-t border-zinc-200 dark:border-zinc-800 hidden">
-      <h3 class="text-xl font-semibold mb-2">Events Board</h3>
-      <p class="text-sm text-zinc-600 dark:text-zinc-300">Post competitions, pop-ups, and classes. (Bulletin board UI placeholder.)</p>
-    </section>
-
-    <section id="blogs" data-group="students" class="scroll-mt-24 py-10 border-t border-zinc-200 dark:border-zinc-800 hidden">
-      <h3 class="text-xl font-semibold mb-2">Contextual Blogs</h3>
-      <div class="grid sm:grid-cols-3 gap-3">
-        <article class="rounded-2xl border border-zinc-200 bg-white shadow p-6 dark:bg-zinc-800 dark:border-zinc-700">
-          <div class="text-xs text-zinc-500">Study</div>
-          <h4 class="font-medium">State Board: What to Expect</h4>
-        </article>
-        <article class="rounded-2xl border border-zinc-200 bg-white shadow p-6 dark:bg-zinc-800 dark:border-zinc-700">
-          <div class="text-xs text-zinc-500">Craft</div>
-          <h4 class="font-medium">Fade Foundations: Blending Like a Pro</h4>
-        </article>
-        <article class="rounded-2xl border border-zinc-200 bg-white shadow p-6 dark:bg-zinc-800 dark:border-zinc-700">
-          <div class="text-xs text-zinc-500">Business</div>
-          <h4 class="font-medium">From Chair to Brand: Building Your Book</h4>
-        </article>
-      </div>
-    </section>
-
-    <section id="shop" data-group="clients" class="scroll-mt-24 py-10 border-t border-zinc-200 dark:border-zinc-800 hidden">
-      <h3 class="text-xl font-semibold mb-2">Shop Merch & Products</h3>
-      <p class="text-sm text-zinc-600 dark:text-zinc-300">Hook this to your storefront later. For now these are placeholders.</p>
-      <div class="grid sm:grid-cols-3 gap-3">
-        <div class="rounded-2xl border border-zinc-200 bg-white shadow p-6 dark:bg-zinc-800 dark:border-zinc-700"><div class="h-28 rounded-lg bg-zinc-100 dark:bg-zinc-800"></div><div class="mt-2 font-medium">FJ Tee</div></div>
-        <div class="rounded-2xl border border-zinc-200 bg-white shadow p-6 dark:bg-zinc-800 dark:border-zinc-700"><div class="h-28 rounded-lg bg-zinc-100 dark:bg-zinc-800"></div><div class="mt-2 font-medium">Snapback</div></div>
-        <div class="rounded-2xl border border-zinc-200 bg-white shadow p-6 dark:bg-zinc-800 dark:border-zinc-700"><div class="h-28 rounded-lg bg-zinc-100 dark:bg-zinc-800"></div><div class="mt-2 font-medium">Clipper Oil</div></div>
-      </div>
-    </section>
-
-    <section id="about" data-group="about" class="scroll-mt-24 py-10 border-t border-zinc-200 dark:border-zinc-800 hidden">
-      <h3 class="text-xl font-semibold mb-2">About FadeJunkie</h3>
-      <p class="text-sm text-zinc-600 dark:text-zinc-300">FadeJunkie is a community and toolset for student barbers, licensed barbers, and clients. This front door routes each audience to the right experience. (You can keep your existing study tool — we linked it above.)</p>
-    </section>
-  </main>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="mt-14 border-t border-zinc-200 dark:border-zinc-800">
-    <div class="max-w-xl mx-auto px-6 py-10 text-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p class="text-zinc-600 dark:text-zinc-400">© <span id="year"></span> FadeJunkie</p>
-      <div class="flex items-center gap-4">
-        <a href="#" class="hover:opacity-70">Privacy</a>
-        <a href="#" class="hover:opacity-70">Terms</a>
-        <a href="#" class="hover:opacity-70">Contact</a>
-      </div>
-    </div>
-  </footer>
+  <!-- ABOUT -->
+  <section id="about" data-group="about" class="hidden max-w-xl mx-auto px-6 py-14">
+    <h2 class="text-2xl font-bold">About FadeJunkie</h2>
+    <p>FadeJunkie is a community and toolset for student barbers, barbers, and clients.</p>
+  </section>
 
   <script>
-    // Icon-based Theme toggle
+    // Theme toggle
     (function(){
-      const KEY='fj_theme';
-      const btn=document.getElementById('themeToggle');
-      const icon=document.getElementById('themeIcon');
-      if(!btn || !icon) return;
+      const KEY='fj_theme', btn=document.getElementById('themeToggle');
       function current(){ return document.documentElement.classList.contains('dark')?'dark':'light'; }
-      function render(){ const t=current(); btn.setAttribute('aria-pressed', t==='dark'); icon.src = t==='dark' ? './light.icon.png' : './dark.icon.png'; }
-      function setTheme(t){
-        if(t==='dark') document.documentElement.classList.add('dark');
-        else document.documentElement.classList.remove('dark');
-        localStorage.setItem(KEY,t); render();
-      }
-      render();
-      btn.addEventListener('click',()=> setTheme(current()==='dark'?'light':'dark'));
+      function setTheme(t){ if(t==='dark') document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); localStorage.setItem(KEY,t); btn.textContent=(t==='dark'?'☀️ Light':'🌙 Dark'); }
+      btn.addEventListener('click',()=>setTheme(current()==='dark'?'light':'dark'));
+      setTheme(localStorage.getItem(KEY)||current());
     })();
 
-    // Year
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // --- Simple hash router: Home vs per-path pages ---
-    (function(){
-      const viewHome = document.getElementById('view-home');
-      const groups = {
-        students: Array.from(document.querySelectorAll('[data-group="students"]')),
-        barbers: Array.from(document.querySelectorAll('[data-group="barbers"]')),
-        clients: Array.from(document.querySelectorAll('[data-group="clients"]')),
-        about: Array.from(document.querySelectorAll('[data-group="about"]')),
-      };
-      function hideAll(){ Object.values(groups).flat().forEach(el=>el.classList.add('hidden')); }
-      function setActive(key){
-        document.querySelectorAll('header nav a[href^="#"]').forEach(a=>{
-          const t=(a.getAttribute('href')||'').replace('#','')||'home';
-          a.classList.toggle('font-semibold', t===key);
-          a.classList.toggle('opacity-60', t!==key);
-        });
-      }
-      function showHome(){ viewHome.classList.remove('hidden'); hideAll(); setActive('home'); }
-      function showGroup(key){ viewHome.classList.add('hidden'); hideAll(); (groups[key]||[]).forEach(el=>el.classList.remove('hidden')); setActive(key); window.scrollTo({top:0, behavior:'smooth'}); }
-      function route(){
-        const h=(location.hash||'#home').replace('#','');
-        const map={ schools:'students', blogs:'students', vendors:'barbers', events:'barbers', shop:'clients' };
-        if (h==='home' || h==='') return showHome();
-        if (h in map) { showGroup(map[h]); const sec=document.getElementById(h); if(sec){ sec.classList.remove('hidden'); sec.scrollIntoView({behavior:'smooth'});} return; }
-        if (['students','barbers','clients'].includes(h)) return showGroup(h);
-        if (h==='about') { viewHome.classList.add('hidden'); hideAll(); groups.about.forEach(el=>el.classList.remove('hidden')); setActive('about'); window.scrollTo({top:0, behavior:'smooth'}); return; }
-        showHome();
-      }
-      window.addEventListener('hashchange', route);
-      route();
-    })();
-<script>
-/* ==========================
-   Schools Directory Widget
-========================== */
-(function(){
-  // Seed data — add more schools here
-  const SCHOOLS = [
-    {
-      id: "tbba",
-      name: "Texas Barber and Beauty Academy",
-      address: "8045 Pinebrook Drive, San Antonio, Texas 78230, United States",
-      // coords: { lat: null, lng: null }, // add later for distance sorting
-      website: null, // e.g., "https://tbba.example.com"
-      phone: null    // e.g., "+1-210-555-1234"
-    },
-  ];
-
-  const elQuery  = document.getElementById("schoolQuery");
-  const elGrid   = document.getElementById("schoolGrid");
-  const elEmpty  = document.getElementById("schoolEmpty");
-  const elCount  = document.getElementById("schoolCount");
-  const btnGeo   = document.getElementById("useLocation");
-  const btnReset = document.getElementById("resetSchoolFilters");
-
-  let userLoc = null; // {lat, lng} once we get it
-  let filtered = [...SCHOOLS];
-
-  function mapsDirHref(address){
-    return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
-  }
-
-  function card(s){
-    const hasPhone = !!s.phone;
-    const hasSite  = !!s.website;
-    return `
-      <article class="rounded-2xl border border-zinc-200 bg-white shadow p-5
-                      dark:bg-zinc-800 dark:border-zinc-700">
-        <h4 class="text-lg font-semibold">${s.name}</h4>
-        <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${s.address}</p>
-
-        <div class="mt-3 flex flex-wrap gap-2">
-          <a href="${mapsDirHref(s.address)}" target="_blank" rel="noopener"
-             class="px-3 py-1.5 rounded-lg bg-black text-white text-sm hover:opacity-90
-                    dark:bg-zinc-100 dark:text-zinc-900">Directions</a>
-          ${hasSite ? `
-          <a href="${s.website}" target="_blank" rel="noopener"
-             class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
-                    dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Website</a>` : ``}
-          ${hasPhone ? `
-          <a href="tel:${s.phone.replace(/[^+\d]/g,'')}"
-             class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
-                    dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Call</a>` : ``}
-        </div>
-
-        <!-- Distance placeholder (will show when coords + userLoc exist) -->
-        <div class="mt-2 text-xs text-zinc-500 dark:text-zinc-400" data-distance-for="${s.id}"></div>
-      </article>
-    `;
-  }
-
-  function render(list){
-    elGrid.innerHTML = list.map(card).join("");
-    elEmpty.classList.toggle("hidden", list.length > 0);
-    elCount.textContent = `${list.length} result${list.length===1?"":"s"}`;
-
-    // Optionally render distances if we have coords later
-    if (userLoc) {
-      list.forEach(s => {
-        if (!s.coords || s.coords.lat == null || s.coords.lng == null) return;
-        const miles = haversineMiles(userLoc, s.coords);
-        const slot = elGrid.querySelector(`[data-distance-for="${s.id}"]`);
-        if (slot) slot.textContent = `~ ${miles.toFixed(1)} mi away`;
-      });
-    }
-  }
-
-  function filterList(){
-    const q = (elQuery.value || "").trim().toLowerCase();
-    filtered = SCHOOLS.filter(s => {
-      if (!q) return true;
-      return (s.name + " " + s.address).toLowerCase().includes(q);
+    // Schools data
+    const SCHOOLS = [
+      { name:"Texas Barber and Beauty Academy", address:"8045 Pinebrook Drive, San Antonio, TX 78230" }
+    ];
+    const list=document.getElementById('schoolsList');
+    SCHOOLS.forEach(s=>{
+      const li=document.createElement('li');
+      li.className="p-4 border rounded-xl bg-white dark:bg-zinc-800";
+      li.innerHTML=`<div class="font-semibold">${s.name}</div><div class="text-sm text-zinc-600 dark:text-zinc-300">${s.address}</div>`;
+      list.appendChild(li);
     });
-    render(filtered);
-  }
 
-  function haversineMiles(a, b){
-    const R = 3958.8; // Earth radius in miles
-    const toRad = d => d * Math.PI / 180;
-    const dLat = toRad(b.lat - a.lat);
-    const dLng = toRad(b.lng - a.lng);
-    const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
-    const h = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
-    return 2 * R * Math.asin(Math.sqrt(h));
-  }
-
-  // Events
-  elQuery.addEventListener("input", filterList);
-
-  btnGeo.addEventListener("click", () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation not supported on this device/browser.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        // If schools have coords, you could sort by distance here:
-        // filtered.sort((a,b)=>distance(a)-distance(b));
-        render(filtered);
-      },
-      err => {
-        console.warn("Geolocation error:", err);
-        alert("Could not get your location. You can still search by city/ZIP.");
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  });
-
-  btnReset.addEventListener("click", () => {
-    elQuery.value = "";
-    userLoc = null;
-    filtered = [...SCHOOLS];
-    render(filtered);
-  });
-
-  // Initial render
-  render(filtered);
-})();
-</script>
-
-    
+    // Router
+    (function(){
+      const viewHome=document.getElementById('view-home');
+      const groups={students:document.querySelectorAll('[data-group="students"]'),
+                    barbers:document.querySelectorAll('[data-group="barbers"]'),
+                    clients:document.querySelectorAll('[data-group="clients"]'),
+                    about:document.querySelectorAll('[data-group="about"]')};
+      function hideAll(){ Object.values(groups).flat().forEach(el=>el.classList.add('hidden')); }
+      function showHome(){ viewHome.classList.remove('hidden'); hideAll(); }
+      function showGroup(k){ viewHome.classList.add('hidden'); hideAll(); groups[k]?.forEach(el=>el.classList.remove('hidden')); window.scrollTo({top:0,behavior:'smooth'}); }
+      function route(){ const h=(location.hash||'#home').replace('#',''); if(h==='home'||h==='') return showHome(); if(groups[h]) return showGroup(h); showHome(); }
+      window.addEventListener('hashchange',route); route();
+    })();
   </script>
 </body>
 </html>
-"""
-with open("/mnt/data/home.html", "w", encoding="utf-8") as f:
-    f.write(home_html)
-
-"/mnt/data/home.html"
