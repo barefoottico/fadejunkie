@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- =========================
+       SEO BASICS
+  ========================== -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Treating Dandruff: 17 Barber-Approved Fixes That Actually Work</title>
+  <meta name="description" content="Treating Dandruff made simple. Anthony—licensed barber & founder of Fadejunkie in San Antonio—shares proven, barber-approved tips, product picks, routines, and FAQs to beat flakes fast." />
+  <link rel="canonical" href="https://your-domain.com/blog/treating-dandruff" />
+
+  <!-- Open Graph / Twitter -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Treating Dandruff: 17 Barber-Approved Fixes That Actually Work" />
+  <meta property="og:description" content="Barber-backed guide to Treating Dandruff—what causes it, how to fix it, best products, lifestyle tips, and when to see a derm." />
+  <meta property="og:url" content="https://your-domain.com/blog/treating-dandruff" />
+  <meta property="og:image" content="https://your-domain.com/assets/dandruff-guide-cover.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Treating Dandruff: 17 Barber-Approved Fixes That Actually Work" />
+  <meta name="twitter:description" content="Licensed barber shares proven fixes, routines, and products to beat flakes fast." />
+  <meta name="twitter:image" content="https://your-domain.com/assets/dandruff-guide-cover.jpg" />
+
+  <!-- Favicons (optional) -->
+  <link rel="icon" href="/favicon.ico" />
+
+  <!-- =========================
+       BASE STYLES (Accessible, Brand-Neutral)
+       - System font stack for performance
+       - 72ch max measure for readability
+       - High contrast text, large tap targets
+  ========================== -->
+  <style>
+    :root{
+      --bg: #0f0f10;
+      --paper: #131416;
+      --ink: #f5f7fa;
+      --muted: #aab2c0;
+      --brand: #37d3a7; /* tweak to your brand green/teal */
+      --accent: #7aa7ff;
+      --ring: #3b82f6;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+
+    /* Basic reset */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a{color: var(--accent); text-decoration: none}
+    a:hover,a:focus{ text-decoration: underline }
+    img{max-width:100%; height:auto; display:block}
+
+    .container{
+      width: min(1100px, 92vw);
+      margin: 0 auto;
+      padding: 24px 0 80px;
+    }
+
+    /* Header / Hero */
+    .hero{
+      background: linear-gradient(180deg, rgba(55,211,167,.08), transparent 60%),
+                  linear-gradient(180deg, rgba(122,167,255,.06), transparent 70%);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      box-shadow: var(--shadow);
+    }
+    .eyebrow{
+      display:inline-flex; align-items:center; gap:.6rem;
+      padding: .3rem .66rem;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      font-size:.85rem; color: var(--muted);
+      background: rgba(255,255,255,.02);
+    }
+    .eyebrow b{color: var(--ink)}
+    h1{
+      margin: 12px 0 10px;
+      font-size: clamp(1.8rem, 2.5vw + 1rem, 2.6rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .subhead{color: var(--muted); font-size: clamp(1rem, .6vw + .8rem, 1.1rem)}
+
+    /* Layout: TOC + Article */
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+      margin-top: 28px;
+    }
+    @media (min-width: 980px){
+      .grid{
+        grid-template-columns: 280px 1fr;
+        align-items:start;
+      }
+    }
+
+    /* Sticky Table of Contents */
+    nav.toc{
+      position: sticky; top: 16px;
+      padding: 18px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      background: var(--paper);
+    }
+    nav.toc h2{
+      margin: 0 0 12px; font-size: 1rem; letter-spacing:.02em
+    }
+    .toc ul{list-style:none; margin:0; padding:0}
+    .toc li{margin: 8px 0}
+    .toc a{color: var(--muted)}
+    .toc a:hover{color: var(--ink)}
+
+    /* Article */
+    main.article{
+      padding: 24px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      background: var(--paper);
+    }
+    .prose{
+      max-width: 72ch;
+    }
+    .prose h2, .prose h3, .prose h4, .prose h5, .prose h6{
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin-top: 2.0rem;
+      margin-bottom: .6rem;
+    }
+    .prose h2{font-size: clamp(1.3rem, .9vw + 1rem, 1.6rem)}
+    .prose h3{font-size: clamp(1.15rem, .7vw + .9rem, 1.35rem)}
+    .prose p{margin: .8rem 0}
+    .note{
+      border-left: 4px solid var(--brand);
+      padding: .75rem 1rem;
+      background: rgba(55,211,167,.07);
+      border-radius: 8px;
+    }
+    .cta{
+      margin-top: 28px;
+      display:flex; flex-wrap:wrap; gap:12px;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      padding: .75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: linear-gradient(180deg, rgba(55,211,167,.18), rgba(55,211,167,.12));
+      color: #04140f; font-weight: 700;
+      box-shadow: 0 6px 16px rgba(55,211,167,.15);
+    }
+    .btn.secondary{
+      background: transparent; color: var(--ink);
+    }
+    .divider{
+      height:1px; background: rgba(255,255,255,.08); margin: 24px 0;
+    }
+
+    /* Lists / Tables */
+    .prose ul{padding-left: 1.2rem}
+    .prose li{margin: .4rem 0}
+
+    /* Footer meta */
+    .post-meta{color: var(--muted); font-size:.95rem}
+    .sr-only{position:absolute; width:1px; height:1px; clip:rect(1px,1px,1px,1px); overflow:hidden; white-space:nowrap}
+    .skip a{position:absolute; left:-999px; top:auto}
+    .skip a:focus{left:16px; top:16px; background:#fff; color:#000; padding:8px; border-radius:6px}
+  </style>
+
+  <!-- =========================
+       STRUCTURED DATA (JSON-LD)
+       - BlogPosting + FAQ
+  ========================== -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BlogPosting",
+    "headline":"Treating Dandruff: 17 Barber-Approved Fixes That Actually Work",
+    "description":"Barber-backed guide to Treating Dandruff—what causes it, how to fix it, best products, lifestyle tips, and when to see a dermatologist.",
+    "image":"https://your-domain.com/assets/dandruff-guide-cover.jpg",
+    "author":{
+      "@type":"Person",
+      "name":"Anthony (Fadejunkie)",
+      "jobTitle":"Licensed Barber, Founder of Fadejunkie",
+      "address":{
+        "@type":"PostalAddress",
+        "addressLocality":"San Antonio",
+        "addressRegion":"TX",
+        "addressCountry":"US"
+      }
+    },
+    "publisher":{
+      "@type":"Organization",
+      "name":"Fadejunkie",
+      "logo":{"@type":"ImageObject","url":"https://your-domain.com/assets/logo.png"}
+    },
+    "datePublished":"2025-08-30",
+    "dateModified":"2025-08-30",
+    "keywords":"Treating Dandruff, dandruff shampoo, barber tips, scalp care, seborrheic dermatitis"
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {"@type":"Question","name":"Can dandruff cause hair loss?","acceptedAnswer":{"@type":"Answer","text":"Severe, untreated dandruff can inflame the scalp and contribute to increased shedding. Managing flakes reduces irritation so hair can grow in a healthier environment."}},
+      {"@type":"Question","name":"Is dandruff contagious?","acceptedAnswer":{"@type":"Answer","text":"No. Dandruff isn’t contagious. It’s often linked to yeast overgrowth, oil production, and skin sensitivities unique to each person."}},
+      {"@type":"Question","name":"How often should I wash if I have dandruff?","acceptedAnswer":{"@type":"Answer","text":"Most people do well using a medicated shampoo 2–3 times per week and a gentle cleanser on non-medicated days. Adjust based on your scalp’s oiliness and response."}},
+      {"@type":"Question","name":"Are natural oils good for dandruff?","acceptedAnswer":{"@type":"Answer","text":"Some, like tea tree and lightweight jojoba, can help. Avoid heavy oils that clog follicles or increase buildup."}},
+      {"@type":"Question","name":"Does dandruff affect beards too?","acceptedAnswer":{"@type":"Answer","text":"Yes—beard dandruff is common. Cleanse, gently exfoliate, and use a lightweight, non-comedogenic beard conditioner or toner."}},
+      {"@type":"Question","name":"Will cutting my hair short get rid of dandruff?","acceptedAnswer":{"@type":"Answer","text":"Shorter hair can make flakes less visible and easier to cleanse, but you still need to treat the scalp with medicated products and consistent care."}}
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="skip"><a href="#content">Skip to content</a></div>
+  <header class="container">
+    <div class="hero" role="banner" aria-label="Article header">
+      <span class="eyebrow" aria-label="Author and location">
+        <b>Anthony @ Fadejunkie</b> • Licensed Barber • San Antonio, TX
+      </span>
+      <h1>Best Ways to Treat Dandruff: A Barber’s Guide</h1>
+      <p class="subhead">I’m Anthony, a 28-year-old, Hispanic, college-educated, licensed barber out of San Antonio. I love fades, shear work, and razor details—and I care about scalp health just as much as sharp lines. Here’s my no-nonsense guide to <strong>Treating Dandruff</strong>.</p>
+      <div class="cta" role="group" aria-label="Calls to action">
+        <a class="btn" href="https://your-booking-link.com" aria-label="Book an appointment at Fadejunkie">Book with Fadejunkie</a>
+        <a class="btn secondary" href="#best-products" aria-label="Jump to best dandruff products">See Best Products</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container grid">
+    <!-- ========== TOC ========== -->
+    <nav class="toc" aria-label="Table of contents">
+      <h2>On this page</h2>
+      <ul>
+        <li><a href="#what-is">What Is Dandruff & Why It Happens</a></li>
+        <li><a href="#signs">Signs It’s Dandruff (Not Just Dry Scalp)</a></li>
+        <li><a href="#why-treat">Why Treating Early Matters</a></li>
+        <li><a href="#habits">Everyday Habits That Help</a></li>
+        <li><a href="#best-products">Best Products (Barber-Approved)</a></li>
+        <li><a href="#pro-treatments">Pro Treatments at the Shop</a></li>
+        <li><a href="#lifestyle">Lifestyle Tips</a></li>
+        <li><a href="#derm">When to See a Dermatologist</a></li>
+        <li><a href="#faqs">FAQs</a></li>
+        <li><a href="#final">Final Thoughts</a></li>
+      </ul>
+    </nav>
+
+    <!-- ========== ARTICLE ========== -->
+    <main id="content" class="article" role="main">
+      <article class="prose" itemscope itemtype="https://schema.org/BlogPosting">
+        <meta itemprop="author" content="Anthony (Fadejunkie)" />
+        <meta itemprop="headline" content="Treating Dandruff: 17 Barber-Approved Fixes That Actually Work" />
+
+        <p>If you’ve ever sat in the chair at <strong>Fadejunkie</strong> in San Antonio, you know I keep it real. Beyond a clean cut, I’m here to help you keep your scalp healthy. One thing I see all the time is <strong>Treating Dandruff</strong> the wrong way—either over-washing, under-washing, or using products that don’t match your scalp type. Let’s fix that, fast.</p>
+
+        <h2 id="what-is"><strong>What Is Dandruff and Why Does It Happen?</strong></h2>
+        <p>Dandruff happens when your scalp sheds skin cells faster than normal, so the flakes become visible. Triggers include excess oil, sensitivity to a yeast that lives on the skin, weather changes, and certain products. It can show up as white or yellowish flakes and, sometimes, redness or itch—especially around the hairline and beard.</p>
+
+        <h3><strong>Common Causes</strong></h3>
+        <ul>
+          <li><strong>Dry vs. Oily Scalp:</strong> Dryness can flake, but excess oil can also feed yeast and drive flakes.</li>
+          <li><strong>Product Buildup:</strong> Pomades, gels, dry shampoos—if they’re not washed out, they can irritate.</li>
+          <li><strong>Skin Conditions:</strong> <em>Seborrheic dermatitis</em> is a more stubborn form with redness and thicker flakes.</li>
+        </ul>
+
+        <h2 id="signs"><strong>Signs You’re Dealing with Dandruff (Not Just Dry Scalp)</strong></h2>
+        <ul>
+          <li>Flakes that stick around even after moisturizing</li>
+          <li>Itch that ramps up with sweat or hats</li>
+          <li>Yellowish, oily flakes with buildup</li>
+          <li>Red, irritated patches on scalp or beard</li>
+        </ul>
+
+        <h2 id="why-treat"><strong>Barber’s Take: Why Treating Early Matters</strong></h2>
+        <p>Untreated dandruff doesn’t just “go away.” It can spread, itch, and even contribute to hair thinning if your scalp stays inflamed. And let’s be honest—nobody wants flakes on a fresh black tee after a clean skin fade. Treat it early; your cut looks better and you feel better.</p>
+
+        <h2 id="habits"><strong>Everyday Habits That Help Reduce Dandruff</strong></h2>
+        <h3><strong>Wash Routine + Technique</strong></h3>
+        <p>Use a medicated shampoo 2–3x per week. On other days, use a gentle cleanser. Massage the scalp for 60–90 seconds, then let medicated lather sit 3–5 minutes before rinsing.</p>
+        <h3><strong>Conditioner Matters</strong></h3>
+        <p>Don’t skip it. Choose lightweight, scalp-friendly formulas to balance moisture without clogging follicles.</p>
+        <h3><strong>Brush & Exfoliate</strong></h3>
+        <p>Use a soft brush to lift loose flakes and boost circulation. A mild scalp scrub 1x/week can help—go easy.</p>
+
+        <div class="divider" role="separator" aria-hidden="true"></div>
+
+        <h2 id="best-products"><strong>Best Products for Treating Dandruff (Barber-Approved Picks)</strong></h2>
+        <p class="note"><strong>How to rotate:</strong> Use a medicated shampoo 2x/week and a gentle cleanser on in-between days. If flakes persist, rotate between two different actives (e.g., ketoconazole + selenium sulfide).</p>
+
+        <h3><strong>Medicated Shampoos That Work</strong></h3>
+        <ul>
+          <li><strong>Nizoral A-D (Ketoconazole 1%)</strong> — Heavy-hitter against yeast; use 2x/week. <small>(OTC)</small></li>
+          <li><strong>Selsun Blue (Selenium Sulfide)</strong> — Great for oily scalps with thicker, stubborn flakes.</li>
+          <li><strong>Neutrogena T/Gel (Coal Tar)</strong> — Slows down rapid scalp turnover; helpful for seborrheic dermatitis-type flaking.</li>
+        </ul>
+
+        <h3><strong>Gentle Everyday Shampoos (Maintenance)</strong></h3>
+        <ul>
+          <li><strong>Head & Shoulders Clinical Strength</strong> — Reliable for mild–moderate dandruff; better than regular H&S for most.</li>
+          <li><strong>Paul Mitchell Tea Tree Special</strong> — Refreshing cleanse that reduces itch and unclogs follicles; pair with the Tea Tree conditioner.</li>
+          <li><strong>Redken Scalp Relief Dandruff Control</strong> — Salon-grade balance of cleanse + flake control.</li>
+        </ul>
+
+        <h3><strong>Conditioners & Leave-Ins That Make a Difference</strong></h3>
+        <ul>
+          <li><strong>Briogeo Scalp Revival Charcoal + Tea Tree (Leave-In)</strong> — Detoxes without heavy residue.</li>
+          <li><strong>SheaMoisture African Black Soap Bamboo Charcoal Conditioner</strong> — Comfortable for dry, flaky scalps looking for moisture.</li>
+          <li><strong>Philip Kingsley Flaky/Itchy Scalp Toner</strong> — Lightweight tonic that calms irritation between washes.</li>
+        </ul>
+
+        <h3><strong>Natural Adjuncts (Use Smart, Patch-Test First)</strong></h3>
+        <ul>
+          <li><strong>Tea Tree Oil</strong> — Add 2–3 drops to shampoo for extra antifungal support.</li>
+          <li><strong>Aloe Vera Gel</strong> — Soothes redness and itch on contact.</li>
+          <li><strong>Diluted Apple Cider Vinegar Rinse</strong> — Helps rebalance scalp pH; avoid if you have open cuts or very sensitive skin.</li>
+        </ul>
+
+        <p><em>Medical resource:</em> For clinical guidance on dandruff and seborrheic dermatitis, see the American Academy of Dermatology’s overview: <a href="https://www.aad.org/public/diseases/a-z/dandruff" target="_blank" rel="nofollow noopener">AAD: Dandruff—Signs & Treatment</a>.</p>
+
+        <div class="divider" role="separator" aria-hidden="true"></div>
+
+        <h2 id="pro-treatments"><strong>Professional Treatments & Advice from the Barber’s Chair</strong></h2>
+        <h3><strong>In-Shop Scalp Detox</strong></h3>
+        <p>At Fadejunkie, I’ll recommend a deep cleanse with mild exfoliation and steam to loosen buildup. It’s quick, relaxing, and sets you up for better at-home results.</p>
+        <h3><strong>Cut Strategy</strong></h3>
+        <p>Shorter cuts can make flakes less visible and easier to manage. If you’re in waves or wearing hats a lot, be consistent with washing and brushing.</p>
+
+        <h2 id="lifestyle"><strong>Lifestyle Tips to Keep Dandruff in Check</strong></h2>
+        <ul>
+          <li><strong>Hydration & Diet:</strong> Water, omega-3s, and balanced meals support skin health.</li>
+          <li><strong>Stress:</strong> Stress can flare dandruff—move your body, get sun, breathe.</li>
+          <li><strong>Consistency:</strong> No single wash cures dandruff. Stick to your rotation for 3–4 weeks before judging results.</li>
+        </ul>
+
+        <h2 id="derm"><strong>When to See a Dermatologist</strong></h2>
+        <p>If flakes don’t improve after 4–6 weeks of consistent care—or if you have painful redness, thick plaques, or cracking—see a dermatologist. Prescription-strength ketoconazole or steroid solutions may be needed.</p>
+
+        <h2 id="faqs"><strong>FAQs: Treating Dandruff</strong></h2>
+        <p><strong>1) Can dandruff cause hair loss?</strong><br/>Indirectly, yes. Ongoing inflammation can stress follicles. Calming the scalp helps growth look fuller over time.</p>
+        <p><strong>2) Is dandruff contagious?</strong><br/>Nope. You can’t “catch” it from someone.</p>
+        <p><strong>3) How often should I wash?</strong><br/>Most do well with medicated 2–3x/week plus a gentle shampoo in between.</p>
+        <p><strong>4) Are natural oils OK?</strong><br/>Lightweight options like tea tree or jojoba are fine; avoid heavy, pore-clogging oils.</p>
+        <p><strong>5) Does it affect beards?</strong><br/>Absolutely. Treat your beard like your scalp—cleanse, condition lightly, and consider a toner.</p>
+        <p><strong>6) Will a short cut cure it?</strong><br/>No, but it can make management easier while you treat the scalp.</p>
+
+        <div id="final" class="divider" role="separator" aria-hidden="true"></div>
+
+        <h2><strong>Final Thoughts: A Healthy Scalp Means a Sharper Fade</strong></h2>
+        <p>Dandruff doesn’t define you—but how you treat it does. Stay consistent, rotate smart, and don’t be shy about asking your barber or a derm for help. Keep the canvas healthy, and every fade, taper, or shear blend will hit harder.</p>
+
+        <p class="post-meta">Written by Anthony • Founder of Fadejunkie • Licensed Barber • San Antonio, TX</p>
+
+        <div class="cta" role="group" aria-label="Calls to action footer">
+          <a class="btn" href="https://your-booking-link.com">Book a Scalp-Safe Cut</a>
+          <a class="btn secondary" href="mailto:hello@your-domain.com?subject=Scalp%20Care%20Help">Ask Me About Your Scalp</a>
+        </div>
+
+        <p class="post-meta" aria-label="Disclaimer"><em>Disclaimer:</em> Educational content only—this isn’t medical advice. If symptoms persist, see a board-certified dermatologist.</p>
+      </article>
+    </main>
+  </div>
+
+  <!-- Optional tiny JS for smooth anchor scrolling -->
+  <script>
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', e=>{
+        const id = a.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if(el){
+          e.preventDefault();
+          window.scrollTo({top: el.getBoundingClientRect().top + window.pageYOffset - 10, behavior:'smooth'});
+        }
+      });
+    });
+  </script>
+</body>
+</html>
