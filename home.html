@@ -196,6 +196,42 @@
       </div>
     </section>
 
+    <!-- Barbershop Finder -->
+<section id="barbershops" data-group="clients" class="scroll-mt-24 py-10 border-t border-zinc-200 dark:border-zinc-800 hidden">
+  <h3 class="text-xl font-semibold mb-2">Barbershops Near Me</h3>
+  <p class="text-sm text-zinc-600 dark:text-zinc-300">
+    Search the directory or use your location. We’ll add distance sorting once lat/lng are saved for each barbershop.
+  </p>
+
+  <!-- Controls -->
+  <div class="mt-4 flex flex-col sm:flex-row gap-3 max-w-2xl">
+    <input id="barbershopQuery" class="flex-1 px-3 py-2 rounded-lg border dark:bg-zinc-900 dark:border-zinc-700"
+           placeholder="Search by name, city, or ZIP..." />
+    <div class="flex items-center gap-2">
+      <button id="useLocation"
+        class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-sm
+               dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
+        Use my location
+      </button>
+      <button id="resetBarbershopFilters"
+        class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-sm
+               dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="barbershopCount" class="mt-3 text-xs text-zinc-500 dark:text-zinc-400">0 results</div>
+  <div id="barbershopGrid" class="mt-4 grid sm:grid-cols-2 gap-3"></div>
+
+  <!-- Empty state -->
+  <div id="barbershopEmpty" class="hidden mt-6 text-sm text-zinc-600 dark:text-zinc-300">
+    No barbershops match your search yet. Try a different term.
+  </div>
+</section>
+
+
     <section id="vendors" data-group="barbers" class="scroll-mt-24 py-10 border-t border-zinc-200 dark:border-zinc-800 hidden">
       <h3 class="text-xl font-semibold mb-2">Vendor Partners</h3>
       <p class="text-sm text-zinc-600 dark:text-zinc-300">List clippers, products, apparel, and education partners here.</p>
@@ -405,6 +441,108 @@
       // Initial render
       render(filtered);
     })();
+
+    /* ==========================
+   Barbershop Directory Widget
+========================== */
+(function(){
+  const BARBERSHOPS = [
+    {
+      id: "ogp",
+      name: "The Original Gentlemen’s Parlor",
+      address: "13529 Nacogdoches Rd, San Antonio, TX 78217",
+      phone: "(210) 233-8645",
+      website: null,
+      // coords: { lat: XX.XXXX, lng: -XX.XXXX }, // optional: add for location sorting later
+    },
+  ];
+
+  const elQuery  = document.getElementById("barbershopQuery");
+  const elGrid   = document.getElementById("barbershopGrid");
+  const elEmpty  = document.getElementById("barbershopEmpty");
+  const elCount  = document.getElementById("barbershopCount");
+  const btnGeo   = document.getElementById("useLocation");
+  const btnReset = document.getElementById("resetBarbershopFilters");
+
+  let userLoc = null;
+  let filtered = [...BARBERSHOPS];
+
+  function mapsDirHref(address){
+    return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
+  }
+
+  function card(s){
+    const hasPhone = !!s.phone;
+    const hasSite  = !!s.website;
+    return `
+      <article class="rounded-2xl border border-zinc-200 bg-white shadow p-5
+                      dark:bg-zinc-800 dark:border-zinc-700">
+        <h4 class="text-lg font-semibold">${s.name}</h4>
+        <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${s.address}</p>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <a href="${mapsDirHref(s.address)}" target="_blank" rel="noopener"
+             class="px-3 py-1.5 rounded-lg bg-black text-white text-sm hover:opacity-90
+                    dark:bg-zinc-100 dark:text-zinc-900">Directions</a>
+          ${hasSite ? `
+          <a href="${s.website}" target="_blank" rel="noopener"
+             class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
+                    dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Website</a>` : ``}
+          ${hasPhone ? `
+          <a href="tel:${s.phone.replace(/[^+\d]/g,'')}"
+             class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
+                    dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Call</a>` : ``}
+        </div>
+        <div class="mt-2 text-xs text-zinc-500 dark:text-zinc-400" data-distance-for="${s.id}"></div>
+      </article>
+    `;
+  }
+
+  function render(list){
+    elGrid.innerHTML = list.map(card).join("");
+    elEmpty.classList.toggle("hidden", list.length > 0);
+    elCount.textContent = `${list.length} result${list.length===1?"":"s"}`;
+  }
+
+  function filterList(){
+    const q = (elQuery.value || "").trim().toLowerCase();
+    filtered = BARBERSHOPS.filter(s => {
+      if (!q) return true;
+      return (s.name + " " + s.address).toLowerCase().includes(q);
+    });
+    render(filtered);
+  }
+
+  // Events
+  elQuery.addEventListener("input", filterList);
+
+  btnGeo.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation not supported on this device/browser.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        // userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        alert("Location saved. Distance sorting will be enabled once barbershop coords are added.");
+      },
+      err => {
+        console.warn("Geolocation error:", err);
+        alert("Could not get your location. You can still search by city/ZIP.");
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  });
+
+  btnReset.addEventListener("click", () => {
+    elQuery.value = "";
+    filtered = [...BARBERSHOPS];
+    render(filtered);
+  });
+
+  // Initial render
+  render(filtered);
+})();
+
   </script>
 </body>
 </html>
