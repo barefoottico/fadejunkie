@@ -472,30 +472,31 @@
   }
 
   function card(s){
-    const hasPhone = !!s.phone;
-    const hasSite  = !!s.website;
-    return `
-      <article class="rounded-2xl border border-zinc-200 bg-white shadow p-5
-                      dark:bg-zinc-800 dark:border-zinc-700">
-        <h4 class="text-lg font-semibold">${s.name}</h4>
-        <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${s.address}</p>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <a href="${mapsDirHref(s.address)}" target="_blank" rel="noopener"
-             class="px-3 py-1.5 rounded-lg bg-black text-white text-sm hover:opacity-90
-                    dark:bg-zinc-100 dark:text-zinc-900">Directions</a>
-          ${hasSite ? `
-          <a href="${s.website}" target="_blank" rel="noopener"
-             class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
-                    dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Website</a>` : ``}
-          ${hasPhone ? `
-          <a href="tel:${s.phone.replace(/[^+\d]/g,'')}"
-             class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
-                    dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Call</a>` : ``}
-        </div>
-        <div class="mt-2 text-xs text-zinc-500 dark:text-zinc-400" data-distance-for="${s.id}"></div>
-      </article>
-    `;
-  }
+  const hasPhone = !!s.phone;
+  const hasSite  = true; // always show for now (placeholder)
+  return `
+    <article class="rounded-2xl border border-zinc-200 bg-white shadow p-5
+                    dark:bg-zinc-800 dark:border-zinc-700">
+      <h4 class="text-lg font-semibold">${s.name}</h4>
+      <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${s.address}</p>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <a href="${mapsDirHref(s.address)}" target="_blank" rel="noopener"
+           class="px-3 py-1.5 rounded-lg bg-black text-white text-sm hover:opacity-90
+                  dark:bg-zinc-100 dark:text-zinc-900">Directions</a>
+        <a href="${s.website || '#'}" target="_blank" rel="noopener"
+           class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
+                  dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">
+          Visit Website
+        </a>
+        ${hasPhone ? `
+        <a href="tel:${s.phone.replace(/[^+\d]/g,'')}"
+           class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
+                  dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Call</a>` : ``}
+      </div>
+      <div class="mt-2 text-xs text-zinc-500 dark:text-zinc-400" data-distance-for="${s.id}"></div>
+    </article>
+  `;
+}
 
   function render(list){
     elGrid.innerHTML = list.map(card).join("");
