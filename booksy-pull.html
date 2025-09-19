@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Booksy Manual Pull</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+
+  <h1>Barber’s Available Times</h1>
+
+  <!-- Input for Barber Name -->
+  <div>
+    <label for="barberName"><strong>Barber Name:</strong></label>
+    <input id="barberName" placeholder="Enter barber name" />
+  </div>
+
+  <!-- Textarea for Booksy Page HTML -->
+  <div style="margin-top: 15px;">
+    <label for="pageHtml"><strong>Paste Booksy Page HTML:</strong></label><br/>
+    <textarea id="pageHtml" style="width:100%;height:200px;" placeholder="Paste Booksy page source here"></textarea>
+  </div>
+
+  <!-- Button -->
+  <div style="margin-top: 15px;">
+    <button id="extractBtn">Show Today’s Times</button>
+  </div>
+
+  <!-- Output -->
+  <div id="output" style="margin-top: 25px; padding: 15px; border:1px solid #ccc; border-radius:8px; display:none;">
+    <h2 id="outName"></h2>
+    <p><strong>Available Today:</strong></p>
+    <ul id="outTimes"></ul>
+  </div>
+
+  <script>
+    document.getElementById("extractBtn").addEventListener("click", () => {
+      const name = document.getElementById("barberName").value.trim();
+      const html = document.getElementById("pageHtml").value;
+
+      // Parse HTML string
+      const doc = new DOMParser().parseFromString(html, "text/html");
+
+      // Find all time slots
+      const nodes = doc.querySelectorAll('[data-testid^="time-slot-"]');
+      const times = [...nodes].map(el => el.innerText.trim()).filter(Boolean);
+
+      // Show output
+      document.getElementById("outName").textContent = name || "(No name entered)";
+      document.getElementById("outTimes").innerHTML = times.length
+        ? times.map(t => `<li>${t}</li>`).join("")
+        : "<li>No times found for today</li>";
+      document.getElementById("output").style.display = "block";
+    });
+  </script>
+</body>
+</html>
