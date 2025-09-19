@@ -8,71 +8,108 @@
 </head>
 <body class="bg-gray-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
 
-  <!-- Wrapper -->
-  <div class="max-w-4xl mx-auto px-4 py-10 space-y-10">
+  <!-- Hero Banner -->
+  <section class="relative h-[70vh] w-full bg-zinc-800">
+    <img src="https://via.placeholder.com/1600x900" alt="Barbershop Interior"
+         class="absolute inset-0 w-full h-full object-cover opacity-70" />
+    <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center text-white px-4">
+      <h1 class="text-4xl sm:text-5xl font-bold">The Original Gentlemen’s Parlor</h1>
+      <p class="mt-4 text-lg">A modern barbershop in San Antonio, Texas</p>
+      <a href="#book" class="mt-6 px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-zinc-200">
+        Book an Appointment
+      </a>
+    </div>
+  </section>
 
-    <!-- Header -->
-    <header class="text-center">
-      <h1 class="text-3xl font-bold">The Original Gentlemen’s Parlor</h1>
-      <p class="text-sm text-zinc-500 dark:text-zinc-400">Barbershop in San Antonio, Texas</p>
-    </header>
-
-    <!-- Hero / Image -->
-    <div class="w-full h-64 bg-zinc-300 dark:bg-zinc-700 rounded-xl overflow-hidden shadow-md flex items-center justify-center">
-      <span class="text-zinc-500 dark:text-zinc-300 text-lg">[ Barbershop Image Placeholder ]</span>
+  <!-- Info Section -->
+  <section class="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-3 gap-10 text-center">
+    <div>
+      <h2 class="text-xl font-semibold mb-2">📍 Location</h2>
+      <p>13529 Nacogdoches Rd<br>San Antonio, TX 78217</p>
+      <a href="https://www.google.com/maps/dir/?api=1&destination=13529+Nacogdoches+Rd,+San+Antonio,+TX+78217"
+         target="_blank"
+         class="inline-block mt-3 px-4 py-2 bg-black text-white rounded-lg text-sm hover:opacity-90">
+        Get Directions
+      </a>
     </div>
 
-    <!-- Barbershop Info -->
-    <section class="bg-white dark:bg-zinc-800 rounded-xl shadow-md p-6 space-y-4 border border-zinc-200 dark:border-zinc-700">
-      <div>
-        <h2 class="text-xl font-semibold">Contact Info</h2>
-        <p>📍 13529 Nacogdoches Rd, San Antonio, TX 78217</p>
-        <p>📞 <a href="tel:2102338645" class="text-blue-600 hover:underline">(210) 233-8645</a></p>
-        <a href="https://www.google.com/maps/dir/?api=1&destination=13529+Nacogdoches+Rd,+San+Antonio,+TX+78217"
-           target="_blank" class="inline-block mt-2 px-4 py-2 bg-black text-white text-sm rounded-lg hover:opacity-90 dark:bg-zinc-100 dark:text-zinc-900">
-          Get Directions
-        </a>
+    <div>
+      <h2 class="text-xl font-semibold mb-2">⏰ Hours</h2>
+      <ul class="text-sm space-y-1">
+        <li>Mon – Wed: 9 AM – 7 PM</li>
+        <li>Thu: 9 AM – 7 PM</li>
+        <li>Fri: 9 AM – 7:30 PM</li>
+        <li>Sat: 9 AM – 6 PM</li>
+        <li>Sun: 11 AM – 5 PM</li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold mb-2">☎️ Contact</h2>
+      <p><a href="tel:2102338645" class="text-blue-600 hover:underline">(210) 233-8645</a></p>
+      <a href="mailto:info@ogp.com"
+         class="block mt-2 text-sm text-zinc-600 dark:text-zinc-400 hover:underline">
+        info@ogp.com
+      </a>
+      <div class="flex justify-center gap-3 mt-3">
+        <a href="#" class="text-zinc-600 hover:text-black dark:hover:text-white">IG</a>
+        <a href="#" class="text-zinc-600 hover:text-black dark:hover:text-white">FB</a>
+        <a href="#" class="text-zinc-600 hover:text-black dark:hover:text-white">TT</a>
       </div>
+    </div>
+  </section>
 
-      <div>
-        <h2 class="text-xl font-semibold">Business Hours</h2>
-        <ul class="text-sm">
-          <li>Monday – Wednesday: 9 AM – 7 PM</li>
-          <li>Thursday: 9 AM – 7 PM</li>
-          <li>Friday: 9 AM – 7:30 PM</li>
-          <li>Saturday: 9 AM – 6 PM</li>
-          <li>Sunday: 11 AM – 5 PM</li>
-        </ul>
-      </div>
-    </section>
+  <!-- Divider -->
+  <div class="border-t border-zinc-300 dark:border-zinc-700"></div>
 
-    <!-- Barber Profiles -->
-    <section>
-      <h2 class="text-2xl font-semibold mb-4">Meet Our Barbers</h2>
-      <div class="grid sm:grid-cols-2 gap-6">
+  <!-- Barber Profiles -->
+  <section class="max-w-6xl mx-auto px-6 py-16">
+    <h2 class="text-3xl font-bold text-center mb-12">Meet Our Barbers</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
 
-        <!-- Barber Profile Card (duplicate to add more) -->
-        <div class="bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl p-5 shadow">
-          <div class="flex items-center gap-4">
-            <div class="w-16 h-16 bg-zinc-300 dark:bg-zinc-600 rounded-full flex items-center justify-center text-sm text-zinc-500">
-              IMG
-            </div>
-            <div>
-              <h3 class="font-semibold text-lg">[Barber Name]</h3>
-              <p class="text-sm text-zinc-500 dark:text-zinc-400">Master Barber</p>
-            </div>
-          </div>
-          <p class="mt-4 text-sm text-zinc-700 dark:text-zinc-300">
-            [Short bio or specialties like fades, beard trims, etc.]
+      <!-- Barber Card -->
+      <div class="group bg-white dark:bg-zinc-800 rounded-xl shadow hover:shadow-lg overflow-hidden">
+        <div class="h-56 bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center">
+          <span class="text-zinc-500">[Photo]</span>
+        </div>
+        <div class="p-5">
+          <h3 class="text-lg font-semibold">[Barber Name]</h3>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">Master Barber</p>
+          <p class="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
+            [Short bio: specializes in fades, beard sculpting, classic cuts.]
           </p>
         </div>
-
-        <!-- Add more barber cards here -->
-
       </div>
-    </section>
 
-  </div>
+      <!-- Duplicate for more barbers -->
+      <div class="group bg-white dark:bg-zinc-800 rounded-xl shadow hover:shadow-lg overflow-hidden">
+        <div class="h-56 bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center">
+          <span class="text-zinc-500">[Photo]</span>
+        </div>
+        <div class="p-5">
+          <h3 class="text-lg font-semibold">[Barber Name]</h3>
+          <p class="text-sm text-zinc-500 dark:text-zinc-400">Senior Barber</p>
+          <p class="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
+            [Bio or specialties: scissor cuts, styling, hot towel shaves.]
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-black text-white py-10 text-center">
+    <h3 class="font-semibold text-lg">The Original Gentlemen’s Parlor</h3>
+    <p class="text-sm mt-2">13529 Nacogdoches Rd, San Antonio, TX 78217</p>
+    <div class="mt-4 flex justify-center gap-4 text-sm">
+      <a href="#" class="hover:underline">Privacy Policy</a>
+      <a href="#" class="hover:underline">Careers</a>
+      <a href="#" class="hover:underline">Book Now</a>
+    </div>
+    <p class="text-xs mt-6 text-zinc-400">© 2025 The Original Gentlemen’s Parlor. All rights reserved.</p>
+  </footer>
 
 </body>
 </html>
