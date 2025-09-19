@@ -41,9 +41,10 @@
       // Parse HTML string
       const doc = new DOMParser().parseFromString(html, "text/html");
 
-      // Find all time slots
-      const nodes = doc.querySelectorAll('[data-testid^="time-slot-"]');
-      const times = [...nodes].map(el => el.innerText.trim()).filter(Boolean);
+      // Find only *available* time slots
+const nodes = doc.querySelectorAll('[data-testid^="time-slot-"]:not(.disabled)');
+const times = [...nodes].map(el => el.innerText.trim()).filter(Boolean);
+
 
       // Show output
       document.getElementById("outName").textContent = name || "(No name entered)";
@@ -55,3 +56,4 @@
   </script>
 </body>
 </html>
+
