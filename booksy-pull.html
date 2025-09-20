@@ -42,10 +42,14 @@
       const doc = new DOMParser().parseFromString(html, "text/html");
 
      // Available slots = only ones with `active` in their class
-const nodes = doc.querySelectorAll('[data-testid^="time-slot-"].active');
-const times = [...nodes].map(el => el.innerText.trim()).filter(Boolean);
+const allSlots = [...doc.querySelectorAll('[data-testid^="time-slot-"]')]
+  .map(el => el.innerText.trim());
 
-console.log(times);
+const availableSlots = [...doc.querySelectorAll('[data-testid^="time-slot-"].active')]
+  .map(el => el.innerText.trim());
+
+console.log("All slots:", allSlots);
+console.log("Available slots:", availableSlots);
 
 
 
@@ -59,5 +63,6 @@ console.log(times);
   </script>
 </body>
 </html>
+
 
 
