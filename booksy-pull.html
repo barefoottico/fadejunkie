@@ -2,67 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Booksy Manual Pull</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Booksy Manual Pull – Barber Availability</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; color: #111; }
+    label { font-weight: bold; }
+    input, textarea, button { font: inherit; }
+    input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-top: 4px; }
+    textarea { min-height: 160px; }
+    button { padding: 10px 14px; border: 1px solid #111; background: #111; color: #fff; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+    button:hover { opacity: .9; }
+    .card { border: 1px solid #eee; border-radius: 12px; padding: 16px; max-width: 680px; margin-top: 20px; }
+    .times { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .chip { padding: 6px 10px; border: 1px solid #ddd; border-radius: 999px; background: #f7f7f7; font-size: 14px; }
+    .muted { color: #666; font-size: 13px; }
+  </style>
 </head>
-<body style="font-family: sans-serif; padding: 20px;">
-
+<body>
   <h1>Barber’s Available Times</h1>
 
-  <!-- Input for Barber Name -->
   <div>
-    <label for="barberName"><strong>Barber Name:</strong></label>
-    <input id="barberName" placeholder="Enter barber name" />
+    <label for="barberName">Barber name</label>
+    <input id="barberName" placeholder="e.g., John Doe" />
   </div>
 
-  <!-- Textarea for Booksy Page HTML -->
-  <div style="margin-top: 15px;">
-    <label for="pageHtml"><strong>Paste Booksy Page HTML:</strong></label><br/>
-    <textarea id="pageHtml" style="width:100%;height:200px;" placeholder="Paste Booksy page source here"></textarea>
+  <div style="margin-top: 12px;">
+    <label for="checkDate">Date to check</label>
+    <input type="date" id="checkDate" />
   </div>
 
-  <!-- Button -->
-  <div style="margin-top: 15px;">
-    <button id="extractBtn">Show Today’s Times</button>
+  <div style="margin-top: 12px;">
+    <label for="pageHtml">Paste Booksy page HTML</label>
+    <textarea id="pageHtml" placeholder="On Booksy, set date to match the chosen date, then paste full page HTML here."></textarea>
   </div>
 
-  <!-- Output -->
-  <div id="output" style="margin-top: 25px; padding: 15px; border:1px solid #ccc; border-radius:8px; display:none;">
+  <button id="extractBtn">Extract Availability</button>
+
+  <div id="output" class="card" style="display:none;">
     <h2 id="outName"></h2>
-    <p><strong>Available Today:</strong></p>
-    <ul id="outTimes"></ul>
+    <p><strong>Date:</strong> <span id="outDate"></span></p>
+    <div class="times" id="outTimes"></div>
   </div>
 
   <script>
+    function timeToMinutes(t) {
+      const m = t.match(/(\d{1,2}):(\d{2})\s*([AP]M)/i);
+      if (!m) return Number.MAX_SAFE_INTEGER;
+      let h = parseInt(m[1], 10);
+      const min = parseInt(m[2], 10);
+      const ampm = m[3].toUpperCase();
+      if (ampm === "PM" && h !== 12) h += 12;
+      if (ampm === "AM" && h === 12) h = 0;
+      return h * 60 + min;
+    }
+
     document.getElementById("extractBtn").addEventListener("click", () => {
       const name = document.getElementById("barberName").value.trim();
+      const chosenDate = document.getElementById("checkDate").value;
       const html = document.getElementById("pageHtml").value;
 
-      // Parse HTML string
       const doc = new DOMParser().parseFromString(html, "text/html");
+      const allSlots = [...doc.querySelectorAll('[data-testid^="time-slot-"]')];
 
-     // Available slots = only ones with `active` in their class
-const allSlots = [...doc.querySelectorAll('[data-testid^="time-slot-"]')]
-  .map(el => el.innerText.trim());
+      // Available = only those with "active"
+      let availableSlots = allSlots
+        .filter(el => el.classList.contains("active"))
+        .map(el => el.innerText.trim());
 
-const availableSlots = [...doc.querySelectorAll('[data-testid^="time-slot-"].active')]
-  .map(el => el.innerText.trim());
+      // If chosen date is today, filter out past times
+      if (chosenDate) {
+        const today = new Date();
+        const todayStr = today.toISOString().split("T")[0];
+        if (chosenDate === todayStr) {
+          const nowMins = today.getHours() * 60 + today.getMinutes();
+          availableSlots = availableSlots.filter(t => timeToMinutes(t) > nowMins);
+        }
+      }
 
-console.log("All slots:", allSlots);
-console.log("Available slots:", availableSlots);
-
-
-
-      // Show output
+      const out = document.getElementById("output");
       document.getElementById("outName").textContent = name || "(No name entered)";
-      document.getElementById("outTimes").innerHTML = times.length
-        ? times.map(t => `<li>${t}</li>`).join("")
-        : "<li>No times found for today</li>";
-      document.getElementById("output").style.display = "block";
+      document.getElementById("outDate").textContent = chosenDate || "(No date selected)";
+
+      const outTimes = document.getElementById("outTimes");
+      outTimes.innerHTML = availableSlots.length
+        ? availableSlots.map(t => `<span class="chip">${t}</span>`).join("")
+        : '<span class="muted">No available slots for this date.</span>';
+
+      out.style.display = "block";
     });
   </script>
 </body>
 </html>
-
-
-
