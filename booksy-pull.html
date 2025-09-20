@@ -41,9 +41,12 @@
       // Parse HTML string
       const doc = new DOMParser().parseFromString(html, "text/html");
 
-      // Find only *available* time slots
-const nodes = doc.querySelectorAll('[data-testid^="time-slot-"]:not(.disabled)');
+     // Available slots = only ones with `active` in their class
+const nodes = doc.querySelectorAll('[data-testid^="time-slot-"].active');
 const times = [...nodes].map(el => el.innerText.trim()).filter(Boolean);
+
+console.log(times);
+
 
 
       // Show output
@@ -56,4 +59,5 @@ const times = [...nodes].map(el => el.innerText.trim()).filter(Boolean);
   </script>
 </body>
 </html>
+
 
