@@ -8,9 +8,15 @@
 </head>
 <body class="bg-gray-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
 
+  <!-- Dark Mode Toggle -->
+  <button id="themeToggle" 
+          class="fixed top-5 right-5 z-50 px-3 py-2 bg-black text-white text-sm rounded-lg shadow hover:opacity-80 transition">
+    Toggle Dark
+  </button>
+
   <!-- Hero Banner -->
   <section class="relative h-[70vh] w-full">
-    <img src="https://via.placeholder.com/1600x900" alt="Barbershop Interior"
+    <img src="images/hero-barbershop.jpg" alt="Barbershop Interior"
          class="absolute inset-0 w-full h-full object-cover opacity-70" />
     <div class="absolute inset-0 bg-gradient-to-b from-black/60 to-black/40"></div>
     <div class="relative z-10 flex flex-col items-center justify-center h-full text-center px-4">
@@ -28,7 +34,15 @@
   <section class="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-3 gap-12 text-center">
     <!-- Location -->
     <div>
-      <h2 class="text-xl font-semibold mb-3">📍 Location</h2>
+      <h2 class="text-xl font-semibold mb-3 flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 11c1.656 0 3-1.344 3-3s-1.344-3-3-3-3 1.344-3 3 1.344 3 3 3z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 22s8-4.5 8-11a8 8 0 10-16 0c0 6.5 8 11 8 11z"/>
+        </svg>
+        Location
+      </h2>
       <p>13529 Nacogdoches Rd<br>San Antonio, TX 78217</p>
       <a href="https://www.google.com/maps/dir/?api=1&destination=13529+Nacogdoches+Rd,+San+Antonio,+TX+78217"
          target="_blank"
@@ -39,7 +53,13 @@
 
     <!-- Hours -->
     <div>
-      <h2 class="text-xl font-semibold mb-3">⏰ Hours</h2>
+      <h2 class="text-xl font-semibold mb-3 flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Hours
+      </h2>
       <ul class="text-sm space-y-1 leading-relaxed">
         <li>Mon – Thu: 9 AM – 7 PM</li>
         <li>Fri: 9 AM – 7:30 PM</li>
@@ -50,7 +70,13 @@
 
     <!-- Contact -->
     <div>
-      <h2 class="text-xl font-semibold mb-3">☎️ Contact</h2>
+      <h2 class="text-xl font-semibold mb-3 flex items-center justify-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 5h2l3.6 7.59-1.35 2.45C6.52 15.37 7.48 17 9 17h9v-2H9.42c-.14 0-.25-.11-.25-.25L9.1 14h7.45c.75 0 1.41-.41 1.75-1.03L21 6H6"/>
+        </svg>
+        Contact
+      </h2>
       <p>
         <a href="tel:2102338645" class="text-blue-600 hover:underline">(210) 233-8645</a>
       </p>
@@ -59,9 +85,15 @@
         info@ogp.com
       </a>
       <div class="flex justify-center gap-4 mt-4 text-lg">
-        <a href="#" aria-label="Instagram" class="hover:text-pink-600">IG</a>
-        <a href="#" aria-label="Facebook" class="hover:text-blue-600">FB</a>
-        <a href="#" aria-label="TikTok" class="hover:text-black dark:hover:text-white">TT</a>
+        <a href="#" aria-label="Instagram" class="hover:text-pink-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 1.9.3 2.4.6.6.3 1 .7 1.4 1.4.3.5.5 1.2.6 2.4.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 1.9-.6 2.4-.3.6-.7 1-1.4 1.4-.5.3-1.2.5-2.4.6-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-1.9-.3-2.4-.6-.6-.3-1-.7-1.4-1.4-.3-.5-.5-1.2-.6-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-1.9.6-2.4.3-.6.7-1 1.4-1.4.5-.3 1.2-.5 2.4-.6C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.2 0-3.6 0-4.8.1-1 .1-1.6.2-2 .4-.5.2-.9.4-1.2.7-.3.3-.5.7-.7 1.2-.2.4-.3 1-.4 2-.1 1.2-.1 1.6-.1 4.8s0 3.6.1 4.8c.1 1 .2 1.6.4 2 .2.5.4.9.7 1.2.3.3.7.5 1.2.7.4.2 1 .3 2 .4 1.2.1 1.6.1 4.8.1s3.6 0 4.8-.1c1-.1 1.6-.2 2-.4.5-.2.9-.4 1.2-.7.3-.3.5-.7.7-1.2.2-.4.3-1 .4-2 .1-1.2.1-1.6.1-4.8s0-3.6-.1-4.8c-.1-1-.2-1.6-.4-2-.2-.5-.4-.9-.7-1.2-.3-.3-.7-.5-1.2-.7-.4-.2-1-.3-2-.4-1.2-.1-1.6-.1-4.8-.1zm0 3.3a6.7 6.7 0 110 13.4 6.7 6.7 0 010-13.4zm0 11a4.3 4.3 0 100-8.6 4.3 4.3 0 000 8.6zm6.8-11.9a1.6 1.6 0 110-3.2 1.6 1.6 0 010 3.2z"/></svg>
+        </a>
+        <a href="#" aria-label="Facebook" class="hover:text-blue-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12a10 10 0 10-11.5 9.9v-7h-2v-3h2v-2.3c0-2 1.2-3.2 3-3.2.9 0 1.8.1 1.8.1v2h-1c-1 0-1.3.6-1.3 1.2V12h2.3l-.4 3h-1.9v7A10 10 0 0022 12"/></svg>
+        </a>
+        <a href="#" aria-label="TikTok" class="hover:text-black dark:hover:text-white">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2zm1 5.1v1.4c.7.5 1.5.9 2.5 1v2.3c-1.1 0-2.1-.3-2.5-.6v4.6a3.3 3.3 0 01-3.3 3.3c-1.8 0-3.3-1.5-3.3-3.3 0-1.8 1.5-3.3 3.3-3.3.4 0 .7.1 1 .2V9.1c-.3 0-.7-.1-1-.1-3 0-5.4 2.4-5.4 5.4s2.4 5.4 5.4 5.4c3 0 5.4-2.4 5.4-5.4V7.1H13z"/></svg>
+        </a>
       </div>
     </div>
   </section>
@@ -76,29 +108,31 @@
 
       <!-- Barber Card -->
       <div class="group bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:shadow-xl transition overflow-hidden">
-        <div class="h-56 bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center">
-          <span class="text-zinc-500">[Photo]</span>
-        </div>
+        <img src="images/barber-john.jpg" alt="Barber John" class="h-56 w-full object-cover">
         <div class="p-5">
-          <h3 class="text-lg font-semibold">[Barber Name]</h3>
+          <h3 class="text-lg font-semibold">John Doe</h3>
           <p class="text-sm text-zinc-500 dark:text-zinc-400">Master Barber</p>
           <p class="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
             Specializes in fades, beard sculpting, and classic cuts.
           </p>
+          <a href="#book" class="mt-4 inline-block px-4 py-2 bg-black text-white rounded-lg text-sm hover:opacity-90 transition">
+            Book with John
+          </a>
         </div>
       </div>
 
-      <!-- Duplicate for more barbers -->
+      <!-- Another Barber -->
       <div class="group bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:shadow-xl transition overflow-hidden">
-        <div class="h-56 bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center">
-          <span class="text-zinc-500">[Photo]</span>
-        </div>
+        <img src="images/barber-jane.jpg" alt="Barber Jane" class="h-56 w-full object-cover">
         <div class="p-5">
-          <h3 class="text-lg font-semibold">[Barber Name]</h3>
+          <h3 class="text-lg font-semibold">Jane Smith</h3>
           <p class="text-sm text-zinc-500 dark:text-zinc-400">Senior Barber</p>
           <p class="mt-3 text-sm text-zinc-700 dark:text-zinc-300">
             Skilled in scissor cuts, styling, and hot towel shaves.
           </p>
+          <a href="#book" class="mt-4 inline-block px-4 py-2 bg-black text-white rounded-lg text-sm hover:opacity-90 transition">
+            Book with Jane
+          </a>
         </div>
       </div>
 
@@ -112,10 +146,18 @@
     <div class="mt-5 flex justify-center gap-6 text-sm">
       <a href="#" class="hover:underline">Privacy Policy</a>
       <a href="#" class="hover:underline">Careers</a>
-      <a href="#" class="hover:underline">Book Now</a>
+      <a href="#book" class="hover:underline">Book Now</a>
     </div>
     <p class="text-xs mt-8 text-zinc-400">© 2025 The Original Gentlemen’s Parlor. All rights reserved.</p>
   </footer>
+
+  <!-- Dark mode toggle script -->
+  <script>
+    const toggleBtn = document.getElementById('themeToggle');
+    toggleBtn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+    });
+  </script>
 
 </body>
 </html>
