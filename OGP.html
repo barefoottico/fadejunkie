@@ -102,9 +102,31 @@
   <div class="border-t border-zinc-300 dark:border-zinc-700"></div>
 
   <!-- Barber Profiles -->
-  <section class="max-w-6xl mx-auto px-6 py-16">
-    <h2 class="text-3xl font-bold text-center mb-12">Meet Our Barbers</h2>
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
+<section id="barbers" class="max-w-6xl mx-auto px-6 py-16">
+  <h2 class="text-3xl font-bold text-center mb-12">Meet Our Barbers</h2>
+  <div id="barber-list" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-10"></div>
+</section>
+
+<script>
+  fetch('barbers.json')
+    .then(response => response.json())
+    .then(barbers => {
+      const container = document.getElementById('barber-list');
+      barbers.forEach(barber => {
+        container.innerHTML += `
+          <div class="group bg-white dark:bg-zinc-800 rounded-xl shadow hover:shadow-lg overflow-hidden">
+            <img src="images/barbers/${barber.image}" alt="${barber.name}" 
+                 class="h-56 w-full object-cover">
+            <div class="p-5 text-center">
+              <h3 class="text-lg font-semibold">${barber.name}</h3>
+            </div>
+          </div>
+        `;
+      });
+    })
+    .catch(err => console.error("Error loading barbers:", err));
+</script>
+
 
       <!-- Barber Card -->
       <div class="group bg-white dark:bg-zinc-800 rounded-xl shadow-md hover:shadow-xl transition overflow-hidden">
