@@ -3,177 +3,330 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enhanced Barber Profiles</title>
+  <title>Dynamic Barber Profiles with Card Replacement</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* CSS Custom Properties for Configuration */
     :root {
-      --animation-duration: 6s;
-      --elevation-duration: 10s;
-      --float-distance: 8px;
-      --elevation-distance: 12px;
-      --stagger-base: 0.8s;
-      --total-cards: 9;
+      /* Grid Configuration */
+      --grid-gap: clamp(1rem, 3vw, 2rem);
+      --card-aspect-ratio: 3/4;
+      
+      /* Animation Timing */
+      --cycle-duration: 4000ms;
+      --transition-duration: 800ms;
+      --stagger-base: 200ms;
+      --grid-transition-duration: 800ms;
+      
+      /* Easing Curves */
+      --ease-grid-transition: cubic-bezier(0.25, 0.8, 0.25, 1);
+      --ease-card-exit: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+      --ease-card-entry: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      --ease-hover: cubic-bezier(0.4, 0, 0.2, 1);
+      
+      /* Visual Effects */
+      --shadow-normal: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
 
-    /* Core floating animation keyframes */
-    @keyframes gentleFloat {
-      0%, 100% { 
-        transform: translate3d(0, 0, 0) scale(1);
-      }
-      33% { 
-        transform: translate3d(0, calc(-1 * var(--float-distance)), 0) scale(1);
-      }
-      66% { 
-        transform: translate3d(0, calc(var(--float-distance) * 0.5), 0) scale(1);
+    /* Container Query Foundation */
+    .barber-container {
+      container-type: inline-size;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Dynamic Responsive Grid System */
+    .barber-grid {
+      display: grid;
+      gap: var(--grid-gap);
+      container-type: inline-size;
+      position: relative;
+      min-height: 320px;
+      
+      /* Mobile First: 1 column */
+      grid-template-columns: 1fr;
+      grid-template-rows: repeat(auto-fit, minmax(280px, 1fr));
+      
+      /* Smooth grid transitions */
+      transition: all var(--grid-transition-duration) var(--ease-grid-transition);
+    }
+
+    /* Container Query Responsive Breakpoints */
+    @container (min-width: 640px) {
+      .barber-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, minmax(280px, 1fr));
       }
     }
 
-    /* Dynamic elevation cycling */
-    @keyframes dynamicElevation {
-      0%, 85%, 100% { 
-        transform: translate3d(0, 0, 0) scale(1);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        filter: brightness(1) saturate(1);
-      }
-      15%, 70% { 
-        transform: translate3d(0, calc(-1 * var(--elevation-distance)), 0) scale(1.02);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        filter: brightness(1.05) saturate(1.1);
+    @container (min-width: 1024px) {
+      .barber-grid {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, minmax(280px, 1fr));
       }
     }
 
-    /* Enhanced shadow transitions */
-    @keyframes shadowPulse {
-      0%, 100% { 
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      }
-      50% { 
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    @container (min-width: 1440px) {
+      .barber-grid {
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(2, minmax(280px, 1fr));
       }
     }
 
-    /* Barber card base styles with animation */
+    /* Barber Card Base Styles */
     .barber-card {
-      will-change: transform, box-shadow, filter;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      animation: gentleFloat var(--animation-duration) ease-in-out infinite,
-                 shadowPulse calc(var(--animation-duration) * 1.5) ease-in-out infinite;
-      transform-origin: center center;
+      aspect-ratio: var(--card-aspect-ratio);
+      container-type: inline-size;
+      position: relative;
+      
+      /* Performance optimizations */
+      will-change: transform, opacity, box-shadow;
       backface-visibility: hidden;
       perspective: 1000px;
+      transform-origin: center center;
+      
+      /* Base styling */
+      background: white;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-normal);
+      
+      /* Smooth transitions */
+      transition: all 0.4s var(--ease-hover);
+      
+      /* Z-index management for animations */
+      z-index: 1;
     }
 
-    /* Individual card stagger delays using nth-child */
-    .barber-card:nth-child(1) {
-      animation-delay: 0s, 0s;
-    }
-    .barber-card:nth-child(2) {
-      animation-delay: 0.8s, 1.2s;
-    }
-    .barber-card:nth-child(3) {
-      animation-delay: 1.3s, 1.95s;
-    }
-    .barber-card:nth-child(4) {
-      animation-delay: 2.1s, 3.15s;
-    }
-    .barber-card:nth-child(5) {
-      animation-delay: 3.4s, 5.1s;
-    }
-    .barber-card:nth-child(6) {
-      animation-delay: 5.5s, 8.25s;
-    }
-    .barber-card:nth-child(7) {
-      animation-delay: 8.9s, 13.35s;
-    }
-    .barber-card:nth-child(8) {
-      animation-delay: 14.4s, 21.6s;
-    }
-    .barber-card:nth-child(9) {
-      animation-delay: 23.3s, 34.95s;
-    }
-
-    /* Dynamic elevation animation for selected cards */
-    .barber-card.elevated {
-      animation: gentleFloat var(--animation-duration) ease-in-out infinite,
-                 dynamicElevation var(--elevation-duration) ease-in-out infinite;
-    }
-
-    /* Hover interactions */
-    .barber-card:hover {
-      animation-play-state: paused;
-      transform: translate3d(0, -4px, 0) scale(1.03) !important;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-      filter: brightness(1.08) saturate(1.15) !important;
-    }
-
-    /* Focus states for accessibility */
-    .barber-card:focus-within {
-      outline: 2px solid #3b82f6;
-      outline-offset: 2px;
-      animation-play-state: paused;
-    }
-
-    /* Dark mode enhancements */
     .dark .barber-card {
+      background: #27272a;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
     }
 
-    .dark .barber-card:hover {
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    /* Card Content Responsive Scaling */
+    .barber-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
     }
 
-    /* Image optimization */
-    .barber-image {
-      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      will-change: transform;
+    @container (max-width: 200px) {
+      .barber-card {
+        padding: 1rem;
+        font-size: 0.875rem;
+      }
+      
+      .barber-image {
+        width: 4rem !important;
+        height: 4rem !important;
+      }
+    }
+
+    @container (min-width: 300px) {
+      .barber-card {
+        padding: 1.5rem;
+        font-size: 1rem;
+      }
+      
+      .barber-image {
+        width: 6rem !important;
+        height: 6rem !important;
+      }
+    }
+
+    @container (min-width: 400px) {
+      .barber-image {
+        width: 8rem !important;
+        height: 8rem !important;
+      }
+    }
+
+    /* Card Replacement Animations */
+    @keyframes cardExit {
+      0% {
+        transform: translate3d(0, 0, 0) scale(1) rotateY(0deg);
+        opacity: 1;
+        z-index: 2;
+      }
+      30% {
+        transform: translate3d(0, -10px, 0) scale(0.98) rotateY(5deg);
+        opacity: 0.8;
+      }
+      60% {
+        transform: translate3d(0, -25px, 0) scale(0.92) rotateY(15deg);
+        opacity: 0.4;
+      }
+      100% {
+        transform: translate3d(0, -50px, 0) scale(0.8) rotateY(25deg);
+        opacity: 0;
+        z-index: 0;
+      }
+    }
+
+    @keyframes cardEntry {
+      0% {
+        transform: translate3d(0, 50px, 0) scale(0.8) rotateY(-25deg);
+        opacity: 0;
+        z-index: 0;
+      }
+      40% {
+        transform: translate3d(0, 15px, 0) scale(0.95) rotateY(-10deg);
+        opacity: 0.6;
+      }
+      70% {
+        transform: translate3d(0, -5px, 0) scale(1.03) rotateY(-2deg);
+        opacity: 0.9;
+        z-index: 2;
+      }
+      100% {
+        transform: translate3d(0, 0, 0) scale(1) rotateY(0deg);
+        opacity: 1;
+        z-index: 1;
+      }
+    }
+
+    /* Grid Transition Animation */
+    @keyframes gridReposition {
+      0% {
+        transform: scale(0.95);
+        opacity: 0.9;
+      }
+      50% {
+        transform: scale(1.02);
+        opacity: 0.95;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Animation State Classes */
+    .barber-card.exiting {
+      animation: cardExit var(--transition-duration) var(--ease-card-exit) forwards;
+      z-index: 10;
+    }
+
+    .barber-card.entering {
+      animation: cardEntry var(--transition-duration) var(--ease-card-entry) forwards;
+      z-index: 5;
+    }
+
+    .barber-card.repositioning {
+      animation: gridReposition var(--grid-transition-duration) var(--ease-grid-transition) forwards;
+    }
+
+    .grid-transition-active .barber-card {
+      transition: all var(--grid-transition-duration) var(--ease-grid-transition);
+      will-change: transform, opacity;
+    }
+
+    /* Hidden card positioning */
+    .barber-card.hidden {
+      position: absolute;
+      top: -100%;
+      left: -100%;
+      opacity: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Enhanced Hover States */
+    .barber-card:hover:not(.exiting):not(.entering) {
+      transform: translate3d(0, -8px, 0) scale(1.05);
+      box-shadow: var(--shadow-hover);
+      z-index: 20;
+    }
+
+    .dark .barber-card:hover:not(.exiting):not(.entering) {
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }
 
     .barber-card:hover .barber-image {
-      transform: scale(1.05);
+      transform: scale(1.1);
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 640px) {
-      :root {
-        --float-distance: 4px;
-        --elevation-distance: 6px;
-        --animation-duration: 8s;
-      }
-      
-      .barber-card {
-        transform: scale(0.95);
-      }
+    /* Focus States for Accessibility */
+    .barber-card:focus-visible {
+      outline: 3px solid #3b82f6;
+      outline-offset: 2px;
+      z-index: 21;
     }
 
-    @media (max-width: 1024px) {
-      :root {
-        --float-distance: 6px;
-        --elevation-distance: 9px;
-      }
+    /* Image Optimization */
+    .barber-image {
+      transition: transform 0.4s var(--ease-hover);
+      will-change: transform;
+      border-radius: 50%;
+      overflow: hidden;
+      position: relative;
+      ring: 3px solid rgba(59, 130, 246, 0.1);
     }
 
-    /* Accessibility - Reduced motion */
-    @media (prefers-reduced-motion: reduce) {
-      .barber-card {
-        animation: none !important;
-        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-      }
-      
-      .barber-card:hover {
-        transform: translate3d(0, -2px, 0) scale(1.01) !important;
-      }
+    .barber-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
-    /* Performance optimizations */
-    .barber-grid {
-      contain: layout style paint;
+    .barber-image .fallback {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      color: white;
+      font-weight: bold;
+      font-size: 1.5rem;
     }
 
-    /* Loading state */
+    /* Star Rating Styles */
+    .star-rating {
+      display: flex;
+      gap: 0.125rem;
+      margin-top: 0.5rem;
+    }
+
+    .star {
+      width: 1rem;
+      height: 1rem;
+      color: #fbbf24;
+      fill: currentColor;
+    }
+
+    /* Performance Monitor */
+    .performance-monitor {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 0.5rem;
+      border-radius: 0.375rem;
+      font-family: monospace;
+      font-size: 0.75rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .performance-monitor.visible {
+      opacity: 1;
+    }
+
+    /* Loading States */
     .barber-card.loading {
       opacity: 0;
-      transform: translate3d(0, 20px, 0);
-      animation: none;
+      transform: translate3d(0, 30px, 0);
     }
 
     .barber-card.loaded {
@@ -182,11 +335,17 @@
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
 
-    /* Section header animation */
+    /* Section Header Animation */
     .section-header {
       opacity: 0;
-      transform: translateY(-20px);
+      transform: translateY(-30px);
       animation: fadeInDown 1s ease forwards;
+    }
+
+    .section-subtitle {
+      opacity: 0;
+      transform: translateY(-20px);
+      animation: fadeInDown 1s ease 0.2s forwards;
     }
 
     @keyframes fadeInDown {
@@ -195,247 +354,821 @@
         transform: translateY(0);
       }
     }
+
+    /* Screen Reader Only */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* Accessibility - Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      
+      .barber-card:hover {
+        transform: translateY(-4px) scale(1.02) !important;
+      }
+      
+      .section-header,
+      .section-subtitle {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+
+    /* High Contrast Mode Support */
+    @media (prefers-contrast: high) {
+      .barber-card {
+        border: 2px solid currentColor;
+      }
+      
+      .barber-card:focus-visible {
+        outline: 4px solid #005fcc;
+        outline-offset: 3px;
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
 
+  <!-- Screen Reader Announcements -->
+  <div id="grid-announcer" class="sr-only" aria-live="polite"></div>
+  <div id="animation-announcer" class="sr-only" aria-live="polite"></div>
+
   <!-- Enhanced Barber Profiles Section -->
-  <section id="barbers" class="max-w-7xl mx-auto px-6 py-16">
-    <h2 class="section-header text-4xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+  <section class="barber-container py-16">
+    <h1 class="section-header text-4xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
       Meet Our Master Barbers
-    </h2>
-    <p class="section-header text-center text-gray-600 dark:text-gray-300 mb-16 max-w-2xl mx-auto" style="animation-delay: 0.2s;">
-      Experience exceptional craftsmanship from our talented team of professional barbers, each bringing their unique style and expertise to every cut.
+    </h1>
+    <p class="section-subtitle text-center text-gray-600 dark:text-gray-300 mb-16 max-w-3xl mx-auto">
+      Experience exceptional craftsmanship from our talented team of professional barbers. Watch as our dynamic showcase highlights different team members, each bringing their unique style and expertise to every cut.
     </p>
     
-    <div id="barber-list" class="barber-grid grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+    <div id="barber-grid" class="barber-grid" role="region" aria-label="Barber profiles grid">
+      <!-- Cards will be dynamically inserted here -->
+    </div>
   </section>
 
-  <!-- Performance monitoring (optional) -->
-  <div id="performance-monitor" class="fixed bottom-4 right-4 bg-black/20 text-white p-2 rounded text-xs opacity-0 transition-opacity" style="font-family: monospace;">
-    FPS: <span id="fps-counter">--</span>
+  <!-- Performance Monitor (Development) -->
+  <div id="performance-monitor" class="performance-monitor">
+    <div>FPS: <span id="fps-counter">--</span></div>
+    <div>Grid: <span id="grid-state">--</span></div>
+    <div>Visible: <span id="visible-count">--</span></div>
   </div>
 
   <!-- Enhanced JavaScript Implementation -->
   <script>
-    class BarberProfilesAnimation {
+    // Configuration Object
+    const CONFIG = {
+      breakpoints: {
+        mobile: { minWidth: 0, columns: 1, rows: 1, maxVisible: 1, name: 'mobile' },
+        tablet: { minWidth: 640, columns: 2, rows: 2, maxVisible: 4, name: 'tablet' },
+        desktop: { minWidth: 1024, columns: 3, rows: 3, maxVisible: 9, name: 'desktop' },
+        ultrawide: { minWidth: 1440, columns: 5, rows: 2, maxVisible: 10, name: 'ultrawide' }
+      },
+      
+      animation: {
+        cycleDuration: 4000,
+        transitionDuration: 800,
+        staggerBase: 200,
+        gridTransitionDuration: 800
+      },
+      
+      performance: {
+        targetFPS: 60,
+        maxConcurrentAnimations: 2,
+        intersectionThreshold: 0.1
+      }
+    };
+
+    // Barber Data
+    const BARBER_DATA = [
+      { id: 'sal', name: 'Sal', specialty: 'Classic Cuts', experience: 15, rating: 4.9 },
+      { id: 'steve', name: 'Steve', specialty: 'Modern Styles', experience: 12, rating: 4.8 },
+      { id: 'nick', name: 'Nick', specialty: 'Beard Specialist', experience: 8, rating: 4.9 },
+      { id: 'jay', name: 'Jay', specialty: 'Fade Expert', experience: 10, rating: 4.7 },
+      { id: 'jacob', name: 'Jacob', specialty: 'Creative Designs', experience: 6, rating: 4.8 },
+      { id: 'anthony', name: 'Anthony', specialty: 'Senior Stylist', experience: 20, rating: 5.0 },
+      { id: 'anderson', name: 'Anderson', specialty: 'Precision Cuts', experience: 14, rating: 4.9 },
+      { id: 'andres', name: 'Andres', specialty: 'Color Expert', experience: 11, rating: 4.6 },
+      { id: 'alex', name: 'Alex', specialty: 'Trendsetter', experience: 7, rating: 4.8 },
+      { id: 'marcus', name: 'Marcus', specialty: 'Traditional Barber', experience: 18, rating: 4.9 },
+      { id: 'david', name: 'David', specialty: 'Style Consultant', experience: 9, rating: 4.7 },
+      { id: 'luis', name: 'Luis', specialty: 'Hair Artist', experience: 13, rating: 4.8 }
+    ];
+
+    // Main Application Class
+    class DynamicBarberProfiles {
       constructor() {
-        this.barbers = [
-          { "name": "Sal", "image": "sal.jpg" },
-          { "name": "Steve", "image": "steve.jpg" },
-          { "name": "Nick", "image": "nick.jpg" },
-          { "name": "Jay", "image": "jay.jpg" },
-          { "name": "Jacob", "image": "jacob.jpg" },
-          { "name": "Anthony", "image": "anthony.jpg" },
-          { "name": "Anderson", "image": "anderson.jpg" },
-          { "name": "Andres", "image": "andres.jpg" },
-          { "name": "Alex", "image": "alex.jpg" }
-        ];
-        
-        this.container = document.getElementById('barber-list');
-        this.observer = null;
-        this.elevationCycle = null;
-        this.performanceMonitor = null;
+        this.allBarbers = [...BARBER_DATA];
+        this.visibleCards = [];
+        this.hiddenCards = [];
+        this.currentBreakpoint = null;
+        this.animationInProgress = false;
+        this.gridTransitionInProgress = false;
+        this.hoverPaused = false;
         this.isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        
+        // Elements
+        this.gridElement = document.getElementById('barber-grid');
+        this.gridAnnouncer = document.getElementById('grid-announcer');
+        this.animationAnnouncer = document.getElementById('animation-announcer');
+        
+        // Managers
+        this.resizeObserver = null;
+        this.intersectionObserver = null;
+        this.animationController = null;
+        this.performanceMonitor = null;
         
         this.init();
       }
 
-      init() {
-        this.updateCSSCustomProperties();
-        this.renderBarberCards();
-        this.setupIntersectionObserver();
-        this.startElevationCycle();
-        this.setupPerformanceMonitoring();
-        this.setupResponsiveHandling();
-      }
-
-      updateCSSCustomProperties() {
-        document.documentElement.style.setProperty('--total-cards', this.barbers.length);
-      }
-
-      renderBarberCards() {
-        this.container.innerHTML = '';
-        
-        this.barbers.forEach((barber, index) => {
-          const cardElement = this.createBarberCard(barber, index);
-          this.container.appendChild(cardElement);
+      async init() {
+        try {
+          this.setupPerformanceMonitoring();
+          this.detectCurrentBreakpoint();
+          await this.renderInitialCards();
+          this.setupObservers();
+          this.startAnimationSystem();
+          this.setupAccessibility();
+          this.setupInteractionHandlers();
           
-          // Staggered loading animation
+          console.log('Dynamic Barber Profiles initialized successfully');
+        } catch (error) {
+          console.error('Initialization failed:', error);
+          this.handleInitializationError(error);
+        }
+      }
+
+      // Breakpoint Detection and Grid Management
+      detectCurrentBreakpoint() {
+        const containerWidth = this.gridElement.offsetWidth;
+        const breakpoints = Object.values(CONFIG.breakpoints).reverse();
+        
+        for (const bp of breakpoints) {
+          if (containerWidth >= bp.minWidth) {
+            if (this.currentBreakpoint?.name !== bp.name) {
+              const oldBreakpoint = this.currentBreakpoint;
+              this.currentBreakpoint = bp;
+              
+              if (oldBreakpoint) {
+                this.handleBreakpointChange(oldBreakpoint, bp);
+              }
+            }
+            break;
+          }
+        }
+        
+        return this.currentBreakpoint;
+      }
+
+      async handleBreakpointChange(oldBp, newBp) {
+        if (this.gridTransitionInProgress) return;
+        
+        this.gridTransitionInProgress = true;
+        
+        try {
+          // Announce change to screen readers
+          this.announceGridChange(oldBp, newBp);
+          
+          // Pause current animations
+          this.pauseCardReplacements();
+          
+          // Add transition class
+          this.gridElement.classList.add('grid-transition-active');
+          
+          // Calculate new visible set
+          await this.transitionToNewGrid(newBp);
+          
+          // Resume animations with new parameters
           setTimeout(() => {
-            cardElement.classList.remove('loading');
-            cardElement.classList.add('loaded');
-          }, index * 100);
+            this.gridElement.classList.remove('grid-transition-active');
+            this.resumeCardReplacements();
+            this.gridTransitionInProgress = false;
+          }, CONFIG.animation.gridTransitionDuration);
+          
+        } catch (error) {
+          console.error('Grid transition failed:', error);
+          this.gridTransitionInProgress = false;
+        }
+      }
+
+      async transitionToNewGrid(newBreakpoint) {
+        const targetVisible = Math.min(newBreakpoint.maxVisible, this.allBarbers.length);
+        
+        if (targetVisible === this.visibleCards.length) {
+          // Same number visible, just reposition
+          this.repositionCards();
+          return;
+        }
+        
+        if (targetVisible > this.visibleCards.length) {
+          // Show more cards
+          await this.addCardsToGrid(targetVisible - this.visibleCards.length);
+        } else {
+          // Hide some cards
+          await this.removeCardsFromGrid(this.visibleCards.length - targetVisible);
+        }
+        
+        this.updatePerformanceMonitor();
+      }
+
+      async addCardsToGrid(count) {
+        const availableHidden = this.hiddenCards.slice(0, count);
+        
+        for (let i = 0; i < availableHidden.length; i++) {
+          const card = availableHidden[i];
+          const staggerDelay = i * (CONFIG.animation.staggerBase / 2);
+          
+          setTimeout(() => {
+            card.classList.remove('hidden');
+            card.classList.add('repositioning');
+            this.visibleCards.push(card);
+            this.hiddenCards = this.hiddenCards.filter(c => c !== card);
+          }, staggerDelay);
+        }
+      }
+
+      async removeCardsFromGrid(count) {
+        const cardsToHide = this.visibleCards.slice(-count);
+        
+        for (let i = 0; i < cardsToHide.length; i++) {
+          const card = cardsToHide[i];
+          const staggerDelay = i * (CONFIG.animation.staggerBase / 3);
+          
+          setTimeout(() => {
+            card.classList.add('hidden');
+            this.hiddenCards.push(card);
+            this.visibleCards = this.visibleCards.filter(c => c !== card);
+          }, staggerDelay);
+        }
+      }
+
+      repositionCards() {
+        this.visibleCards.forEach((card, index) => {
+          const delay = index * 50;
+          setTimeout(() => {
+            card.classList.add('repositioning');
+            setTimeout(() => card.classList.remove('repositioning'), CONFIG.animation.gridTransitionDuration);
+          }, delay);
         });
       }
 
-      createBarberCard(barber, index) {
+      // Card Creation and Management
+      async renderInitialCards() {
+        this.gridElement.innerHTML = '';
+        
+        const initialVisible = Math.min(
+          this.currentBreakpoint.maxVisible, 
+          this.allBarbers.length
+        );
+        
+        // Create all card elements
+        const allCardElements = this.allBarbers.map(barber => this.createBarberCard(barber));
+        
+        // Set initial visible/hidden states
+        allCardElements.forEach((card, index) => {
+          if (index < initialVisible) {
+            card.classList.add('loading');
+            this.visibleCards.push(card);
+            this.gridElement.appendChild(card);
+          } else {
+            card.classList.add('hidden');
+            this.hiddenCards.push(card);
+            this.gridElement.appendChild(card);
+          }
+        });
+        
+        // Staggered loading animation
+        await this.animateCardsIn();
+      }
+
+      createBarberCard(barber) {
         const card = document.createElement('div');
-        card.className = 'barber-card loading bg-white dark:bg-zinc-800 rounded-xl overflow-hidden p-6 flex flex-col items-center transform cursor-pointer';
+        card.className = 'barber-card';
+        card.setAttribute('data-barber-id', barber.id);
         card.setAttribute('tabindex', '0');
         card.setAttribute('role', 'button');
-        card.setAttribute('aria-label', `View ${barber.name}'s profile`);
+        card.setAttribute('aria-label', `View ${barber.name}'s profile - ${barber.specialty}, ${barber.experience} years experience`);
         
-        // Create placeholder image with better fallback
-        const imageUrl = `https://images.unsplash.com/photo-${1500000000000 + index}?w=200&h=200&fit=crop&crop=face&auto=format&q=75`;
+        const imageUrl = `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000)}?w=300&h=300&fit=crop&crop=face&auto=format&q=75`;
         
         card.innerHTML = `
-          <div class="relative w-36 h-36 overflow-hidden rounded-full mb-4 ring-2 ring-gray-200 dark:ring-gray-600">
+          <div class="barber-image" style="width: 6rem; height: 6rem;">
             <img src="${imageUrl}" 
                  alt="${barber.name}" 
                  loading="lazy"
-                 class="barber-image w-full h-full object-cover"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full hidden items-center justify-center text-white text-2xl font-bold">
+            <div class="fallback">
               ${barber.name.charAt(0)}
             </div>
           </div>
-          <div class="text-center">
-            <h3 class="text-xl font-semibold mb-1 text-gray-900 dark:text-white">${barber.name}</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-300">Master Barber</p>
-            <div class="mt-2 flex items-center justify-center space-x-1">
-              ${Array(5).fill().map(() => 
-                '<svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>'
-              ).join('')}
+          
+          <div class="text-center mt-4 flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-lg font-semibold mb-1 text-gray-900 dark:text-white">${barber.name}</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">${barber.specialty}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">${barber.experience} years experience</p>
+            </div>
+            
+            <div class="mt-3">
+              <div class="star-rating justify-center">
+                ${this.generateStars(barber.rating)}
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${barber.rating} stars</p>
             </div>
           </div>
         `;
 
-        // Add click interaction
+        // Add event listeners
+        this.addCardEventListeners(card, barber);
+        
+        return card;
+      }
+
+      generateStars(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        let starsHtml = '';
+        
+        for (let i = 0; i < fullStars; i++) {
+          starsHtml += '<svg class="star" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
+        }
+        
+        if (hasHalfStar) {
+          starsHtml += '<svg class="star opacity-50" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
+        }
+        
+        return starsHtml;
+      }
+
+      async animateCardsIn() {
+        const loadingCards = this.visibleCards.filter(card => card.classList.contains('loading'));
+        
+        for (let i = 0; i < loadingCards.length; i++) {
+          await new Promise(resolve => {
+            setTimeout(() => {
+              loadingCards[i].classList.remove('loading');
+              loadingCards[i].classList.add('loaded');
+              resolve();
+            }, i * 150);
+          });
+        }
+      }
+
+      // Card Replacement Animation System
+      startAnimationSystem() {
+        if (this.isReducedMotion) return;
+        
+        this.animationController = new AnimationController(this);
+        this.animationController.start();
+      }
+
+      async executeCardReplacement() {
+        if (this.animationInProgress || this.gridTransitionInProgress || this.hoverPaused) {
+          return;
+        }
+        
+        if (this.visibleCards.length === 0 || this.hiddenCards.length === 0) {
+          return;
+        }
+        
+        this.animationInProgress = true;
+        
+        try {
+          // Select cards for replacement
+          const exitingCard = this.selectCardForExit();
+          const enteringCard = this.selectCardForEntry();
+          
+          if (!exitingCard || !enteringCard) {
+            this.animationInProgress = false;
+            return;
+          }
+          
+          // Execute replacement sequence
+          await this.performCardSwap(exitingCard, enteringCard);
+          
+        } catch (error) {
+          console.error('Card replacement failed:', error);
+        } finally {
+          this.animationInProgress = false;
+        }
+      }
+
+      selectCardForExit() {
+        // Select a visible card that's not being hovered
+        const availableCards = this.visibleCards.filter(card => 
+          !card.matches(':hover') && 
+          !card.classList.contains('exiting') && 
+          !card.classList.contains('entering')
+        );
+        
+        if (availableCards.length === 0) return null;
+        
+        // Use weighted random selection favoring cards that have been visible longer
+        const randomIndex = Math.floor(Math.random() * availableCards.length);
+        return availableCards[randomIndex];
+      }
+
+      selectCardForEntry() {
+        // Select a random hidden card
+        if (this.hiddenCards.length === 0) return null;
+        
+        const randomIndex = Math.floor(Math.random() * this.hiddenCards.length);
+        return this.hiddenCards[randomIndex];
+      }
+
+      async performCardSwap(exitingCard, enteringCard) {
+        // Get the position of the exiting card
+        const exitingRect = exitingCard.getBoundingClientRect();
+        
+        // Position entering card at the same location
+        enteringCard.style.position = 'absolute';
+        enteringCard.style.left = `${exitingRect.left}px`;
+        enteringCard.style.top = `${exitingRect.top}px`;
+        enteringCard.style.width = `${exitingRect.width}px`;
+        enteringCard.style.height = `${exitingRect.height}px`;
+        
+        // Remove hidden class and add to DOM if needed
+        enteringCard.classList.remove('hidden');
+        if (!enteringCard.parentNode) {
+          this.gridElement.appendChild(enteringCard);
+        }
+        
+        // Start exit animation
+        exitingCard.classList.add('exiting');
+        
+        // Start enter animation after a brief delay
+        setTimeout(() => {
+          enteringCard.classList.add('entering');
+        }, CONFIG.animation.transitionDuration * 0.3);
+        
+        // Handle animation completion
+        await new Promise(resolve => {
+          setTimeout(() => {
+            this.completeCardSwap(exitingCard, enteringCard);
+            resolve();
+          }, CONFIG.animation.transitionDuration);
+        });
+      }
+
+      completeCardSwap(exitingCard, enteringCard) {
+        // Clean up exiting card
+        exitingCard.classList.remove('exiting');
+        exitingCard.classList.add('hidden');
+        
+        // Clean up entering card
+        enteringCard.classList.remove('entering');
+        enteringCard.style.position = '';
+        enteringCard.style.left = '';
+        enteringCard.style.top = '';
+        enteringCard.style.width = '';
+        enteringCard.style.height = '';
+        
+        // Update card arrays
+        const exitingIndex = this.visibleCards.indexOf(exitingCard);
+        if (exitingIndex !== -1) {
+          this.visibleCards[exitingIndex] = enteringCard;
+        }
+        
+        const enteringIndex = this.hiddenCards.indexOf(enteringCard);
+        if (enteringIndex !== -1) {
+          this.hiddenCards.splice(enteringIndex, 1);
+        }
+        
+        this.hiddenCards.push(exitingCard);
+        
+        // Announce change to screen readers
+        const barberName = enteringCard.querySelector('h3').textContent;
+        this.announceCardChange(barberName);
+      }
+
+      pauseCardReplacements() {
+        if (this.animationController) {
+          this.animationController.pause();
+        }
+      }
+
+      resumeCardReplacements() {
+        if (this.animationController && !this.isReducedMotion) {
+          this.animationController.resume();
+        }
+      }
+
+      // Event Handlers
+      addCardEventListeners(card, barber) {
+        // Click handler
         card.addEventListener('click', () => this.handleCardClick(barber));
+        
+        // Keyboard handler
         card.addEventListener('keydown', (e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             this.handleCardClick(barber);
           }
         });
-
-        return card;
+        
+        // Hover handlers
+        card.addEventListener('mouseenter', () => this.handleCardHover(card, true));
+        card.addEventListener('mouseleave', () => this.handleCardHover(card, false));
+        
+        // Focus handlers
+        card.addEventListener('focus', () => this.handleCardFocus(card, true));
+        card.addEventListener('blur', () => this.handleCardFocus(card, false));
       }
 
       handleCardClick(barber) {
         console.log(`Clicked on ${barber.name}'s profile`);
-        // Here you could implement navigation to a detailed profile page
-        // or open a modal with more information
+        // Could implement modal or navigation here
+        this.announceCardInteraction(barber.name);
       }
 
-      setupIntersectionObserver() {
-        if (!('IntersectionObserver' in window)) return;
+      handleCardHover(card, isEntering) {
+        if (isEntering) {
+          this.hoverPaused = true;
+          card.style.animationPlayState = 'paused';
+        } else {
+          this.hoverPaused = false;
+          card.style.animationPlayState = 'running';
+        }
+      }
 
-        this.observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            const card = entry.target;
-            if (entry.isIntersecting) {
-              card.style.animationPlayState = 'running';
-            } else {
-              card.style.animationPlayState = 'paused';
-            }
+      handleCardFocus(card, isFocused) {
+        if (isFocused) {
+          this.hoverPaused = true;
+          card.style.animationPlayState = 'paused';
+        } else {
+          this.hoverPaused = false;
+          card.style.animationPlayState = 'running';
+        }
+      }
+
+      // Observer Setup
+      setupObservers() {
+        // Resize Observer for responsive behavior
+        if ('ResizeObserver' in window) {
+          this.resizeObserver = new ResizeObserver(entries => {
+            clearTimeout(this.resizeTimeout);
+            this.resizeTimeout = setTimeout(() => {
+              this.detectCurrentBreakpoint();
+            }, 250);
           });
-        }, {
-          threshold: 0.1,
-          rootMargin: '50px'
-        });
-
-        document.querySelectorAll('.barber-card').forEach(card => {
-          this.observer.observe(card);
-        });
-      }
-
-      startElevationCycle() {
-        if (this.isReducedMotion) return;
-
-        let currentElevated = 0;
-        const cards = document.querySelectorAll('.barber-card');
+          
+          this.resizeObserver.observe(this.gridElement);
+        } else {
+          // Fallback to window resize
+          window.addEventListener('resize', () => {
+            clearTimeout(this.resizeTimeout);
+            this.resizeTimeout = setTimeout(() => {
+              this.detectCurrentBreakpoint();
+            }, 250);
+          });
+        }
         
-        const cycleElevation = () => {
-          // Remove elevation from all cards
-          cards.forEach(card => card.classList.remove('elevated'));
-          
-          // Add elevation to current card
-          if (cards[currentElevated]) {
-            cards[currentElevated].classList.add('elevated');
-          }
-          
-          // Move to next card
-          currentElevated = (currentElevated + 1) % cards.length;
-        };
-
-        // Start the cycle
-        cycleElevation();
-        this.elevationCycle = setInterval(cycleElevation, 3000);
-      }
-
-      setupPerformanceMonitoring() {
-        if (process?.env?.NODE_ENV === 'development') {
-          let fps = 0;
-          let lastTime = performance.now();
-          let frames = 0;
-
-          const countFPS = (currentTime) => {
-            frames++;
-            if (currentTime >= lastTime + 1000) {
-              fps = Math.round((frames * 1000) / (currentTime - lastTime));
-              document.getElementById('fps-counter').textContent = fps;
-              document.getElementById('performance-monitor').style.opacity = fps < 50 ? '1' : '0';
-              frames = 0;
-              lastTime = currentTime;
-            }
-            requestAnimationFrame(countFPS);
-          };
-
-          requestAnimationFrame(countFPS);
-        }
-      }
-
-      setupResponsiveHandling() {
-        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-        mediaQuery.addListener((e) => {
-          this.isReducedMotion = e.matches;
-          if (e.matches && this.elevationCycle) {
-            clearInterval(this.elevationCycle);
-            document.querySelectorAll('.barber-card').forEach(card => {
-              card.classList.remove('elevated');
+        // Intersection Observer for performance
+        if ('IntersectionObserver' in window) {
+          this.intersectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              const card = entry.target;
+              if (entry.isIntersecting) {
+                card.style.animationPlayState = 'running';
+              } else {
+                card.style.animationPlayState = 'paused';
+              }
             });
-          } else if (!e.matches && !this.elevationCycle) {
-            this.startElevationCycle();
+          }, {
+            threshold: CONFIG.performance.intersectionThreshold,
+            rootMargin: '50px'
+          });
+          
+          // Observe all cards
+          [...this.visibleCards, ...this.hiddenCards].forEach(card => {
+            this.intersectionObserver.observe(card);
+          });
+        }
+      }
+
+      // Accessibility
+      setupAccessibility() {
+        // Reduced motion detection
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        mediaQuery.addEventListener('change', (e) => {
+          this.isReducedMotion = e.matches;
+          if (e.matches) {
+            this.pauseCardReplacements();
+          } else {
+            this.resumeCardReplacements();
           }
         });
-
-        // Handle window resize for responsive adjustments
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-          clearTimeout(resizeTimeout);
-          resizeTimeout = setTimeout(() => {
-            this.updateCSSCustomProperties();
-          }, 250);
+        
+        // Page visibility handling
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            this.pauseCardReplacements();
+          } else {
+            this.resumeCardReplacements();
+          }
         });
       }
 
-      destroy() {
-        if (this.observer) {
-          this.observer.disconnect();
+      setupInteractionHandlers() {
+        // Touch device detection
+        if ('ontouchstart' in window) {
+          this.gridElement.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
         }
-        if (this.elevationCycle) {
-          clearInterval(this.elevationCycle);
+      }
+
+      handleTouchStart(e) {
+        // Pause animations during touch interactions
+        this.hoverPaused = true;
+        setTimeout(() => {
+          this.hoverPaused = false;
+        }, 1000);
+      }
+
+      // Announcements for screen readers
+      announceGridChange(oldBp, newBp) {
+        const message = `Grid layout changed from ${oldBp.columns} columns to ${newBp.columns} columns, now showing ${newBp.maxVisible} barbers`;
+        this.gridAnnouncer.textContent = message;
+      }
+
+      announceCardChange(barberName) {
+        const message = `Now featuring ${barberName}`;
+        this.animationAnnouncer.textContent = message;
+      }
+
+      announceCardInteraction(barberName) {
+        const message = `Selected ${barberName}'s profile`;
+        this.animationAnnouncer.textContent = message;
+      }
+
+      // Performance Monitoring
+      setupPerformanceMonitoring() {
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          this.performanceMonitor = new PerformanceMonitor();
+          this.updatePerformanceMonitor();
+        }
+      }
+
+      updatePerformanceMonitor() {
+        if (this.performanceMonitor) {
+          document.getElementById('grid-state').textContent = this.currentBreakpoint?.name || 'unknown';
+          document.getElementById('visible-count').textContent = this.visibleCards.length;
+        }
+      }
+
+      // Error Handling
+      handleInitializationError(error) {
+        console.error('Failed to initialize barber profiles:', error);
+        
+        // Fallback: Show static grid
+        this.gridElement.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <h3 class="text-lg font-semibold mb-2">Unable to load barber profiles</h3>
+            <p class="text-gray-600 dark:text-gray-300">Please refresh the page to try again.</p>
+          </div>
+        `;
+      }
+
+      // Cleanup
+      destroy() {
+        if (this.animationController) {
+          this.animationController.stop();
+        }
+        
+        if (this.resizeObserver) {
+          this.resizeObserver.disconnect();
+        }
+        
+        if (this.intersectionObserver) {
+          this.intersectionObserver.disconnect();
+        }
+        
+        if (this.performanceMonitor) {
+          this.performanceMonitor.stop();
         }
       }
     }
 
-    // Initialize when DOM is ready
+    // Animation Controller Class
+    class AnimationController {
+      constructor(profileSystem) {
+        this.profileSystem = profileSystem;
+        this.intervalId = null;
+        this.paused = false;
+        this.lastExecutionTime = 0;
+      }
+
+      start() {
+        if (this.intervalId) return;
+        
+        this.intervalId = setInterval(() => {
+          if (!this.paused && !this.profileSystem.isReducedMotion) {
+            const now = Date.now();
+            if (now - this.lastExecutionTime >= CONFIG.animation.cycleDuration) {
+              this.profileSystem.executeCardReplacement();
+              this.lastExecutionTime = now;
+            }
+          }
+        }, 1000); // Check every second
+      }
+
+      pause() {
+        this.paused = true;
+      }
+
+      resume() {
+        this.paused = false;
+      }
+
+      stop() {
+        if (this.intervalId) {
+          clearInterval(this.intervalId);
+          this.intervalId = null;
+        }
+      }
+    }
+
+    // Performance Monitor Class
+    class PerformanceMonitor {
+      constructor() {
+        this.fps = 0;
+        this.frameCount = 0;
+        this.lastTime = performance.now();
+        this.monitor = document.getElementById('performance-monitor');
+        this.fpsCounter = document.getElementById('fps-counter');
+        this.animationId = null;
+        
+        this.start();
+      }
+
+      start() {
+        this.measure();
+      }
+
+      measure() {
+        this.frameCount++;
+        const currentTime = performance.now();
+        
+        if (currentTime >= this.lastTime + 1000) {
+          this.fps = Math.round((this.frameCount * 1000) / (currentTime - this.lastTime));
+          this.fpsCounter.textContent = this.fps;
+          
+          // Show monitor if performance is poor
+          if (this.fps < 50) {
+            this.monitor.classList.add('visible');
+          } else {
+            this.monitor.classList.remove('visible');
+          }
+          
+          this.frameCount = 0;
+          this.lastTime = currentTime;
+        }
+        
+        this.animationId = requestAnimationFrame(() => this.measure());
+      }
+
+      stop() {
+        if (this.animationId) {
+          cancelAnimationFrame(this.animationId);
+          this.animationId = null;
+        }
+      }
+    }
+
+    // Initialize the application
+    let barberProfiles;
+    
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
-        new BarberProfilesAnimation();
+        barberProfiles = new DynamicBarberProfiles();
       });
     } else {
-      new BarberProfilesAnimation();
+      barberProfiles = new DynamicBarberProfiles();
     }
 
-    // Handle page visibility changes for performance
-    document.addEventListener('visibilitychange', () => {
-      const cards = document.querySelectorAll('.barber-card');
-      cards.forEach(card => {
-        card.style.animationPlayState = document.hidden ? 'paused' : 'running';
-      });
+    // Global error handling
+    window.addEventListener('error', (event) => {
+      console.error('Global error caught:', event.error);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (barberProfiles) {
+        barberProfiles.destroy();
+      }
     });
   </script>
 </body>
