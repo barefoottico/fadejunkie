@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Barber Profiles</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --animation-duration: 6s;
+      --elevation-duration: 10s;
+      --float-distance: 8px;
+      --elevation-distance: 12px;
+      --stagger-base: 0.8s;
+      --total-cards: 9;
+    }
+
+    /* Core floating animation keyframes */
+    @keyframes gentleFloat {
+      0%, 100% { 
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+      33% { 
+        transform: translate3d(0, calc(-1 * var(--float-distance)), 0) scale(1);
+      }
+      66% { 
+        transform: translate3d(0, calc(var(--float-distance) * 0.5), 0) scale(1);
+      }
+    }
+
+    /* Dynamic elevation cycling */
+    @keyframes dynamicElevation {
+      0%, 85%, 100% { 
+        transform: translate3d(0, 0, 0) scale(1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        filter: brightness(1) saturate(1);
+      }
+      15%, 70% { 
+        transform: translate3d(0, calc(-1 * var(--elevation-distance)), 0) scale(1.02);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        filter: brightness(1.05) saturate(1.1);
+      }
+    }
+
+    /* Enhanced shadow transitions */
+    @keyframes shadowPulse {
+      0%, 100% { 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      50% { 
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+    }
+
+    /* Barber card base styles with animation */
+    .barber-card {
+      will-change: transform, box-shadow, filter;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: gentleFloat var(--animation-duration) ease-in-out infinite,
+                 shadowPulse calc(var(--animation-duration) * 1.5) ease-in-out infinite;
+      transform-origin: center center;
+      backface-visibility: hidden;
+      perspective: 1000px;
+    }
+
+    /* Individual card stagger delays using nth-child */
+    .barber-card:nth-child(1) {
+      animation-delay: 0s, 0s;
+    }
+    .barber-card:nth-child(2) {
+      animation-delay: 0.8s, 1.2s;
+    }
+    .barber-card:nth-child(3) {
+      animation-delay: 1.3s, 1.95s;
+    }
+    .barber-card:nth-child(4) {
+      animation-delay: 2.1s, 3.15s;
+    }
+    .barber-card:nth-child(5) {
+      animation-delay: 3.4s, 5.1s;
+    }
+    .barber-card:nth-child(6) {
+      animation-delay: 5.5s, 8.25s;
+    }
+    .barber-card:nth-child(7) {
+      animation-delay: 8.9s, 13.35s;
+    }
+    .barber-card:nth-child(8) {
+      animation-delay: 14.4s, 21.6s;
+    }
+    .barber-card:nth-child(9) {
+      animation-delay: 23.3s, 34.95s;
+    }
+
+    /* Dynamic elevation animation for selected cards */
+    .barber-card.elevated {
+      animation: gentleFloat var(--animation-duration) ease-in-out infinite,
+                 dynamicElevation var(--elevation-duration) ease-in-out infinite;
+    }
+
+    /* Hover interactions */
+    .barber-card:hover {
+      animation-play-state: paused;
+      transform: translate3d(0, -4px, 0) scale(1.03) !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+      filter: brightness(1.08) saturate(1.15) !important;
+    }
+
+    /* Focus states for accessibility */
+    .barber-card:focus-within {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+      animation-play-state: paused;
+    }
+
+    /* Dark mode enhancements */
+    .dark .barber-card {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .dark .barber-card:hover {
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Image optimization */
+    .barber-image {
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: transform;
+    }
+
+    .barber-card:hover .barber-image {
+      transform: scale(1.05);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+      :root {
+        --float-distance: 4px;
+        --elevation-distance: 6px;
+        --animation-duration: 8s;
+      }
+      
+      .barber-card {
+        transform: scale(0.95);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      :root {
+        --float-distance: 6px;
+        --elevation-distance: 9px;
+      }
+    }
+
+    /* Accessibility - Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .barber-card {
+        animation: none !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+      }
+      
+      .barber-card:hover {
+        transform: translate3d(0, -2px, 0) scale(1.01) !important;
+      }
+    }
+
+    /* Performance optimizations */
+    .barber-grid {
+      contain: layout style paint;
+    }
+
+    /* Loading state */
+    .barber-card.loading {
+      opacity: 0;
+      transform: translate3d(0, 20px, 0);
+      animation: none;
+    }
+
+    .barber-card.loaded {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    /* Section header animation */
+    .section-header {
+      opacity: 0;
+      transform: translateY(-20px);
+      animation: fadeInDown 1s ease forwards;
+    }
+
+    @keyframes fadeInDown {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
+
+  <!-- Enhanced Barber Profiles Section -->
+  <section id="barbers" class="max-w-7xl mx-auto px-6 py-16">
+    <h2 class="section-header text-4xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      Meet Our Master Barbers
+    </h2>
+    <p class="section-header text-center text-gray-600 dark:text-gray-300 mb-16 max-w-2xl mx-auto" style="animation-delay: 0.2s;">
+      Experience exceptional craftsmanship from our talented team of professional barbers, each bringing their unique style and expertise to every cut.
+    </p>
+    
+    <div id="barber-list" class="barber-grid grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+  </section>
+
+  <!-- Performance monitoring (optional) -->
+  <div id="performance-monitor" class="fixed bottom-4 right-4 bg-black/20 text-white p-2 rounded text-xs opacity-0 transition-opacity" style="font-family: monospace;">
+    FPS: <span id="fps-counter">--</span>
+  </div>
+
+  <!-- Enhanced JavaScript Implementation -->
+  <script>
+    class BarberProfilesAnimation {
+      constructor() {
+        this.barbers = [
+          { "name": "Sal", "image": "sal.jpg" },
+          { "name": "Steve", "image": "steve.jpg" },
+          { "name": "Nick", "image": "nick.jpg" },
+          { "name": "Jay", "image": "jay.jpg" },
+          { "name": "Jacob", "image": "jacob.jpg" },
+          { "name": "Anthony", "image": "anthony.jpg" },
+          { "name": "Anderson", "image": "anderson.jpg" },
+          { "name": "Andres", "image": "andres.jpg" },
+          { "name": "Alex", "image": "alex.jpg" }
+        ];
+        
+        this.container = document.getElementById('barber-list');
+        this.observer = null;
+        this.elevationCycle = null;
+        this.performanceMonitor = null;
+        this.isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        
+        this.init();
+      }
+
+      init() {
+        this.updateCSSCustomProperties();
+        this.renderBarberCards();
+        this.setupIntersectionObserver();
+        this.startElevationCycle();
+        this.setupPerformanceMonitoring();
+        this.setupResponsiveHandling();
+      }
+
+      updateCSSCustomProperties() {
+        document.documentElement.style.setProperty('--total-cards', this.barbers.length);
+      }
+
+      renderBarberCards() {
+        this.container.innerHTML = '';
+        
+        this.barbers.forEach((barber, index) => {
+          const cardElement = this.createBarberCard(barber, index);
+          this.container.appendChild(cardElement);
+          
+          // Staggered loading animation
+          setTimeout(() => {
+            cardElement.classList.remove('loading');
+            cardElement.classList.add('loaded');
+          }, index * 100);
+        });
+      }
+
+      createBarberCard(barber, index) {
+        const card = document.createElement('div');
+        card.className = 'barber-card loading bg-white dark:bg-zinc-800 rounded-xl overflow-hidden p-6 flex flex-col items-center transform cursor-pointer';
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `View ${barber.name}'s profile`);
+        
+        // Create placeholder image with better fallback
+        const imageUrl = `https://images.unsplash.com/photo-${1500000000000 + index}?w=200&h=200&fit=crop&crop=face&auto=format&q=75`;
+        
+        card.innerHTML = `
+          <div class="relative w-36 h-36 overflow-hidden rounded-full mb-4 ring-2 ring-gray-200 dark:ring-gray-600">
+            <img src="${imageUrl}" 
+                 alt="${barber.name}" 
+                 loading="lazy"
+                 class="barber-image w-full h-full object-cover"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full hidden items-center justify-center text-white text-2xl font-bold">
+              ${barber.name.charAt(0)}
+            </div>
+          </div>
+          <div class="text-center">
+            <h3 class="text-xl font-semibold mb-1 text-gray-900 dark:text-white">${barber.name}</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-300">Master Barber</p>
+            <div class="mt-2 flex items-center justify-center space-x-1">
+              ${Array(5).fill().map(() => 
+                '<svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>'
+              ).join('')}
+            </div>
+          </div>
+        `;
+
+        // Add click interaction
+        card.addEventListener('click', () => this.handleCardClick(barber));
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.handleCardClick(barber);
+          }
+        });
+
+        return card;
+      }
+
+      handleCardClick(barber) {
+        console.log(`Clicked on ${barber.name}'s profile`);
+        // Here you could implement navigation to a detailed profile page
+        // or open a modal with more information
+      }
+
+      setupIntersectionObserver() {
+        if (!('IntersectionObserver' in window)) return;
+
+        this.observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            const card = entry.target;
+            if (entry.isIntersecting) {
+              card.style.animationPlayState = 'running';
+            } else {
+              card.style.animationPlayState = 'paused';
+            }
+          });
+        }, {
+          threshold: 0.1,
+          rootMargin: '50px'
+        });
+
+        document.querySelectorAll('.barber-card').forEach(card => {
+          this.observer.observe(card);
+        });
+      }
+
+      startElevationCycle() {
+        if (this.isReducedMotion) return;
+
+        let currentElevated = 0;
+        const cards = document.querySelectorAll('.barber-card');
+        
+        const cycleElevation = () => {
+          // Remove elevation from all cards
+          cards.forEach(card => card.classList.remove('elevated'));
+          
+          // Add elevation to current card
+          if (cards[currentElevated]) {
+            cards[currentElevated].classList.add('elevated');
+          }
+          
+          // Move to next card
+          currentElevated = (currentElevated + 1) % cards.length;
+        };
+
+        // Start the cycle
+        cycleElevation();
+        this.elevationCycle = setInterval(cycleElevation, 3000);
+      }
+
+      setupPerformanceMonitoring() {
+        if (process?.env?.NODE_ENV === 'development') {
+          let fps = 0;
+          let lastTime = performance.now();
+          let frames = 0;
+
+          const countFPS = (currentTime) => {
+            frames++;
+            if (currentTime >= lastTime + 1000) {
+              fps = Math.round((frames * 1000) / (currentTime - lastTime));
+              document.getElementById('fps-counter').textContent = fps;
+              document.getElementById('performance-monitor').style.opacity = fps < 50 ? '1' : '0';
+              frames = 0;
+              lastTime = currentTime;
+            }
+            requestAnimationFrame(countFPS);
+          };
+
+          requestAnimationFrame(countFPS);
+        }
+      }
+
+      setupResponsiveHandling() {
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        mediaQuery.addListener((e) => {
+          this.isReducedMotion = e.matches;
+          if (e.matches && this.elevationCycle) {
+            clearInterval(this.elevationCycle);
+            document.querySelectorAll('.barber-card').forEach(card => {
+              card.classList.remove('elevated');
+            });
+          } else if (!e.matches && !this.elevationCycle) {
+            this.startElevationCycle();
+          }
+        });
+
+        // Handle window resize for responsive adjustments
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = setTimeout(() => {
+            this.updateCSSCustomProperties();
+          }, 250);
+        });
+      }
+
+      destroy() {
+        if (this.observer) {
+          this.observer.disconnect();
+        }
+        if (this.elevationCycle) {
+          clearInterval(this.elevationCycle);
+        }
+      }
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        new BarberProfilesAnimation();
+      });
+    } else {
+      new BarberProfilesAnimation();
+    }
+
+    // Handle page visibility changes for performance
+    document.addEventListener('visibilitychange', () => {
+      const cards = document.querySelectorAll('.barber-card');
+      cards.forEach(card => {
+        card.style.animationPlayState = document.hidden ? 'paused' : 'running';
+      });
+    });
+  </script>
+</body>
+</html>
