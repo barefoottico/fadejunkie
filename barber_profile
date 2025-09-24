@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barber Profiles</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Optional: Smooth hover scale effect */
+    .group:hover {
+      transform: scale(1);
+      transition: transform 0.3s ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+
+  <!-- Barber Profiles Section -->
+  <section id="barbers" class="max-w-6xl mx-auto px-6 py-16">
+    <h2 class="text-3xl font-bold text-center mb-12">Meet Our Barbers</h2>
+    <div id="barber-list" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-10"></div>
+  </section>
+
+  <!-- Barber Profiles Script -->
+  <script>
+    fetch('barbers.json')
+      .then(response => response.json())
+      .then(barbers => {
+        const container = document.getElementById('barber-list');
+        barbers.forEach(barber => {
+          container.innerHTML += `
+            <div class="group bg-white dark:bg-zinc-800 rounded-xl shadow hover:shadow-lg overflow-hidden p-4 flex flex-col items-center transform scale-90">
+              <div class="w-36 h-36 overflow-hidden rounded-full">
+                <img src="images/barbers/${barber.image}" 
+                     alt="${barber.name}" 
+                     loading="lazy"
+                     class="w-full h-full object-cover">
+              </div>
+              <div class="mt-3 text-center">
+                <h3 class="text-base font-semibold">${barber.name}</h3>
+              </div>
+            </div>
+          `;
+        });
+      })
+      .catch(err => console.error("Error loading barbers:", err));
+  </script>
+
+</body>
+</html>
