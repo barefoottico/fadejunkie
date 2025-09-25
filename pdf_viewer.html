@@ -85,13 +85,60 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    .guide-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+    .filter-tab {
+      @apply text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100;
     }
     
-    .dark .guide-card:hover {
-      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3);
+    .filter-tab.active {
+      @apply bg-white dark:bg-zinc-600 text-zinc-900 dark:text-zinc-100 shadow-sm;
+    }
+    
+    .view-toggle {
+      @apply text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300;
+    }
+    
+    .view-toggle.active {
+      @apply text-blue-600 dark:text-blue-400;
+    }
+    
+    .file-type-badge {
+      @apply text-xs px-2 py-1 bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded font-medium;
+    }
+    
+    .category-badge {
+      @apply text-xs px-2 py-1 rounded font-medium;
+    }
+    
+    .category-badge.practical {
+      @apply bg-green-50 dark:bg-green-900/50 text-green-700 dark:text-green-300;
+    }
+    
+    .category-badge.sanitation {
+      @apply bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300;
+    }
+    
+    .category-badge.maintenance {
+      @apply bg-purple-50 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300;
+    }
+    
+    .category-badge.checklists {
+      @apply bg-orange-50 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300;
+    }
+    
+    .category-badge.techniques {
+      @apply bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300;
+    }
+    
+    .favorite-btn.favorited svg {
+      @apply fill-red-500 text-red-500;
+    }
+    
+    .guide-item.grid-view {
+      @apply rounded-xl p-4 text-center;
+    }
+    
+    .guide-item.grid-view .text-2xl {
+      @apply text-4xl mb-3;
     }
 
     .loading-spinner {
@@ -116,7 +163,7 @@
   <div class="flex h-screen">
     
     <!-- Sidebar -->
-    <div id="sidebar" class="sidebar-closed fixed lg:relative lg:sidebar-open z-30 w-80 bg-white dark:bg-zinc-800 border-r border-zinc-200 dark:border-zinc-700 h-full flex flex-col transition-transform duration-300 ease-in-out">
+    <div id="sidebar" class="sidebar-closed fixed lg:relative lg:sidebar-open z-30 w-96 bg-white dark:bg-zinc-800 border-r border-zinc-200 dark:border-zinc-700 h-full flex flex-col transition-transform duration-300 ease-in-out">
       
       <!-- Sidebar Header -->
       <div class="p-6 border-b border-zinc-200 dark:border-zinc-700">
@@ -136,7 +183,7 @@
         </div>
 
         <!-- Search Bar -->
-        <div class="relative">
+        <div class="relative mb-4">
           <input 
             type="text" 
             id="searchInput"
@@ -147,79 +194,298 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
         </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex space-x-1 bg-zinc-100 dark:bg-zinc-700 rounded-lg p-1">
+          <button id="allTab" class="filter-tab active flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors">
+            All Files
+          </button>
+          <button id="favoritesTab" class="filter-tab flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            Favorites
+          </button>
+          <button id="recentTab" class="filter-tab flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors">
+            Recent
+          </button>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="mt-4">
+          <label class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Filter by Category</label>
+          <select id="categoryFilter" class="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-700 rounded-lg border-0 text-sm">
+            <option value="all">All Categories</option>
+            <option value="practical">Practical Exams</option>
+            <option value="sanitation">Sanitation</option>
+            <option value="maintenance">Tool Maintenance</option>
+            <option value="techniques">Cutting Techniques</option>
+            <option value="checklists">Checklists</option>
+            <option value="theory">Theory</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- File Statistics -->
+      <div class="px-6 py-3 bg-zinc-50 dark:bg-zinc-700/50 border-b border-zinc-200 dark:border-zinc-600">
+        <div class="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <div id="totalFiles" class="text-lg font-bold text-blue-600">5</div>
+            <div class="text-xs text-zinc-500">Total</div>
+          </div>
+          <div>
+            <div id="favoriteCount" class="text-lg font-bold text-red-500">0</div>
+            <div class="text-xs text-zinc-500">Favorites</div>
+          </div>
+          <div>
+            <div id="recentCount" class="text-lg font-bold text-green-600">0</div>
+            <div class="text-xs text-zinc-500">Recent</div>
+          </div>
+        </div>
       </div>
 
       <!-- Guide Library -->
       <div class="flex-1 overflow-y-auto p-6">
-        <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-4">Available Guides</h2>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Available Guides</h2>
+          
+          <!-- View Toggle -->
+          <div class="flex space-x-1">
+            <button id="listView" class="view-toggle active p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700" title="List View">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+              </svg>
+            </button>
+            <button id="gridView" class="view-toggle p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700" title="Grid View">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-1zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
         
         <div id="guidesList" class="space-y-3">
           <!-- TDLR Practical Guide -->
-          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="tdlr-practical">
-            <div class="flex items-start space-x-3">
-              <div class="text-2xl">🎯</div>
-              <div class="flex-1">
-                <h3 class="font-semibold text-sm mb-1">TDLR Barber Practical Exam Guide</h3>
-                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Complete step-by-step practical exam preparation</p>
-                <div class="flex items-center space-x-2 text-xs text-zinc-500">
-                  <span class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">Featured</span>
-                  <span>24 pages</span>
+          <div class="guide-item guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" 
+               data-guide="tdlr-practical" 
+               data-category="practical" 
+               data-type="pdf"
+               data-size="2.4 MB"
+               data-date="2025-01-15">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start space-x-3 flex-1">
+                <div class="text-2xl">🎯</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <h3 class="font-semibold text-sm truncate">TDLR Barber Practical Exam Guide</h3>
+                    <button class="favorite-btn ml-2 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700" data-guide="tdlr-practical">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Complete step-by-step practical exam preparation</p>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                      <span class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">Featured</span>
+                      <span id="tdlr-page-count">Loading...</span>
+                      <span>•</span>
+                      <span>2.4 MB</span>
+                    </div>
+                  </div>
+                  <div class="mt-2 flex items-center space-x-2">
+                    <div class="file-type-badge">PDF</div>
+                    <div class="category-badge practical">Practical</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Sanitation Guide -->
-          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="sanitation">
-            <div class="flex items-start space-x-3">
-              <div class="text-2xl">🧽</div>
-              <div class="flex-1">
-                <h3 class="font-semibold text-sm mb-1">Sanitation & Disinfection Quick Reference</h3>
-                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Essential cleaning protocols and procedures</p>
-                <div class="flex items-center space-x-2 text-xs text-zinc-500">
-                  <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">Quick Ref</span>
-                  <span>8 pages</span>
+          <div class="guide-item guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" 
+               data-guide="sanitation" 
+               data-category="sanitation" 
+               data-type="pdf"
+               data-size="1.2 MB"
+               data-date="2025-01-10">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start space-x-3 flex-1">
+                <div class="text-2xl">🧽</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <h3 class="font-semibold text-sm truncate">Sanitation & Disinfection Quick Reference</h3>
+                    <button class="favorite-btn ml-2 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700" data-guide="sanitation">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Essential cleaning protocols and procedures</p>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                      <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">Quick Ref</span>
+                      <span>8 pages</span>
+                      <span>•</span>
+                      <span>1.2 MB</span>
+                    </div>
+                  </div>
+                  <div class="mt-2 flex items-center space-x-2">
+                    <div class="file-type-badge">PDF</div>
+                    <div class="category-badge sanitation">Sanitation</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Tool Maintenance -->
-          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="tool-maintenance">
-            <div class="flex items-start space-x-3">
-              <div class="text-2xl">⚙️</div>
-              <div class="flex-1">
-                <h3 class="font-semibold text-sm mb-1">Clipper & Tool Maintenance Guide</h3>
-                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Proper care and maintenance procedures</p>
-                <div class="flex items-center space-x-2 text-xs text-zinc-500">
-                  <span class="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full">Maintenance</span>
-                  <span>12 pages</span>
+          <div class="guide-item guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" 
+               data-guide="tool-maintenance" 
+               data-category="maintenance" 
+               data-type="pdf"
+               data-size="1.8 MB"
+               data-date="2025-01-08">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start space-x-3 flex-1">
+                <div class="text-2xl">⚙️</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <h3 class="font-semibold text-sm truncate">Clipper & Tool Maintenance Guide</h3>
+                    <button class="favorite-btn ml-2 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700" data-guide="tool-maintenance">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Proper care and maintenance procedures</p>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                      <span class="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full">Maintenance</span>
+                      <span>12 pages</span>
+                      <span>•</span>
+                      <span>1.8 MB</span>
+                    </div>
+                  </div>
+                  <div class="mt-2 flex items-center space-x-2">
+                    <div class="file-type-badge">PDF</div>
+                    <div class="category-badge maintenance">Maintenance</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- State Board Kit -->
-          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="kit-checklist">
-            <div class="flex items-start space-x-3">
-              <div class="text-2xl">🧰</div>
-              <div class="flex-1">
-                <h3 class="font-semibold text-sm mb-1">State Board Kit Checklist</h3>
-                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Complete packing list for exam day</p>
-                <div class="flex items-center space-x-2 text-xs text-zinc-500">
-                  <span class="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded-full">Checklist</span>
-                  <span>4 pages</span>
+          <div class="guide-item guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" 
+               data-guide="kit-checklist" 
+               data-category="checklists" 
+               data-type="pdf"
+               data-size="0.8 MB"
+               data-date="2025-01-05">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start space-x-3 flex-1">
+                <div class="text-2xl">🧰</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <h3 class="font-semibold text-sm truncate">State Board Kit Checklist</h3>
+                    <button class="favorite-btn ml-2 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700" data-guide="kit-checklist">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Complete packing list for exam day</p>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                      <span class="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded-full">Checklist</span>
+                      <span>4 pages</span>
+                      <span>•</span>
+                      <span>0.8 MB</span>
+                    </div>
+                  </div>
+                  <div class="mt-2 flex items-center space-x-2">
+                    <div class="file-type-badge">PDF</div>
+                    <div class="category-badge checklists">Checklist</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Technique Reference -->
-          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="techniques">
-            <div class="flex items-start space-x-3">
-              <div class="text-2xl">✂️</div>
-              <div class="flex-1">
-                <h3 class="font-semibold text-sm mb-1">Essential Cutting Techniques</h3>
+          <div class="guide-item guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" 
+               data-guide="techniques" 
+               data-category="techniques" 
+               data-type="pdf"
+               data-size="3.1 MB"
+               data-date="2025-01-12">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start space-x-3 flex-1">
+                <div class="text-2xl">✂️</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <h3 class="font-semibold text-sm truncate">Essential Cutting Techniques</h3>
+                    <button class="favorite-btn ml-2 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700" data-guide="techniques">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Visual guide to fundamental cuts and styles</p>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                      <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-full">Techniques</span>
+                      <span>16 pages</span>
+                      <span>•</span>
+                      <span>3.1 MB</span>
+                    </div>
+                  </div>
+                  <div class="mt-2 flex items-center space-x-2">
+                    <div class="file-type-badge">PDF</div>
+                    <div class="category-badge techniques">Techniques</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty States -->
+        <div id="noResults" class="hidden text-center py-8">
+          <div class="text-4xl mb-4">📭</div>
+          <h3 class="font-semibold mb-2">No guides found</h3>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Try adjusting your search or filters</p>
+        </div>
+
+        <div id="noFavorites" class="hidden text-center py-8">
+          <div class="text-4xl mb-4">⭐</div>
+          <h3 class="font-semibold mb-2">No favorites yet</h3>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Click the heart icon on any guide to add it to favorites</p>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="p-6 border-t border-zinc-200 dark:border-zinc-700">
+        <div class="flex items-center justify-between text-sm mb-2">
+          <span class="text-zinc-600 dark:text-zinc-300">Study Progress</span>
+          <span id="studyProgress" class="font-semibold">0%</span>
+        </div>
+        <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2 mb-3">
+          <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="flex space-x-2">
+          <button id="clearFilters" class="flex-1 text-xs px-3 py-2 bg-zinc-100 dark:bg-zinc-700 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors">
+            Clear Filters
+          </button>
+          <button id="exportProgress" class="flex-1 text-xs px-3 py-2 bg-zinc-100 dark:bg-zinc-700 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors">
+            Export Data
+          </button>
+        </div>
+      </div>
+    </div>semibold text-sm mb-1">Essential Cutting Techniques</h3>
                 <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Visual guide to fundamental cuts and styles</p>
                 <div class="flex items-center space-x-2 text-xs text-zinc-500">
                   <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-full">Techniques</span>
@@ -366,21 +632,210 @@
   </div>
 
   <script>
-    // Global Variables
-    let currentPDF = null;
-    let currentPage = 1;
-    let totalPages = 0;
-    let scale = 1.0;
-    let pdfDoc = null;
-    const canvas = document.getElementById('pdfCanvas');
-    const ctx = canvas.getContext('2d');
+    // Favorites Management
+    let favorites = new Set(JSON.parse(localStorage.getItem('fj_favorites') || '[]'));
+    let recentFiles = JSON.parse(localStorage.getItem('fj_recent_files') || '[]');
+    let currentView = 'list'; // 'list' or 'grid'
+    let currentFilter = 'all'; // 'all', 'favorites', 'recent'
 
-    // Sample PDF data (in real implementation, these would be actual PDF URLs)
+    // Update favorites and recent files
+    function updateFavorites() {
+      localStorage.setItem('fj_favorites', JSON.stringify(Array.from(favorites)));
+      updateStatistics();
+      updateFavoriteButtons();
+      
+      if (currentFilter === 'favorites') {
+        filterFiles('favorites');
+      }
+    }
+
+    function addToRecent(guideId) {
+      // Remove if already exists
+      recentFiles = recentFiles.filter(id => id !== guideId);
+      // Add to beginning
+      recentFiles.unshift(guideId);
+      // Keep only last 10
+      recentFiles = recentFiles.slice(0, 10);
+      
+      localStorage.setItem('fj_recent_files', JSON.stringify(recentFiles));
+      updateStatistics();
+      
+      if (currentFilter === 'recent') {
+        filterFiles('recent');
+      }
+    }
+
+    function updateStatistics() {
+      document.getElementById('totalFiles').textContent = Object.keys(guides).length;
+      document.getElementById('favoriteCount').textContent = favorites.size;
+      document.getElementById('recentCount').textContent = recentFiles.length;
+    }
+
+    function updateFavoriteButtons() {
+      document.querySelectorAll('.favorite-btn').forEach(btn => {
+        const guideId = btn.getAttribute('data-guide');
+        if (favorites.has(guideId)) {
+          btn.classList.add('favorited');
+        } else {
+          btn.classList.remove('favorited');
+        }
+      });
+    }
+
+    // Filter and Search Functions
+    function filterFiles(filterType) {
+      currentFilter = filterType;
+      const items = document.querySelectorAll('.guide-item');
+      let visibleCount = 0;
+      
+      // Update tab states
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.getElementById(filterType + 'Tab').classList.add('active');
+      
+      items.forEach(item => {
+        const guideId = item.getAttribute('data-guide');
+        let shouldShow = false;
+        
+        switch(filterType) {
+          case 'all':
+            shouldShow = true;
+            break;
+          case 'favorites':
+            shouldShow = favorites.has(guideId);
+            break;
+          case 'recent':
+            shouldShow = recentFiles.includes(guideId);
+            break;
+        }
+        
+        if (shouldShow) {
+          item.style.display = 'block';
+          item.style.animation = 'fadeIn 0.3s ease-in-out';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      
+      // Show/hide empty states
+      document.getElementById('noResults').classList.add('hidden');
+      document.getElementById('noFavorites').classList.add('hidden');
+      
+      if (visibleCount === 0) {
+        if (filterType === 'favorites') {
+          document.getElementById('noFavorites').classList.remove('hidden');
+        } else {
+          document.getElementById('noResults').classList.remove('hidden');
+        }
+      }
+    }
+
+    function searchFiles() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const category = document.getElementById('categoryFilter').value;
+      const items = document.querySelectorAll('.guide-item');
+      let visibleCount = 0;
+      
+      items.forEach(item => {
+        const title = item.querySelector('h3').textContent.toLowerCase();
+        const description = item.querySelector('p').textContent.toLowerCase();
+        const itemCategory = item.getAttribute('data-category');
+        
+        const matchesSearch = !query || title.includes(query) || description.includes(query);
+        const matchesCategory = category === 'all' || itemCategory === category;
+        const matchesFilter = currentFilter === 'all' || 
+          (currentFilter === 'favorites' && favorites.has(item.getAttribute('data-guide'))) ||
+          (currentFilter === 'recent' && recentFiles.includes(item.getAttribute('data-guide')));
+        
+        if (matchesSearch && matchesCategory && matchesFilter) {
+          item.style.display = 'block';
+          item.style.animation = 'fadeIn 0.3s ease-in-out';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      
+      // Update empty states
+      document.getElementById('noResults').classList.toggle('hidden', visibleCount > 0);
+      document.getElementById('noFavorites').classList.add('hidden');
+    }
+
+    function toggleView(viewType) {
+      currentView = viewType;
+      const container = document.getElementById('guidesList');
+      const items = document.querySelectorAll('.guide-item');
+      
+      // Update view toggle buttons
+      document.querySelectorAll('.view-toggle').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(viewType + 'View').classList.add('active');
+      
+      if (viewType === 'grid') {
+        container.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4';
+        items.forEach(item => {
+          item.classList.add('grid-view');
+        });
+      } else {
+        container.className = 'space-y-3';
+        items.forEach(item => {
+          item.classList.remove('grid-view');
+        });
+      }
+    }
+
+    function clearAllFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('categoryFilter').value = 'all';
+      filterFiles('all');
+      searchFiles();
+    }
+
+    function exportProgress() {
+      const progressData = {
+        studyProgress: localStorage.getItem('fj_study_progress') || '0',
+        viewedGuides: JSON.parse(localStorage.getItem('fj_viewed_guides') || '[]'),
+        favorites: Array.from(favorites),
+        recentFiles: recentFiles,
+        notes: JSON.parse(localStorage.getItem('fj_guide_notes') || '{}'),
+        exportDate: new Date().toISOString()
+      };
+      
+      const dataStr = JSON.stringify(progressData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(dataBlob);
+      link.download = `fadejunkie_study_progress_${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+      
+      // Show success message
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50';
+      toast.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <div>
+            <div class="font-bold">Progress Exported!</div>
+            <div class="text-sm opacity-90">Your study data has been downloaded</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // PDF data with actual file URLs
     const guides = {
       'tdlr-practical': {
         title: 'TDLR Barber Practical Exam Guide',
-        url: 'https://example.com/tdlr-guide.pdf', // Replace with actual PDF
-        pages: 24,
+        url: './TDLR Barber Practical Exam Guide.pdf', // Actual PDF from your repo
+        pages: null, // Will be determined when PDF loads
         description: 'Complete step-by-step practical exam preparation'
       },
       'sanitation': {
@@ -475,7 +930,7 @@
       });
     })();
 
-    // PDF Management
+    // PDF Management - Real PDF.js Implementation
     async function loadPDF(guideId) {
       const guide = guides[guideId];
       if (!guide) return;
@@ -486,17 +941,36 @@
       document.getElementById('pdfContainer').classList.add('hidden');
 
       try {
-        // For demonstration, we'll create a mock PDF viewer
-        // In a real implementation, you'd load the actual PDF here
-        await simulatePDFLoad(guide);
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        // Load the actual PDF
+        const loadingTask = pdfjsLib.getDocument(guide.url);
+        pdfDoc = await loadingTask.promise;
         
         currentPDF = guideId;
         currentPage = 1;
-        totalPages = guide.pages;
+        totalPages = pdfDoc.numPages;
         
+        // Add to recent files
+        addToRecent(guideId);
+        
+        // Update guide info with actual page count
+        guide.pages = totalPages;
+        
+        // Update the page count display in sidebar
+        const pageCountElement = document.getElementById('tdlr-page-count');
+        if (pageCountElement) {
+          pageCountElement.textContent = `${totalPages} pages`;
+        }
+        
+        // Update UI elements
         document.getElementById('documentTitle').textContent = guide.title;
         updatePageInfo();
         updateToolbarState();
+        
+        // Render first page
+        await renderPage(currentPage);
         
         // Hide loading, show PDF
         document.getElementById('loadingScreen').classList.add('hidden');
@@ -514,20 +988,57 @@
       } catch (error) {
         console.error('Error loading PDF:', error);
         document.getElementById('loadingScreen').classList.add('hidden');
-        alert('Error loading guide. Please try again.');
+        
+        // Show error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'fixed top-4 right-4 bg-red-600 text-white p-4 rounded-lg shadow-lg z-50';
+        errorDiv.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+            <div>
+              <div class="font-bold">Error Loading PDF</div>
+              <div class="text-sm">Please check if the file exists in your repository</div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 5000);
       }
     }
 
-    // Simulate PDF loading (replace with actual PDF.js implementation)
-    async function simulatePDFLoad(guide) {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          // Create a mock PDF page
-          renderMockPage(guide);
-          resolve();
-        }, 1500);
-      });
+    // Render PDF Page - Real Implementation
+    async function renderPage(pageNum) {
+      if (!pdfDoc) return;
+      
+      try {
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: scale });
+        
+        const canvas = document.getElementById('pdfCanvas');
+        const context = canvas.getContext('2d');
+        
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        
+        await page.render(renderContext).promise;
+        
+      } catch (error) {
+        console.error('Error rendering page:', error);
+        // Fallback to mock rendering for other guides
+        renderMockPage(guides[currentPDF]);
+      }
     }
+
+    // Remove the simulatePDFLoad function since we're using real PDF.js now
+    
+    // Keep renderMockPage for other guides that don't have real PDFs yet
 
     // Render mock PDF page (replace with actual PDF rendering)
     function renderMockPage(guide) {
@@ -593,52 +1104,59 @@
       ctx.fillText(`- ${currentPage} -`, canvas.width / 2, canvas.height - 30);
     }
 
-    // Page Navigation
-    function goToPage(pageNum) {
+    // Page Navigation - Updated for Real PDF
+    async function goToPage(pageNum) {
       if (pageNum < 1 || pageNum > totalPages || !currentPDF) return;
       
       currentPage = pageNum;
-      const guide = guides[currentPDF];
-      renderMockPage(guide);
+      
+      // Render the actual PDF page if we have pdfDoc, otherwise use mock
+      if (pdfDoc && currentPDF === 'tdlr-practical') {
+        await renderPage(currentPage);
+      } else {
+        const guide = guides[currentPDF];
+        renderMockPage(guide);
+      }
+      
       updatePageInfo();
       updateToolbarState();
     }
 
-    function nextPage() {
+    async function nextPage() {
       if (currentPage < totalPages) {
-        goToPage(currentPage + 1);
+        await goToPage(currentPage + 1);
       }
     }
 
-    function prevPage() {
+    async function prevPage() {
       if (currentPage > 1) {
-        goToPage(currentPage - 1);
+        await goToPage(currentPage - 1);
       }
     }
 
-    // Zoom Controls
-    function zoomIn() {
+    // Zoom Controls - Updated for Real PDF
+    async function zoomIn() {
       scale = Math.min(scale + 0.25, 3.0);
-      updateZoom();
+      await updateZoom();
     }
 
-    function zoomOut() {
+    async function zoomOut() {
       scale = Math.max(scale - 0.25, 0.5);
-      updateZoom();
+      await updateZoom();
     }
 
-    function updateZoom() {
-      const canvas = document.getElementById('pdfCanvas');
-      canvas.style.transform = `scale(${scale})`;
-      canvas.style.transformOrigin = 'top center';
-      
+    async function updateZoom() {
       document.getElementById('zoomLevel').textContent = `${Math.round(scale * 100)}%`;
       
       // Re-render current page at new scale
-      if (currentPDF) {
+      if (currentPDF && pdfDoc && currentPDF === 'tdlr-practical') {
+        await renderPage(currentPage);
+      } else if (currentPDF) {
         const guide = guides[currentPDF];
         renderMockPage(guide);
       }
+      
+      updateToolbarState();
     }
 
     // UI Update Functions
@@ -666,36 +1184,18 @@
       document.getElementById('progressBar').style.width = `${progress}%`;
     }
 
-    // Search Functionality
-    function setupSearch() {
-      const searchInput = document.getElementById('searchInput');
-      const guideCards = document.querySelectorAll('.guide-card');
-
-      searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
-        
-        guideCards.forEach(card => {
-          const title = card.querySelector('h3').textContent.toLowerCase();
-          const description = card.querySelector('p').textContent.toLowerCase();
-          
-          if (title.includes(query) || description.includes(query)) {
-            card.style.display = 'block';
-            card.style.animation = 'fadeIn 0.3s ease-in-out';
-          } else {
-            card.style.display = 'none';
-          }
-        });
-      });
-    }
-
-    // Guide Selection
+    // Enhanced Guide Selection with Favorites
     function setupGuideSelection() {
-      document.querySelectorAll('.guide-card').forEach(card => {
-        card.addEventListener('click', () => {
+      // Handle guide card clicks
+      document.querySelectorAll('.guide-item').forEach(card => {
+        card.addEventListener('click', (e) => {
+          // Don't trigger if clicking on favorite button
+          if (e.target.closest('.favorite-btn')) return;
+          
           const guideId = card.getAttribute('data-guide');
           
           // Update active state
-          document.querySelectorAll('.guide-card').forEach(c => 
+          document.querySelectorAll('.guide-item').forEach(c => 
             c.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20')
           );
           card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20');
@@ -704,6 +1204,57 @@
           loadPDF(guideId);
         });
       });
+      
+      // Handle favorite button clicks
+      document.querySelectorAll('.favorite-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const guideId = btn.getAttribute('data-guide');
+          
+          if (favorites.has(guideId)) {
+            favorites.delete(guideId);
+          } else {
+            favorites.add(guideId);
+          }
+          
+          updateFavorites();
+          
+          // Show feedback
+          const isFavorited = favorites.has(guideId);
+          const toast = document.createElement('div');
+          toast.className = 'fixed top-4 right-4 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 p-3 rounded-lg shadow-lg z-50';
+          toast.innerHTML = `
+            <div class="flex items-center space-x-2 text-sm">
+              <div class="text-lg">${isFavorited ? '❤️' : '💔'}</div>
+              <div>${isFavorited ? 'Added to favorites' : 'Removed from favorites'}</div>
+            </div>
+          `;
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 2000);
+        });
+      });
+    }
+
+    // Enhanced Search with Real-time Filtering
+    function setupSearch() {
+      const searchInput = document.getElementById('searchInput');
+      const categoryFilter = document.getElementById('categoryFilter');
+      
+      searchInput.addEventListener('input', searchFiles);
+      categoryFilter.addEventListener('change', searchFiles);
+      
+      // Filter tabs
+      document.getElementById('allTab').addEventListener('click', () => filterFiles('all'));
+      document.getElementById('favoritesTab').addEventListener('click', () => filterFiles('favorites'));
+      document.getElementById('recentTab').addEventListener('click', () => filterFiles('recent'));
+      
+      // View toggles
+      document.getElementById('listView').addEventListener('click', () => toggleView('list'));
+      document.getElementById('gridView').addEventListener('click', () => toggleView('grid'));
+      
+      // Footer actions
+      document.getElementById('clearFilters').addEventListener('click', clearAllFilters);
+      document.getElementById('exportProgress').addEventListener('click', exportProgress);
     }
 
     // Keyboard Shortcuts
@@ -991,6 +1542,8 @@
       setupKeyboardShortcuts();
       setupFloatingButton();
       updateStudyProgress();
+      updateStatistics();
+      updateFavoriteButtons();
       
       // Auto-load TDLR guide if specified in URL
       const urlParams = new URLSearchParams(window.location.search);
@@ -1001,7 +1554,7 @@
         }, 500);
       }
       
-      console.log('🎯 Practical Guides PDF Reader initialized successfully!');
+      console.log('🎯 Practical Guides PDF Reader with Enhanced Sidebar initialized successfully!');
     }
 
     // Start the app when DOM is ready
