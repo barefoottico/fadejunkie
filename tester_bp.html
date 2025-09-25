@@ -1,361 +1,1327 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dynamic Barber Profiles with Card Replacement</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FadeJunkie — Find your lane</title>
+  
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { 
+        extend: { 
+          colors: { 
+            brand: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              500: '#64748b',
+              600: '#475569',
+              900: '#0f172a'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-up': 'slideUp 0.3s ease-out',
+            'slide-down': 'slideDown 0.3s ease-out',
+          }
+        } 
+      }
+    }
+  </script>
+  
+  <!-- Set initial theme before paint -->
+  <script>
+    (function(){
+      const KEY='fj_theme';
+      const saved=localStorage.getItem(KEY);
+      const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme=saved || (prefersDark?'dark':'light');
+      if(theme==='dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💈</text></svg>" />
+  <meta name="description" content="FadeJunkie — the hub for student barbers, licensed barbers, and clients. Study tools, profiles, and local discovery." />
+  
   <style>
-    /* CSS Custom Properties for Configuration */
-    :root {
-      /* Grid Configuration */
-      --grid-gap: clamp(1rem, 3vw, 2rem);
-      --card-aspect-ratio: 3/4;
-      
-      /* Animation Timing */
-      --cycle-duration: 4000ms;
-      --transition-duration: 800ms;
-      --stagger-base: 200ms;
-      --grid-transition-duration: 800ms;
-      
-      /* Easing Curves */
-      --ease-grid-transition: cubic-bezier(0.25, 0.8, 0.25, 1);
-      --ease-card-exit: cubic-bezier(0.55, 0.085, 0.68, 0.53);
-      --ease-card-entry: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      --ease-hover: cubic-bezier(0.4, 0, 0.2, 1);
-      
-      /* Visual Effects */
-      --shadow-normal: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      --shadow-hover: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
-
-    /* Container Query Foundation */
-    .barber-container {
-      container-type: inline-size;
-      width: 100%;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 1.5rem;
+    
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
-
-    /* Dynamic Responsive Grid System */
-    .barber-grid {
-      display: grid;
-      gap: var(--grid-gap);
-      container-type: inline-size;
-      position: relative;
-      min-height: 320px;
-      
-      /* Mobile First: 1 column */
-      grid-template-columns: 1fr;
-      grid-template-rows: repeat(auto-fit, minmax(280px, 1fr));
-      
-      /* Smooth grid transitions */
-      transition: all var(--grid-transition-duration) var(--ease-grid-transition);
+    
+    @keyframes slideDown {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
-
-    /* Container Query Responsive Breakpoints */
-    @container (min-width: 640px) {
-      .barber-grid {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(2, minmax(280px, 1fr));
-      }
+    
+    .glass-effect {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.8);
     }
-
-    @container (min-width: 1024px) {
-      .barber-grid {
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(3, minmax(280px, 1fr));
-      }
+    
+    .dark .glass-effect {
+      background: rgba(39, 39, 42, 0.8);
     }
-
-    @container (min-width: 1440px) {
-      .barber-grid {
-        grid-template-columns: repeat(5, 1fr);
-        grid-template-rows: repeat(2, minmax(280px, 1fr));
-      }
-    }
-
-    /* Barber Card Base Styles */
-    .barber-card {
-      aspect-ratio: var(--card-aspect-ratio);
-      container-type: inline-size;
-      position: relative;
-      
-      /* Performance optimizations */
-      will-change: transform, opacity, box-shadow;
-      backface-visibility: hidden;
-      perspective: 1000px;
-      transform-origin: center center;
-      
-      /* Base styling */
-      background: white;
-      border-radius: 0.75rem;
-      overflow: hidden;
-      padding: 1.5rem;
-      box-shadow: var(--shadow-normal);
-      
-      /* Smooth transitions */
-      transition: all 0.4s var(--ease-hover);
-      
-      /* Z-index management for animations */
-      z-index: 1;
-    }
-
-    .dark .barber-card {
-      background: #27272a;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Card Content Responsive Scaling */
-    .barber-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    @container (max-width: 200px) {
-      .barber-card {
-        padding: 1rem;
-        font-size: 0.875rem;
-      }
-      
-      .barber-image {
-        width: 4rem !important;
-        height: 4rem !important;
-      }
-    }
-
-    @container (min-width: 300px) {
-      .barber-card {
-        padding: 1.5rem;
-        font-size: 1rem;
-      }
-      
-      .barber-image {
-        width: 6rem !important;
-        height: 6rem !important;
-      }
-    }
-
-    @container (min-width: 400px) {
-      .barber-image {
-        width: 8rem !important;
-        height: 8rem !important;
-      }
-    }
-
-    /* Card Replacement Animations */
-    @keyframes cardExit {
-      0% {
-        transform: translate3d(0, 0, 0) scale(1) rotateY(0deg);
-        opacity: 1;
-        z-index: 2;
-      }
-      30% {
-        transform: translate3d(0, -10px, 0) scale(0.98) rotateY(5deg);
-        opacity: 0.8;
-      }
-      60% {
-        transform: translate3d(0, -25px, 0) scale(0.92) rotateY(15deg);
-        opacity: 0.4;
-      }
-      100% {
-        transform: translate3d(0, -50px, 0) scale(0.8) rotateY(25deg);
-        opacity: 0;
-        z-index: 0;
-      }
-    }
-
-    @keyframes cardEntry {
-      0% {
-        transform: translate3d(0, 50px, 0) scale(0.8) rotateY(-25deg);
-        opacity: 0;
-        z-index: 0;
-      }
-      40% {
-        transform: translate3d(0, 15px, 0) scale(0.95) rotateY(-10deg);
-        opacity: 0.6;
-      }
-      70% {
-        transform: translate3d(0, -5px, 0) scale(1.03) rotateY(-2deg);
-        opacity: 0.9;
-        z-index: 2;
-      }
-      100% {
-        transform: translate3d(0, 0, 0) scale(1) rotateY(0deg);
-        opacity: 1;
-        z-index: 1;
-      }
-    }
-
-    /* Grid Transition Animation */
-    @keyframes gridReposition {
-      0% {
-        transform: scale(0.95);
-        opacity: 0.9;
-      }
-      50% {
-        transform: scale(1.02);
-        opacity: 0.95;
-      }
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    /* Animation State Classes */
-    .barber-card.exiting {
-      animation: cardExit var(--transition-duration) var(--ease-card-exit) forwards;
-      z-index: 10;
-    }
-
-    .barber-card.entering {
-      animation: cardEntry var(--transition-duration) var(--ease-card-entry) forwards;
-      z-index: 5;
-    }
-
-    .barber-card.repositioning {
-      animation: gridReposition var(--grid-transition-duration) var(--ease-grid-transition) forwards;
-    }
-
-    .grid-transition-active .barber-card {
-      transition: all var(--grid-transition-duration) var(--ease-grid-transition);
-      will-change: transform, opacity;
-    }
-
-    /* Hidden card positioning */
-    .barber-card.hidden {
-      position: absolute;
-      top: -100%;
-      left: -100%;
-      opacity: 0;
-      pointer-events: none;
-      z-index: -1;
-    }
-
-    /* Enhanced Hover States */
-    .barber-card:hover:not(.exiting):not(.entering) {
-      transform: translate3d(0, -8px, 0) scale(1.05);
-      box-shadow: var(--shadow-hover);
-      z-index: 20;
-    }
-
-    .dark .barber-card:hover:not(.exiting):not(.entering) {
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    }
-
-    .barber-card:hover .barber-image {
-      transform: scale(1.1);
-    }
-
-    /* Focus States for Accessibility */
-    .barber-card:focus-visible {
-      outline: 3px solid #3b82f6;
-      outline-offset: 2px;
-      z-index: 21;
-    }
-
-    /* Image Optimization */
-    .barber-image {
-      transition: transform 0.4s var(--ease-hover);
-      will-change: transform;
-      border-radius: 50%;
-      overflow: hidden;
-      position: relative;
-      ring: 3px solid rgba(59, 130, 246, 0.1);
-    }
-
-    .barber-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .barber-image .fallback {
-      position: absolute;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
+    
+    .gradient-text {
       background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
-      font-weight: bold;
-      font-size: 1.5rem;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-
-    /* Star Rating Styles */
-    .star-rating {
-      display: flex;
-      gap: 0.125rem;
-      margin-top: 0.5rem;
+    
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    .star {
-      width: 1rem;
-      height: 1rem;
-      color: #fbbf24;
-      fill: currentColor;
+    
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
     }
-
-    /* Performance Monitor */
-    .performance-monitor {
-      position: fixed;
-      bottom: 1rem;
-      right: 1rem;
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 0.5rem;
-      border-radius: 0.375rem;
-      font-family: monospace;
-      font-size: 0.75rem;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      z-index: 1000;
-      pointer-events: none;
+    
+    .dark .card-hover:hover {
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3);
     }
+  </style>
+</head>
 
-    .performance-monitor.visible {
-      opacity: 1;
-    }
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100 min-h-screen">
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-zinc-200 dark:border-zinc-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex items-center">
+          <div class="text-2xl">💈</div>
+          <span class="ml-2 text-xl font-bold gradient-text">FadeJunkie</span>
+        </div>
+        
+        <!-- Navigation Links (Desktop) -->
+        <div class="hidden md:flex items-center space-x-8">
+          <a href="#home" class="nav-link text-sm font-medium hover:text-blue-600 transition-colors">Home</a>
+          <a href="#students" class="nav-link text-sm font-medium hover:text-blue-600 transition-colors">Students</a>
+          <a href="#barbers" class="nav-link text-sm font-medium hover:text-blue-600 transition-colors">Barbers</a>
+          <a href="#clients" class="nav-link text-sm font-medium hover:text-blue-600 transition-colors">Clients</a>
+          <a href="#directory" class="nav-link text-sm font-medium hover:text-blue-600 transition-colors">Directory</a>
+        </div>
+        
+        <!-- Actions -->
+        <div class="flex items-center space-x-4">
+          <!-- Theme Toggle -->
+          <button id="themeToggle" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" title="Toggle theme">
+            <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+          </button>
+          
+          <!-- Mobile Menu Button -->
+          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="md:hidden hidden bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700">
+      <div class="px-4 py-2 space-y-2">
+        <a href="#home" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Home</a>
+        <a href="#students" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Students</a>
+        <a href="#barbers" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Barbers</a>
+        <a href="#clients" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Clients</a>
+        <a href="#directory" class="mobile-nav-link block px-3 py-2 rounded-lg text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Directory</a>
+      </div>
+    </div>
+  </nav>
 
-    /* Loading States */
-    .barber-card.loading {
-      opacity: 0;
-      transform: translate3d(0, 30px, 0);
-    }
+  <!-- Main Content -->
+  <main class="pt-16">
+    
+    <!-- Hero Section -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-zinc-900 dark:to-zinc-800">
+      <div class="max-w-4xl mx-auto px-6 text-center">
+        <div class="animate-fade-in">
+          <h1 class="text-4xl sm:text-6xl font-black leading-tight mb-6">
+            One community. <br>
+            <span class="gradient-text">Three paths.</span> <br>
+            Find your lane.
+          </h1>
+          <p class="text-xl text-zinc-600 dark:text-zinc-300 mb-12 max-w-2xl mx-auto">
+            Whether you're studying for boards, building a book, or booking a clean fade — FadeJunkie points you in the right direction.
+          </p>
+        </div>
+        
+        <!-- Path Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
+          <a href="#students" class="group card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-800 text-left">
+            <div class="text-4xl mb-4">📚</div>
+            <h3 class="text-xl font-bold mb-2">I'm a Student</h3>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-4">Master your craft with study tools, practice tests, and school resources.</p>
+            <div class="flex items-center text-blue-600 group-hover:translate-x-1 transition-transform">
+              <span class="text-sm font-medium">Get started</span>
+              <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </a>
+          
+          <a href="#barbers" class="group card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-800 text-left">
+            <div class="text-4xl mb-4">💈</div>
+            <h3 class="text-xl font-bold mb-2">I'm a Barber</h3>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-4">Build your brand, connect with clients, and grow your business.</p>
+            <div class="flex items-center text-blue-600 group-hover:translate-x-1 transition-transform">
+              <span class="text-sm font-medium">Join now</span>
+              <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </a>
+          
+          <a href="#clients" class="group card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-800 text-left">
+            <div class="text-4xl mb-4">🧑‍🦱</div>
+            <h3 class="text-xl font-bold mb-2">I'm a Client</h3>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-4">Find skilled barbers near you and book your next cut.</p>
+            <div class="flex items-center text-blue-600 group-hover:translate-x-1 transition-transform">
+              <span class="text-sm font-medium">Find barbers</span>
+              <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
 
-    .barber-card.loaded {
-      opacity: 1;
-      transform: translate3d(0, 0, 0);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-    }
+    <!-- Students Section -->
+    <section id="students" class="py-20 bg-white dark:bg-zinc-900 hidden">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl sm:text-4xl font-bold mb-4">Student Resources</h2>
+          <p class="text-xl text-zinc-600 dark:text-zinc-300 max-w-2xl mx-auto">
+            Master your craft with comprehensive study tools, practice exams, and resources designed for aspiring barbers.
+          </p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <div class="grid grid-cols-2 gap-4">
+              <!-- Study Tools Card -->
+              <div class="card-hover rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-zinc-50 dark:bg-zinc-800">
+                <div class="text-2xl mb-3">🧠</div>
+                <h3 class="font-semibold mb-2">Test Prep</h3>
+                <p class="text-sm text-zinc-600 dark:text-zinc-300">Flashcards and practice exams</p>
+              </div>
+              
+              <!-- Practical Guide Card -->
+              <div class="card-hover rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-zinc-50 dark:bg-zinc-800">
+                <div class="text-2xl mb-3">📋</div>
+                <h3 class="font-semibold mb-2">Exam Guides</h3>
+                <p class="text-sm text-zinc-600 dark:text-zinc-300">Step-by-step practical guides</p>
+              </div>
+              
+              <!-- Schools Card -->
+              <div class="card-hover rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-zinc-50 dark:bg-zinc-800">
+                <div class="text-2xl mb-3">🏫</div>
+                <h3 class="font-semibold mb-2">School Finder</h3>
+                <p class="text-sm text-zinc-600 dark:text-zinc-300">Find barber schools near you</p>
+              </div>
+              
+              <!-- Resources Card -->
+              <div class="card-hover rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-zinc-50 dark:bg-zinc-800">
+                <div class="text-2xl mb-3">📚</div>
+                <h3 class="font-semibent mb-2">Resources</h3>
+                <p class="text-sm text-zinc-600 dark:text-zinc-300">Blogs, tips, and tutorials</p>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl p-8 text-white">
+              <h3 class="text-2xl font-bold mb-4">Ready to start studying?</h3>
+              <p class="mb-6 opacity-90">Access our comprehensive test prep tools and start your journey to becoming a licensed barber.</p>
+              <button class="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-zinc-50 transition-colors">
+                Launch Test Prep
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    /* Section Header Animation */
-    .section-header {
-      opacity: 0;
-      transform: translateY(-30px);
-      animation: fadeInDown 1s ease forwards;
-    }
+    <!-- Barbers Section -->
+    <section id="barbers" class="py-20 bg-zinc-50 dark:bg-zinc-800 hidden">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl sm:text-4xl font-bold mb-4">Barber Hub</h2>
+          <p class="text-xl text-zinc-600 dark:text-zinc-300 max-w-2xl mx-auto">
+            Grow your brand, connect with clients, and build the business of your dreams.
+          </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Profile Builder -->
+          <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-900">
+            <div class="text-3xl mb-4">👤</div>
+            <h3 class="text-xl font-bold mb-3">Build Your Profile</h3>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-6">Showcase your work, specialties, and availability to attract new clients.</p>
+            <ul class="space-y-2 text-sm text-zinc-600 dark:text-zinc-300">
+              <li class="flex items-center">
+                <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                Portfolio showcase
+              </li>
+              <li class="flex items-center">
+                <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                Booking integration
+              </li>
+              <li class="flex items-center">
+                <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                Client reviews
+              </li>
+            </ul>
+          </div>
+          
+          <!-- Vendor Partners -->
+          <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-900">
+            <div class="text-3xl mb-4">🤝</div>
+            <h3 class="text-xl font-bold mb-3">Vendor Network</h3>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-6">Connect with trusted suppliers for tools, products, and equipment.</p>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
+                <div class="text-lg mb-1">✂️</div>
+                <div class="text-xs font-medium">Tools</div>
+              </div>
+              <div class="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
+                <div class="text-lg mb-1">🧴</div>
+                <div class="text-xs font-medium">Products</div>
+              </div>
+              <div class="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
+                <div class="text-lg mb-1">👕</div>
+                <div class="text-xs font-medium">Apparel</div>
+              </div>
+              <div class="bg-zinc-100 dark:bg-zinc-800 rounded-lg p-3 text-center">
+                <div class="text-lg mb-1">🎓</div>
+                <div class="text-xs font-medium">Education</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Events -->
+          <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-900">
+            <div class="text-3xl mb-4">🎉</div>
+            <h3 class="text-xl font-bold mb-3">Events & Community</h3>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-6">Join competitions, workshops, and networking events in your area.</p>
+            <div class="space-y-3">
+              <div class="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
+                <div class="text-sm font-medium">Fade Competition</div>
+                <div class="text-xs text-zinc-500">Dallas, TX • Mar 15</div>
+              </div>
+              <div class="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
+                <div class="text-sm font-medium">Business Workshop</div>
+                <div class="text-xs text-zinc-500">Online • Mar 22</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="text-center mt-12">
+          <button class="bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+            Become a FadeJunkie
+          </button>
+        </div>
+      </div>
+    </section>
 
-    .section-subtitle {
-      opacity: 0;
-      transform: translateY(-20px);
-      animation: fadeInDown 1s ease 0.2s forwards;
-    }
+    <!-- Clients Section -->
+    <section id="clients" class="py-20 bg-white dark:bg-zinc-900 hidden">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl sm:text-4xl font-bold mb-4">Find Your Perfect Cut</h2>
+          <p class="text-xl text-zinc-600 dark:text-zinc-300 max-w-2xl mx-auto">
+            Discover skilled barbers in your area and book your next appointment with confidence.
+          </p>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="max-w-2xl mx-auto mb-12">
+          <div class="relative">
+            <input 
+              type="text" 
+              id="location-search"
+              placeholder="Enter your location (e.g., San Antonio, TX)" 
+              class="w-full px-6 py-4 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <button class="absolute right-2 top-2 bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors">
+              Search
+            </button>
+          </div>
+        </div>
+        
+        <!-- Featured Barbers -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="barber-grid">
+          <!-- Sample Barber Cards -->
+          <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800">
+            <div class="aspect-square bg-gradient-to-br from-blue-400 to-purple-500"></div>
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xl font-bold">Anthony</h3>
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                  </svg>
+                  <span class="text-sm text-zinc-600 dark:text-zinc-300">4.9</span>
+                </div>
+              </div>
+              <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-3">Creative Styles • 6 years exp.</p>
+              <p class="text-xs text-zinc-500 mb-4">Uptown Cuts • 0.8 mi</p>
+              <div class="flex items-center justify-between">
+                <span class="text-green-600 text-sm font-medium">Next: Today 2:15p</span>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  Book
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    @keyframes fadeInDown {
-      to {
-        opacity: 1;
-        transform: translateY(0);
+    <!-- Directory Section -->
+    <section id="directory" class="py-20 bg-zinc-50 dark:bg-zinc-800 hidden">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl sm:text-4xl font-bold mb-4">Barber Directory</h2>
+          <p class="text-xl text-zinc-600 dark:text-zinc-300 max-w-2xl mx-auto">
+            Browse our comprehensive directory of barbers and barbershops.
+          </p>
+        </div>
+        
+        <!-- Search and Filters -->
+        <div class="bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 mb-12">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium mb-2">Location</label>
+              <input 
+                type="text" 
+                id="directory-location"
+                placeholder="Enter city, state, or ZIP" 
+                class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Specialty</label>
+              <select class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option>All Specialties</option>
+                <option>Fades</option>
+                <option>Classic Cuts</option>
+                <option>Beard Styling</option>
+                <option>Razor Work</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Availability</label>
+              <select class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option>Any Time</option>
+                <option>Today</option>
+                <option>Tomorrow</option>
+                <option>This Week</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex justify-center mt-6">
+            <button class="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+              Search Directory
+            </button>
+          </div>
+        </div>
+        
+        <!-- Featured Barbershops -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- The Original Gentlemen's Parlor -->
+          <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-900">
+            <div class="flex items-start justify-between mb-6">
+              <div>
+                <h3 class="text-2xl font-bold mb-2">The Original Gentlemen's Parlor</h3>
+                <p class="text-zinc-600 dark:text-zinc-300 mb-1">13529 Nacogdoches Rd, San Antonio, TX 78217</p>
+                <p class="text-sm text-zinc-500">(210) 233-8645</p>
+              </div>
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                </svg>
+                <span class="text-lg font-semibold">4.8</span>
+              </div>
+            </div>
+            
+            <!-- Hours -->
+            <div class="mb-6">
+              <h4 class="font-semibold mb-2">Hours</h4>
+              <div class="grid grid-cols-2 gap-2 text-sm text-zinc-600 dark:text-zinc-300">
+                <div>Mon – Wed: 9 AM – 7 PM</div>
+                <div>Thu: 9 AM – 7 PM</div>
+                <div>Fri: 9 AM – 7:30 PM</div>
+                <div>Sat: 9 AM – 6 PM</div>
+                <div class="col-span-2">Sun: 11 AM – 5 PM</div>
+              </div>
+            </div>
+            
+            <!-- Barber Team Preview -->
+            <div class="mb-6">
+              <h4 class="font-semibold mb-3">Our Team</h4>
+              <div class="flex -space-x-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 border-2 border-white dark:border-zinc-900"></div>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-blue-500 border-2 border-white dark:border-zinc-900"></div>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 border-2 border-white dark:border-zinc-900"></div>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-red-500 border-2 border-white dark:border-zinc-900 flex items-center justify-center">
+                  <span class="text-xs font-bold text-white">+6</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex space-x-3">
+              <button class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+                View Shop
+              </button>
+              <button class="px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Add more barbershops here -->
+          <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-900">
+            <div class="text-center py-12">
+              <div class="text-4xl mb-4">🏪</div>
+              <h3 class="text-xl font-semibold mb-2">More Shops Coming Soon</h3>
+              <p class="text-zinc-600 dark:text-zinc-300">We're expanding our directory to include more amazing barbershops in your area.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Study Tools Integration -->
+    <section class="py-20 bg-gradient-to-br from-blue-600 to-purple-700 text-white">
+      <div class="max-w-4xl mx-auto px-6 text-center">
+        <div class="animate-fade-in">
+          <h2 class="text-3xl sm:text-4xl font-bold mb-6">Master Your Craft</h2>
+          <p class="text-xl opacity-90 mb-12 max-w-2xl mx-auto">
+            Access our comprehensive study tools including flashcards, practice tests, and exam preparation guides.
+          </p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8">
+              <div class="text-3xl mb-4">🧠</div>
+              <h3 class="text-xl font-bold mb-3">Test Prep Tools</h3>
+              <p class="opacity-90 mb-4">Interactive flashcards and practice exams for state board preparation.</p>
+              <button class="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-zinc-50 transition-colors">
+                Start Studying
+              </button>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-8">
+              <div class="text-3xl mb-4">📋</div>
+              <h3 class="text-xl font-bold mb-3">Practical Guides</h3>
+              <p class="opacity-90 mb-4">Step-by-step guides for hands-on exam preparation and technique mastery.</p>
+              <button class="bg-white/20 border border-white/30 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/30 transition-colors">
+                View Guides
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Newsletter Signup -->
+    <section class="py-20 bg-white dark:bg-zinc-900">
+      <div class="max-w-4xl mx-auto px-6 text-center">
+        <h2 class="text-3xl sm:text-4xl font-bold mb-6">Stay in the Loop</h2>
+        <p class="text-xl text-zinc-600 dark:text-zinc-300 mb-8 max-w-2xl mx-auto">
+          Get the latest updates on new features, barber spotlights, and industry insights delivered to your inbox.
+        </p>
+        
+        <div class="max-w-md mx-auto flex">
+          <input 
+            type="email" 
+            placeholder="Enter your email" 
+            class="flex-1 px-4 py-3 rounded-l-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+          <button class="bg-blue-600 text-white px-6 py-3 rounded-r-xl font-semibold hover:bg-blue-700 transition-colors">
+            Subscribe
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-zinc-900 text-zinc-100 py-16">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <!-- Brand -->
+        <div class="md:col-span-1">
+          <div class="flex items-center mb-4">
+            <div class="text-2xl mr-2">💈</div>
+            <span class="text-xl font-bold">FadeJunkie</span>
+          </div>
+          <p class="text-zinc-400 mb-4">
+            Connecting the barbering community through education, networking, and discovery.
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-zinc-400 hover:text-white transition-colors">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M20 10C20 4.477 15.523 0 10 0S0 4.477 0 10c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V10h2.54V7.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V10h2.773l-.443 2.89h-2.33v6.988C16.343 19.128 20 14.991 20 10z" clip-rule="evenodd"></path>
+              </svg>
+            </a>
+            <a href="#" class="text-zinc-400 hover:text-white transition-colors">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.29 18.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0020 3.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.073 4.073 0 01.8 7.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 010 16.407a11.616 11.616 0 006.29 1.84"></path>
+              </svg>
+            </a>
+            <a href="#" class="text-zinc-400 hover:text-white transition-colors">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M12.017 14.081c-.51.307-1.048.504-1.607.596-.43.068-.854.031-1.264-.111a1.98 1.98 0 01-.91-.626L8.05 13.724c-.327-.35-.539-.803-.606-1.289-.067-.485.044-.97.316-1.38l.84-1.266c.253-.382.632-.664 1.077-.803.445-.138.916-.112 1.339.074l1.17.516c.423.186.778.497.994.871.217.374.287.805.197 1.22l-.359 1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+        
+        <!-- Quick Links -->
+        <div>
+          <h3 class="font-semibold mb-4">For Students</h3>
+          <ul class="space-y-2 text-zinc-400">
+            <li><a href="#" class="hover:text-white transition-colors">Test Prep</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Study Guides</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">School Finder</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Resources</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold mb-4">For Barbers</h3>
+          <ul class="space-y-2 text-zinc-400">
+            <li><a href="#" class="hover:text-white transition-colors">Create Profile</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Vendor Network</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Events</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Community</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="font-semibold mb-4">For Clients</h3>
+          <ul class="space-y-2 text-zinc-400">
+            <li><a href="#" class="hover:text-white transition-colors">Find Barbers</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Book Appointment</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Reviews</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Directory</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t border-zinc-700 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-zinc-400 text-sm">© 2025 FadeJunkie. All rights reserved.</p>
+        <div class="flex space-x-6 mt-4 md:mt-0">
+          <a href="#" class="text-zinc-400 hover:text-white text-sm transition-colors">Privacy Policy</a>
+          <a href="#" class="text-zinc-400 hover:text-white text-sm transition-colors">Terms of Service</a>
+          <a href="#" class="text-zinc-400 hover:text-white text-sm transition-colors">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Theme Management
+    (function setupTheme(){
+      const KEY = 'fj_theme';
+      const btn = document.getElementById('themeToggle');
+      const icon = document.getElementById('theme-icon');
+      
+      const currentTheme = () =>
+        document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+
+      const renderThemeIcon = () => {
+        const theme = currentTheme();
+        if (theme === 'dark') {
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+        } else {
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+        }
+      };
+
+      const setTheme = (theme) => {
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem(KEY, theme);
+        renderThemeIcon();
+      };
+
+      btn.addEventListener('click', () => {
+        const newTheme = currentTheme() === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      });
+
+      renderThemeIcon();
+    })();
+
+    // Navigation Management
+    (function setupNavigation(){
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
+      const sections = document.querySelectorAll('section[id]');
+
+      // Mobile menu toggle
+      mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+
+      // Close mobile menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+
+      // Section navigation
+      function showSection(targetId) {
+        sections.forEach(section => {
+          if (section.id === targetId || (targetId === 'home' && section.id === 'home')) {
+            section.classList.remove('hidden');
+            if (section.id !== 'home') {
+              section.scrollIntoView({ behavior: 'smooth' });
+            }
+          } else if (section.id !== 'home') {
+            section.classList.add('hidden');
+          }
+        });
+
+        // Update active nav links
+        navLinks.forEach(link => {
+          const href = link.getAttribute('href').replace('#', '');
+          if (href === targetId) {
+            link.classList.add('text-blue-600', 'font-semibold');
+          } else {
+            link.classList.remove('text-blue-600', 'font-semibold');
+          }
+        });
+
+        // Close mobile menu
+        mobileMenu.classList.add('hidden');
       }
-    }
 
-    /* Screen Reader Only */
+      // Handle navigation clicks
+      navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetId = link.getAttribute('href').replace('#', '');
+          showSection(targetId);
+        });
+      });
+
+      // Show home section by default
+      showSection('home');
+    })();
+
+    // Search Functionality
+    (function setupSearch(){
+      const locationSearch = document.getElementById('location-search');
+      const directoryLocation = document.getElementById('directory-location');
+      const barberGrid = document.getElementById('barber-grid');
+
+      // Sample barber data for demonstration
+      const sampleBarbers = [
+        {
+          name: "Anthony",
+          specialty: "Fade Expert",
+          experience: "8 years",
+          shop: "The Original Gentlemen's Parlor",
+          distance: "1.2 mi",
+          rating: 4.9,
+          nextSlot: "Today 4:30p",
+          available: true,
+          color: "from-blue-400 to-purple-500"
+        },
+        {
+          name: "Marcus",
+          specialty: "Classic Cuts",
+          experience: "12 years",
+          shop: "Downtown Barber Co",
+          distance: "2.1 mi",
+          rating: 4.8,
+          nextSlot: "Tomorrow 10:00a",
+          available: false,
+          color: "from-green-400 to-blue-500"
+        },
+        {
+          name: "Sofia",
+          specialty: "Creative Styles",
+          experience: "6 years",
+          shop: "Uptown Cuts",
+          distance: "0.8 mi",
+          rating: 4.9,
+          nextSlot: "Today 2:15p",
+          available: true,
+          color: "from-purple-400 to-pink-500"
+        }
+      ];
+
+      function createBarberCard(barber) {
+        const availabilityColor = barber.available ? 'text-green-600' : 'text-orange-600';
+        
+        return `
+          <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800">
+            <div class="aspect-square bg-gradient-to-br ${barber.color}"></div>
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xl font-bold">${barber.name}</h3>
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                  </svg>
+                  <span class="text-sm text-zinc-600 dark:text-zinc-300">${barber.rating}</span>
+                </div>
+              </div>
+              <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-3">${barber.specialty} • ${barber.experience} exp.</p>
+              <p class="text-xs text-zinc-500 mb-4">${barber.shop} • ${barber.distance}</p>
+              <div class="flex items-center justify-between">
+                <span class="${availabilityColor} text-sm font-medium">Next: ${barber.nextSlot}</span>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  Book
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function updateBarberGrid() {
+        if (barberGrid) {
+          barberGrid.innerHTML = sampleBarbers.map(createBarberCard).join('');
+        }
+      }
+
+      // Initialize barber grid
+      updateBarberGrid();
+
+      // Search functionality (placeholder)
+      if (locationSearch) {
+        locationSearch.addEventListener('input', (e) => {
+          // In a real app, this would trigger an API call
+          console.log('Searching for barbers near:', e.target.value);
+        });
+      }
+
+      if (directoryLocation) {
+        directoryLocation.addEventListener('input', (e) => {
+          // In a real app, this would filter the directory
+          console.log('Filtering directory by location:', e.target.value);
+        });
+      }
+    })();
+
+    // Animation and Interaction Enhancements
+    (function setupAnimations(){
+      // Intersection Observer for scroll animations
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in');
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      });
+
+      // Observe elements for animation
+      document.querySelectorAll('.card-hover').forEach(el => {
+        observer.observe(el);
+      });
+
+      // Smooth scrolling for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        });
+      });
+
+      // Add loading states for interactive elements
+      document.querySelectorAll('button').forEach(btn => {
+        if (btn.textContent.includes('Book') || btn.textContent.includes('Search')) {
+          btn.addEventListener('click', function() {
+            const originalText = this.textContent;
+            this.textContent = 'Loading...';
+            this.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+              this.textContent = originalText;
+              this.disabled = false;
+            }, 2000);
+          });
+        }
+      });
+    })();
+
+    // Study Tools Integration
+    (function setupStudyTools(){
+      const studyButtons = document.querySelectorAll('button');
+      
+      studyButtons.forEach(btn => {
+        if (btn.textContent.includes('Test Prep') || btn.textContent.includes('Start Studying')) {
+          btn.addEventListener('click', () => {
+            // In a real app, this would navigate to the study tools page
+            alert('Study tools would open here! This would integrate with your existing test prep system.');
+          });
+        }
+        
+        if (btn.textContent.includes('View Guides')) {
+          btn.addEventListener('click', () => {
+            // Navigate to practical guides
+            alert('Practical exam guides would open here!');
+          });
+        }
+      });
+    })();
+
+    // Barber Profile System
+    (function setupBarberProfiles(){
+      const profileButtons = document.querySelectorAll('button');
+      
+      profileButtons.forEach(btn => {
+        if (btn.textContent.includes('Become a FadeJunkie') || btn.textContent.includes('Create Profile')) {
+          btn.addEventListener('click', () => {
+            showBarberSignupModal();
+          });
+        }
+        
+        if (btn.textContent.includes('View Shop')) {
+          btn.addEventListener('click', () => {
+            showShopDetails();
+          });
+        }
+      });
+
+      function showBarberSignupModal() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm';
+        modal.innerHTML = `
+          <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="text-center mb-6">
+              <div class="text-4xl mb-4">💈</div>
+              <h2 class="text-2xl font-bold mb-2">Join FadeJunkie</h2>
+              <p class="text-zinc-600 dark:text-zinc-300">Create your barber profile and start connecting with clients.</p>
+            </div>
+            
+            <form class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Full Name</label>
+                <input type="text" class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your name">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium mb-1">Email</label>
+                <input type="email" class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your email">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium mb-1">Phone</label>
+                <input type="tel" class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your phone">
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium mb-1">Specialty</label>
+                <select class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option>Select your specialty</option>
+                  <option>Fades</option>
+                  <option>Classic Cuts</option>
+                  <option>Beard Styling</option>
+                  <option>Razor Work</option>
+                  <option>Creative Designs</option>
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium mb-1">Years of Experience</label>
+                <input type="number" class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Years of experience">
+              </div>
+              
+              <div class="flex space-x-3 mt-6">
+                <button type="button" class="flex-1 px-6 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors" onclick="this.closest('.fixed').remove()">
+                  Cancel
+                </button>
+                <button type="submit" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+                  Create Profile
+                </button>
+              </div>
+            </form>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Handle form submission
+        modal.querySelector('form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          alert('Profile created successfully! Welcome to FadeJunkie.');
+          modal.remove();
+        });
+      }
+
+      function showShopDetails() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm';
+        modal.innerHTML = `
+          <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h2 class="text-2xl font-bold mb-2">The Original Gentlemen's Parlor</h2>
+                <p class="text-zinc-600 dark:text-zinc-300">13529 Nacogdoches Rd, San Antonio, TX 78217</p>
+                <p class="text-sm text-zinc-500">(210) 233-8645</p>
+              </div>
+              <button onclick="this.closest('.fixed').remove()" class="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Shop Gallery -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+              <div class="aspect-video bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl"></div>
+              <div class="aspect-video bg-gradient-to-br from-green-400 to-blue-500 rounded-xl"></div>
+              <div class="aspect-video bg-gradient-to-br from-purple-400 to-pink-500 rounded-xl"></div>
+              <div class="aspect-video bg-gradient-to-br from-yellow-400 to-red-500 rounded-xl"></div>
+            </div>
+            
+            <!-- Services -->
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-3">Services</h3>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="flex items-center space-x-2">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span class="text-sm">Classic Cuts</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span class="text-sm">Fades</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span class="text-sm">Beard Trim</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span class="text-sm">Hot Towel Shave</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Team -->
+            <div class="mb-6">
+              <h3 class="text-lg font-semibold mb-3">Our Team</h3>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full mx-auto mb-2"></div>
+                  <div class="text-sm font-medium">Anthony</div>
+                  <div class="text-xs text-zinc-500">Senior Barber</div>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-500 rounded-full mx-auto mb-2"></div>
+                  <div class="text-sm font-medium">Marcus</div>
+                  <div class="text-xs text-zinc-500">Master Barber</div>
+                </div>
+                <div class="text-center">
+                  <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full mx-auto mb-2"></div>
+                  <div class="text-sm font-medium">Jay</div>
+                  <div class="text-xs text-zinc-500">Fade Specialist</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex space-x-3">
+              <button class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+                Book Appointment
+              </button>
+              <button class="px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                </svg>
+              </button>
+              <button class="px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+      }
+    })();
+
+    // Newsletter Signup
+    (function setupNewsletter(){
+      const newsletterForm = document.querySelector('section:last-of-type form');
+      if (newsletterForm) {
+        newsletterForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const email = e.target.querySelector('input[type="email"]').value;
+          if (email) {
+            alert('Thanks for subscribing! We\'ll keep you updated with the latest from FadeJunkie.');
+            e.target.reset();
+          }
+        });
+      }
+    })();
+
+    // Enhanced Mobile Experience
+    (function setupMobileEnhancements(){
+      // Add touch gestures for mobile devices
+      let touchStartY = 0;
+      let touchEndY = 0;
+
+      document.addEventListener('touchstart', (e) => {
+        touchStartY = e.changedTouches[0].screenY;
+      }, { passive: true });
+
+      document.addEventListener('touchend', (e) => {
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipe();
+      }, { passive: true });
+
+      function handleSwipe() {
+        const swipeDistance = touchStartY - touchEndY;
+        const minSwipeDistance = 50;
+
+        if (Math.abs(swipeDistance) > minSwipeDistance) {
+          // Add haptic feedback if available
+          if ('vibrate' in navigator) {
+            navigator.vibrate(10);
+          }
+        }
+      }
+
+      // Add pull-to-refresh simulation
+      let pullToRefreshTriggered = false;
+      document.addEventListener('touchstart', (e) => {
+        if (window.scrollY === 0) {
+          touchStartY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchmove', (e) => {
+        if (window.scrollY === 0) {
+          const currentY = e.touches[0].clientY;
+          const pullDistance = currentY - touchStartY;
+          
+          if (pullDistance > 100 && !pullToRefreshTriggered) {
+            pullToRefreshTriggered = true;
+            // Show refresh indicator
+            const refreshIndicator = document.createElement('div');
+            refreshIndicator.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full text-sm z-50 animate-bounce';
+            refreshIndicator.textContent = 'Release to refresh';
+            document.body.appendChild(refreshIndicator);
+            
+            setTimeout(() => {
+              refreshIndicator.remove();
+              pullToRefreshTriggered = false;
+            }, 2000);
+          }
+        }
+      }, { passive: true });
+    })();
+
+    // Performance Optimization
+    (function setupPerformanceOptimizations(){
+      // Lazy load images when they come into view
+      const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            if (img.dataset.src) {
+              img.src = img.dataset.src;
+              img.removeAttribute('data-src');
+              imageObserver.unobserve(img);
+            }
+          }
+        });
+      });
+
+      // Observe all images with data-src attribute
+      document.querySelectorAll('img[data-src]').forEach(img => {
+        imageObserver.observe(img);
+      });
+
+      // Preload critical resources
+      const criticalResources = [
+        'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💈</text></svg>'
+      ];
+
+      criticalResources.forEach(resource => {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.href = resource;
+        link.as = 'image';
+        document.head.appendChild(link);
+      });
+
+      // Service Worker registration for offline support
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('SW registered successfully');
+          })
+          .catch(error => {
+            console.log('SW registration failed');
+          });
+      }
+    })();
+
+    // Analytics and User Tracking (Privacy-Focused)
+    (function setupAnalytics(){
+      // Track page views and user interactions
+      const trackEvent = (eventName, data = {}) => {
+        // In a real app, this would send data to your analytics service
+        console.log('Analytics Event:', eventName, data);
+      };
+
+      // Track navigation
+      document.querySelectorAll('a, button').forEach(element => {
+        element.addEventListener('click', () => {
+          trackEvent('click', {
+            element: element.tagName,
+            text: element.textContent.trim().substring(0, 50),
+            href: element.href || null
+          });
+        });
+      });
+
+      // Track section visits
+      const sectionObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            trackEvent('section_view', {
+              section: entry.target.id || 'unknown'
+            });
+          }
+        });
+      }, { threshold: 0.5 });
+
+      document.querySelectorAll('section[id]').forEach(section => {
+        sectionObserver.observe(section);
+      });
+
+      // Track time on page
+      let startTime = Date.now();
+      window.addEventListener('beforeunload', () => {
+        const timeOnPage = Date.now() - startTime;
+        trackEvent('page_exit', {
+          duration: Math.round(timeOnPage / 1000) // seconds
+        });
+      });
+    })();
+
+    // Accessibility Enhancements
+    (function setupAccessibility(){
+      // Skip navigation link
+      const skipLink = document.createElement('a');
+      skipLink.href = '#main-content';
+      skipLink.textContent = 'Skip to main content';
+      skipLink.className = 'sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:z-50';
+      document.body.insertBefore(skipLink, document.body.firstChild);
+
+      // Add main content ID
+      document.querySelector('main').id = 'main-content';
+
+      // Announce dynamic content changes to screen readers
+      const announcer = document.createElement('div');
+      announcer.setAttribute('aria-live', 'polite');
+      announcer.setAttribute('aria-atomic', 'true');
+      announcer.className = 'sr-only';
+      document.body.appendChild(announcer);
+
+      // Function to announce changes
+      window.announce = (message) => {
+        announcer.textContent = message;
+        setTimeout(() => {
+          announcer.textContent = '';
+        }, 1000);
+      };
+
+      // Keyboard navigation enhancements
+      document.addEventListener('keydown', (e) => {
+        // Escape key to close modals
+        if (e.key === 'Escape') {
+          const modal = document.querySelector('.fixed.inset-0');
+          if (modal) {
+            modal.remove();
+          }
+        }
+
+        // Tab key management for better focus handling
+        if (e.key === 'Tab') {
+          document.body.classList.add('keyboard-navigation');
+        }
+      });
+
+      document.addEventListener('mousedown', () => {
+        document.body.classList.remove('keyboard-navigation');
+      });
+
+      // High contrast mode detection
+      const highContrastMediaQuery = window.matchMedia('(prefers-contrast: high)');
+      if (highContrastMediaQuery.matches) {
+        document.body.classList.add('high-contrast');
+      }
+
+      highContrastMediaQuery.addEventListener('change', (e) => {
+        if (e.matches) {
+          document.body.classList.add('high-contrast');
+        } else {
+          document.body.classList.remove('high-contrast');
+        }
+      });
+
+      // Reduced motion preferences
+      const reducedMotionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      if (reducedMotionMediaQuery.matches) {
+        document.body.classList.add('reduced-motion');
+      }
+    })();
+
+    console.log('🎉 FadeJunkie app initialized successfully!');
+  </script>
+
+  <!-- Screen reader only styles -->
+  <style>
     .sr-only {
       position: absolute;
       width: 1px;
@@ -368,808 +1334,102 @@
       border: 0;
     }
 
-    /* Accessibility - Reduced Motion */
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-      
-      .barber-card:hover {
-        transform: translateY(-4px) scale(1.02) !important;
-      }
-      
-      .section-header,
-      .section-subtitle {
-        animation: none !important;
-        opacity: 1 !important;
-        transform: none !important;
-      }
+    .focus\:not-sr-only:focus {
+      position: static;
+      width: auto;
+      height: auto;
+      padding: inherit;
+      margin: inherit;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
     }
 
-    /* High Contrast Mode Support */
-    @media (prefers-contrast: high) {
-      .barber-card {
-        border: 2px solid currentColor;
+    /* High contrast mode styles */
+    .high-contrast .card-hover {
+      border: 2px solid currentColor;
+    }
+
+    .high-contrast .card-hover:hover {
+      border-color: #3b82f6;
+    }
+
+    /* Reduced motion styles */
+    .reduced-motion *,
+    .reduced-motion *::before,
+    .reduced-motion *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    /* Keyboard navigation styles */
+    .keyboard-navigation *:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+
+    /* Print styles */
+    @media print {
+      .no-print,
+      nav,
+      footer,
+      button,
+      .fixed {
+        display: none !important;
       }
       
-      .barber-card:focus-visible {
-        outline: 4px solid #005fcc;
-        outline-offset: 3px;
+      .print-break {
+        page-break-before: always;
       }
     }
   </style>
-</head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen">
-
-  <!-- Screen Reader Announcements -->
-  <div id="grid-announcer" class="sr-only" aria-live="polite"></div>
-  <div id="animation-announcer" class="sr-only" aria-live="polite"></div>
-
-  <!-- Enhanced Barber Profiles Section -->
-  <section class="barber-container py-16">
-    <h1 class="section-header text-4xl font-bold text-center mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-      Meet Our Master Barbers
-    </h1>
-    <p class="section-subtitle text-center text-gray-600 dark:text-gray-300 mb-16 max-w-3xl mx-auto">
-      Experience exceptional craftsmanship from our talented team of professional barbers. Watch as our dynamic showcase highlights different team members, each bringing their unique style and expertise to every cut.
-    </p>
-    
-    <div id="barber-grid" class="barber-grid" role="region" aria-label="Barber profiles grid">
-      <!-- Cards will be dynamically inserted here -->
-    </div>
-  </section>
-
-  <!-- Performance Monitor (Development) -->
-  <div id="performance-monitor" class="performance-monitor">
-    <div>FPS: <span id="fps-counter">--</span></div>
-    <div>Grid: <span id="grid-state">--</span></div>
-    <div>Visible: <span id="visible-count">--</span></div>
-  </div>
-
-  <!-- Enhanced JavaScript Implementation -->
-  <script>
-    // Configuration Object
-    const CONFIG = {
-      breakpoints: {
-        mobile: { minWidth: 0, columns: 1, rows: 1, maxVisible: 1, name: 'mobile' },
-        tablet: { minWidth: 640, columns: 2, rows: 2, maxVisible: 4, name: 'tablet' },
-        desktop: { minWidth: 1024, columns: 3, rows: 3, maxVisible: 9, name: 'desktop' },
-        ultrawide: { minWidth: 1440, columns: 5, rows: 2, maxVisible: 10, name: 'ultrawide' }
-      },
-      
-      animation: {
-        cycleDuration: 4000,
-        transitionDuration: 800,
-        staggerBase: 200,
-        gridTransitionDuration: 800
-      },
-      
-      performance: {
-        targetFPS: 60,
-        maxConcurrentAnimations: 2,
-        intersectionThreshold: 0.1
-      }
-    };
-
-    // Barber Data
-    const BARBER_DATA = [
-      { id: 'sal', name: 'Sal', specialty: 'Classic Cuts', experience: 15, rating: 4.9 },
-      { id: 'steve', name: 'Steve', specialty: 'Modern Styles', experience: 12, rating: 4.8 },
-      { id: 'nick', name: 'Nick', specialty: 'Beard Specialist', experience: 8, rating: 4.9 },
-      { id: 'jay', name: 'Jay', specialty: 'Fade Expert', experience: 10, rating: 4.7 },
-      { id: 'jacob', name: 'Jacob', specialty: 'Creative Designs', experience: 6, rating: 4.8 },
-      { id: 'anthony', name: 'Anthony', specialty: 'Senior Stylist', experience: 20, rating: 5.0 },
-      { id: 'anderson', name: 'Anderson', specialty: 'Precision Cuts', experience: 14, rating: 4.9 },
-      { id: 'andres', name: 'Andres', specialty: 'Color Expert', experience: 11, rating: 4.6 },
-      { id: 'alex', name: 'Alex', specialty: 'Trendsetter', experience: 7, rating: 4.8 },
-      { id: 'marcus', name: 'Marcus', specialty: 'Traditional Barber', experience: 18, rating: 4.9 },
-      { id: 'david', name: 'David', specialty: 'Style Consultant', experience: 9, rating: 4.7 },
-      { id: 'luis', name: 'Luis', specialty: 'Hair Artist', experience: 13, rating: 4.8 }
-    ];
-
-    // Main Application Class
-    class DynamicBarberProfiles {
-      constructor() {
-        this.allBarbers = [...BARBER_DATA];
-        this.visibleCards = [];
-        this.hiddenCards = [];
-        this.currentBreakpoint = null;
-        this.animationInProgress = false;
-        this.gridTransitionInProgress = false;
-        this.hoverPaused = false;
-        this.isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        
-        // Elements
-        this.gridElement = document.getElementById('barber-grid');
-        this.gridAnnouncer = document.getElementById('grid-announcer');
-        this.animationAnnouncer = document.getElementById('animation-announcer');
-        
-        // Managers
-        this.resizeObserver = null;
-        this.intersectionObserver = null;
-        this.animationController = null;
-        this.performanceMonitor = null;
-        
-        this.init();
-      }
-
-      async init() {
-        try {
-          this.setupPerformanceMonitoring();
-          this.detectCurrentBreakpoint();
-          await this.renderInitialCards();
-          this.setupObservers();
-          this.startAnimationSystem();
-          this.setupAccessibility();
-          this.setupInteractionHandlers();
-          
-          console.log('Dynamic Barber Profiles initialized successfully');
-        } catch (error) {
-          console.error('Initialization failed:', error);
-          this.handleInitializationError(error);
-        }
-      }
-
-      // Breakpoint Detection and Grid Management
-      detectCurrentBreakpoint() {
-        const containerWidth = this.gridElement.offsetWidth;
-        const breakpoints = Object.values(CONFIG.breakpoints).reverse();
-        
-        for (const bp of breakpoints) {
-          if (containerWidth >= bp.minWidth) {
-            if (this.currentBreakpoint?.name !== bp.name) {
-              const oldBreakpoint = this.currentBreakpoint;
-              this.currentBreakpoint = bp;
-              
-              if (oldBreakpoint) {
-                this.handleBreakpointChange(oldBreakpoint, bp);
-              }
-            }
-            break;
-          }
-        }
-        
-        return this.currentBreakpoint;
-      }
-
-      async handleBreakpointChange(oldBp, newBp) {
-        if (this.gridTransitionInProgress) return;
-        
-        this.gridTransitionInProgress = true;
-        
-        try {
-          // Announce change to screen readers
-          this.announceGridChange(oldBp, newBp);
-          
-          // Pause current animations
-          this.pauseCardReplacements();
-          
-          // Add transition class
-          this.gridElement.classList.add('grid-transition-active');
-          
-          // Calculate new visible set
-          await this.transitionToNewGrid(newBp);
-          
-          // Resume animations with new parameters
-          setTimeout(() => {
-            this.gridElement.classList.remove('grid-transition-active');
-            this.resumeCardReplacements();
-            this.gridTransitionInProgress = false;
-          }, CONFIG.animation.gridTransitionDuration);
-          
-        } catch (error) {
-          console.error('Grid transition failed:', error);
-          this.gridTransitionInProgress = false;
-        }
-      }
-
-      async transitionToNewGrid(newBreakpoint) {
-        const targetVisible = Math.min(newBreakpoint.maxVisible, this.allBarbers.length);
-        
-        if (targetVisible === this.visibleCards.length) {
-          // Same number visible, just reposition
-          this.repositionCards();
-          return;
-        }
-        
-        if (targetVisible > this.visibleCards.length) {
-          // Show more cards
-          await this.addCardsToGrid(targetVisible - this.visibleCards.length);
-        } else {
-          // Hide some cards
-          await this.removeCardsFromGrid(this.visibleCards.length - targetVisible);
-        }
-        
-        this.updatePerformanceMonitor();
-      }
-
-      async addCardsToGrid(count) {
-        const availableHidden = this.hiddenCards.slice(0, count);
-        
-        for (let i = 0; i < availableHidden.length; i++) {
-          const card = availableHidden[i];
-          const staggerDelay = i * (CONFIG.animation.staggerBase / 2);
-          
-          setTimeout(() => {
-            card.classList.remove('hidden');
-            card.classList.add('repositioning');
-            this.visibleCards.push(card);
-            this.hiddenCards = this.hiddenCards.filter(c => c !== card);
-          }, staggerDelay);
-        }
-      }
-
-      async removeCardsFromGrid(count) {
-        const cardsToHide = this.visibleCards.slice(-count);
-        
-        for (let i = 0; i < cardsToHide.length; i++) {
-          const card = cardsToHide[i];
-          const staggerDelay = i * (CONFIG.animation.staggerBase / 3);
-          
-          setTimeout(() => {
-            card.classList.add('hidden');
-            this.hiddenCards.push(card);
-            this.visibleCards = this.visibleCards.filter(c => c !== card);
-          }, staggerDelay);
-        }
-      }
-
-      repositionCards() {
-        this.visibleCards.forEach((card, index) => {
-          const delay = index * 50;
-          setTimeout(() => {
-            card.classList.add('repositioning');
-            setTimeout(() => card.classList.remove('repositioning'), CONFIG.animation.gridTransitionDuration);
-          }, delay);
-        });
-      }
-
-      // Card Creation and Management
-      async renderInitialCards() {
-        this.gridElement.innerHTML = '';
-        
-        const initialVisible = Math.min(
-          this.currentBreakpoint.maxVisible, 
-          this.allBarbers.length
-        );
-        
-        // Create all card elements
-        const allCardElements = this.allBarbers.map(barber => this.createBarberCard(barber));
-        
-        // Set initial visible/hidden states
-        allCardElements.forEach((card, index) => {
-          if (index < initialVisible) {
-            card.classList.add('loading');
-            this.visibleCards.push(card);
-            this.gridElement.appendChild(card);
-          } else {
-            card.classList.add('hidden');
-            this.hiddenCards.push(card);
-            this.gridElement.appendChild(card);
-          }
-        });
-        
-        // Staggered loading animation
-        await this.animateCardsIn();
-      }
-
-      createBarberCard(barber) {
-        const card = document.createElement('div');
-        card.className = 'barber-card';
-        card.setAttribute('data-barber-id', barber.id);
-        card.setAttribute('tabindex', '0');
-        card.setAttribute('role', 'button');
-        card.setAttribute('aria-label', `View ${barber.name}'s profile - ${barber.specialty}, ${barber.experience} years experience`);
-        
-        const imageUrl = `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 100000)}?w=300&h=300&fit=crop&crop=face&auto=format&q=75`;
-        
-        card.innerHTML = `
-          <div class="barber-image" style="width: 6rem; height: 6rem;">
-            <img src="${imageUrl}" 
-                 alt="${barber.name}" 
-                 loading="lazy"
-                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-            <div class="fallback">
-              ${barber.name.charAt(0)}
-            </div>
-          </div>
-          
-          <div class="text-center mt-4 flex-1 flex flex-col justify-between">
-            <div>
-              <h3 class="text-lg font-semibold mb-1 text-gray-900 dark:text-white">${barber.name}</h3>
-              <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">${barber.specialty}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">${barber.experience} years experience</p>
-            </div>
-            
-            <div class="mt-3">
-              <div class="star-rating justify-center">
-                ${this.generateStars(barber.rating)}
-              </div>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${barber.rating} stars</p>
-            </div>
-          </div>
-        `;
-
-        // Add event listeners
-        this.addCardEventListeners(card, barber);
-        
-        return card;
-      }
-
-      generateStars(rating) {
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 >= 0.5;
-        let starsHtml = '';
-        
-        for (let i = 0; i < fullStars; i++) {
-          starsHtml += '<svg class="star" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
-        }
-        
-        if (hasHalfStar) {
-          starsHtml += '<svg class="star opacity-50" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>';
-        }
-        
-        return starsHtml;
-      }
-
-      async animateCardsIn() {
-        const loadingCards = this.visibleCards.filter(card => card.classList.contains('loading'));
-        
-        for (let i = 0; i < loadingCards.length; i++) {
-          await new Promise(resolve => {
-            setTimeout(() => {
-              loadingCards[i].classList.remove('loading');
-              loadingCards[i].classList.add('loaded');
-              resolve();
-            }, i * 150);
-          });
-        }
-      }
-
-      // Card Replacement Animation System
-      startAnimationSystem() {
-        if (this.isReducedMotion) return;
-        
-        this.animationController = new AnimationController(this);
-        this.animationController.start();
-      }
-
-      async executeCardReplacement() {
-        if (this.animationInProgress || this.gridTransitionInProgress || this.hoverPaused) {
-          return;
-        }
-        
-        if (this.visibleCards.length === 0 || this.hiddenCards.length === 0) {
-          return;
-        }
-        
-        this.animationInProgress = true;
-        
-        try {
-          // Select cards for replacement
-          const exitingCard = this.selectCardForExit();
-          const enteringCard = this.selectCardForEntry();
-          
-          if (!exitingCard || !enteringCard) {
-            this.animationInProgress = false;
-            return;
-          }
-          
-          // Execute replacement sequence
-          await this.performCardSwap(exitingCard, enteringCard);
-          
-        } catch (error) {
-          console.error('Card replacement failed:', error);
-        } finally {
-          this.animationInProgress = false;
-        }
-      }
-
-      selectCardForExit() {
-        // Select a visible card that's not being hovered
-        const availableCards = this.visibleCards.filter(card => 
-          !card.matches(':hover') && 
-          !card.classList.contains('exiting') && 
-          !card.classList.contains('entering')
-        );
-        
-        if (availableCards.length === 0) return null;
-        
-        // Use weighted random selection favoring cards that have been visible longer
-        const randomIndex = Math.floor(Math.random() * availableCards.length);
-        return availableCards[randomIndex];
-      }
-
-      selectCardForEntry() {
-        // Select a random hidden card
-        if (this.hiddenCards.length === 0) return null;
-        
-        const randomIndex = Math.floor(Math.random() * this.hiddenCards.length);
-        return this.hiddenCards[randomIndex];
-      }
-
-      async performCardSwap(exitingCard, enteringCard) {
-        // Get the position of the exiting card
-        const exitingRect = exitingCard.getBoundingClientRect();
-        
-        // Position entering card at the same location
-        enteringCard.style.position = 'absolute';
-        enteringCard.style.left = `${exitingRect.left}px`;
-        enteringCard.style.top = `${exitingRect.top}px`;
-        enteringCard.style.width = `${exitingRect.width}px`;
-        enteringCard.style.height = `${exitingRect.height}px`;
-        
-        // Remove hidden class and add to DOM if needed
-        enteringCard.classList.remove('hidden');
-        if (!enteringCard.parentNode) {
-          this.gridElement.appendChild(enteringCard);
-        }
-        
-        // Start exit animation
-        exitingCard.classList.add('exiting');
-        
-        // Start enter animation after a brief delay
-        setTimeout(() => {
-          enteringCard.classList.add('entering');
-        }, CONFIG.animation.transitionDuration * 0.3);
-        
-        // Handle animation completion
-        await new Promise(resolve => {
-          setTimeout(() => {
-            this.completeCardSwap(exitingCard, enteringCard);
-            resolve();
-          }, CONFIG.animation.transitionDuration);
-        });
-      }
-
-      completeCardSwap(exitingCard, enteringCard) {
-        // Clean up exiting card
-        exitingCard.classList.remove('exiting');
-        exitingCard.classList.add('hidden');
-        
-        // Clean up entering card
-        enteringCard.classList.remove('entering');
-        enteringCard.style.position = '';
-        enteringCard.style.left = '';
-        enteringCard.style.top = '';
-        enteringCard.style.width = '';
-        enteringCard.style.height = '';
-        
-        // Update card arrays
-        const exitingIndex = this.visibleCards.indexOf(exitingCard);
-        if (exitingIndex !== -1) {
-          this.visibleCards[exitingIndex] = enteringCard;
-        }
-        
-        const enteringIndex = this.hiddenCards.indexOf(enteringCard);
-        if (enteringIndex !== -1) {
-          this.hiddenCards.splice(enteringIndex, 1);
-        }
-        
-        this.hiddenCards.push(exitingCard);
-        
-        // Announce change to screen readers
-        const barberName = enteringCard.querySelector('h3').textContent;
-        this.announceCardChange(barberName);
-      }
-
-      pauseCardReplacements() {
-        if (this.animationController) {
-          this.animationController.pause();
-        }
-      }
-
-      resumeCardReplacements() {
-        if (this.animationController && !this.isReducedMotion) {
-          this.animationController.resume();
-        }
-      }
-
-      // Event Handlers
-      addCardEventListeners(card, barber) {
-        // Click handler
-        card.addEventListener('click', () => this.handleCardClick(barber));
-        
-        // Keyboard handler
-        card.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            this.handleCardClick(barber);
-          }
-        });
-        
-        // Hover handlers
-        card.addEventListener('mouseenter', () => this.handleCardHover(card, true));
-        card.addEventListener('mouseleave', () => this.handleCardHover(card, false));
-        
-        // Focus handlers
-        card.addEventListener('focus', () => this.handleCardFocus(card, true));
-        card.addEventListener('blur', () => this.handleCardFocus(card, false));
-      }
-
-      handleCardClick(barber) {
-        console.log(`Clicked on ${barber.name}'s profile`);
-        // Could implement modal or navigation here
-        this.announceCardInteraction(barber.name);
-      }
-
-      handleCardHover(card, isEntering) {
-        if (isEntering) {
-          this.hoverPaused = true;
-          card.style.animationPlayState = 'paused';
-        } else {
-          this.hoverPaused = false;
-          card.style.animationPlayState = 'running';
-        }
-      }
-
-      handleCardFocus(card, isFocused) {
-        if (isFocused) {
-          this.hoverPaused = true;
-          card.style.animationPlayState = 'paused';
-        } else {
-          this.hoverPaused = false;
-          card.style.animationPlayState = 'running';
-        }
-      }
-
-      // Observer Setup
-      setupObservers() {
-        // Resize Observer for responsive behavior
-        if ('ResizeObserver' in window) {
-          this.resizeObserver = new ResizeObserver(entries => {
-            clearTimeout(this.resizeTimeout);
-            this.resizeTimeout = setTimeout(() => {
-              this.detectCurrentBreakpoint();
-            }, 250);
-          });
-          
-          this.resizeObserver.observe(this.gridElement);
-        } else {
-          // Fallback to window resize
-          window.addEventListener('resize', () => {
-            clearTimeout(this.resizeTimeout);
-            this.resizeTimeout = setTimeout(() => {
-              this.detectCurrentBreakpoint();
-            }, 250);
-          });
-        }
-        
-        // Intersection Observer for performance
-        if ('IntersectionObserver' in window) {
-          this.intersectionObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-              const card = entry.target;
-              if (entry.isIntersecting) {
-                card.style.animationPlayState = 'running';
-              } else {
-                card.style.animationPlayState = 'paused';
-              }
-            });
-          }, {
-            threshold: CONFIG.performance.intersectionThreshold,
-            rootMargin: '50px'
-          });
-          
-          // Observe all cards
-          [...this.visibleCards, ...this.hiddenCards].forEach(card => {
-            this.intersectionObserver.observe(card);
-          });
-        }
-      }
-
-      // Accessibility
-      setupAccessibility() {
-        // Reduced motion detection
-        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-        mediaQuery.addEventListener('change', (e) => {
-          this.isReducedMotion = e.matches;
-          if (e.matches) {
-            this.pauseCardReplacements();
-          } else {
-            this.resumeCardReplacements();
-          }
-        });
-        
-        // Page visibility handling
-        document.addEventListener('visibilitychange', () => {
-          if (document.hidden) {
-            this.pauseCardReplacements();
-          } else {
-            this.resumeCardReplacements();
-          }
-        });
-      }
-
-      setupInteractionHandlers() {
-        // Touch device detection
-        if ('ontouchstart' in window) {
-          this.gridElement.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
-        }
-      }
-
-      handleTouchStart(e) {
-        // Pause animations during touch interactions
-        this.hoverPaused = true;
-        setTimeout(() => {
-          this.hoverPaused = false;
-        }, 1000);
-      }
-
-      // Announcements for screen readers
-      announceGridChange(oldBp, newBp) {
-        const message = `Grid layout changed from ${oldBp.columns} columns to ${newBp.columns} columns, now showing ${newBp.maxVisible} barbers`;
-        this.gridAnnouncer.textContent = message;
-      }
-
-      announceCardChange(barberName) {
-        const message = `Now featuring ${barberName}`;
-        this.animationAnnouncer.textContent = message;
-      }
-
-      announceCardInteraction(barberName) {
-        const message = `Selected ${barberName}'s profile`;
-        this.animationAnnouncer.textContent = message;
-      }
-
-      // Performance Monitoring
-      setupPerformanceMonitoring() {
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          this.performanceMonitor = new PerformanceMonitor();
-          this.updatePerformanceMonitor();
-        }
-      }
-
-      updatePerformanceMonitor() {
-        if (this.performanceMonitor) {
-          document.getElementById('grid-state').textContent = this.currentBreakpoint?.name || 'unknown';
-          document.getElementById('visible-count').textContent = this.visibleCards.length;
-        }
-      }
-
-      // Error Handling
-      handleInitializationError(error) {
-        console.error('Failed to initialize barber profiles:', error);
-        
-        // Fallback: Show static grid
-        this.gridElement.innerHTML = `
-          <div class="col-span-full text-center py-12">
-            <h3 class="text-lg font-semibold mb-2">Unable to load barber profiles</h3>
-            <p class="text-gray-600 dark:text-gray-300">Please refresh the page to try again.</p>
-          </div>
-        `;
-      }
-
-      // Cleanup
-      destroy() {
-        if (this.animationController) {
-          this.animationController.stop();
-        }
-        
-        if (this.resizeObserver) {
-          this.resizeObserver.disconnect();
-        }
-        
-        if (this.intersectionObserver) {
-          this.intersectionObserver.disconnect();
-        }
-        
-        if (this.performanceMonitor) {
-          this.performanceMonitor.stop();
-        }
-      }
-    }
-
-    // Animation Controller Class
-    class AnimationController {
-      constructor(profileSystem) {
-        this.profileSystem = profileSystem;
-        this.intervalId = null;
-        this.paused = false;
-        this.lastExecutionTime = 0;
-      }
-
-      start() {
-        if (this.intervalId) return;
-        
-        this.intervalId = setInterval(() => {
-          if (!this.paused && !this.profileSystem.isReducedMotion) {
-            const now = Date.now();
-            if (now - this.lastExecutionTime >= CONFIG.animation.cycleDuration) {
-              this.profileSystem.executeCardReplacement();
-              this.lastExecutionTime = now;
-            }
-          }
-        }, 1000); // Check every second
-      }
-
-      pause() {
-        this.paused = true;
-      }
-
-      resume() {
-        this.paused = false;
-      }
-
-      stop() {
-        if (this.intervalId) {
-          clearInterval(this.intervalId);
-          this.intervalId = null;
-        }
-      }
-    }
-
-    // Performance Monitor Class
-    class PerformanceMonitor {
-      constructor() {
-        this.fps = 0;
-        this.frameCount = 0;
-        this.lastTime = performance.now();
-        this.monitor = document.getElementById('performance-monitor');
-        this.fpsCounter = document.getElementById('fps-counter');
-        this.animationId = null;
-        
-        this.start();
-      }
-
-      start() {
-        this.measure();
-      }
-
-      measure() {
-        this.frameCount++;
-        const currentTime = performance.now();
-        
-        if (currentTime >= this.lastTime + 1000) {
-          this.fps = Math.round((this.frameCount * 1000) / (currentTime - this.lastTime));
-          this.fpsCounter.textContent = this.fps;
-          
-          // Show monitor if performance is poor
-          if (this.fps < 50) {
-            this.monitor.classList.add('visible');
-          } else {
-            this.monitor.classList.remove('visible');
-          }
-          
-          this.frameCount = 0;
-          this.lastTime = currentTime;
-        }
-        
-        this.animationId = requestAnimationFrame(() => this.measure());
-      }
-
-      stop() {
-        if (this.animationId) {
-          cancelAnimationFrame(this.animationId);
-          this.animationId = null;
-        }
-      }
-    }
-
-    // Initialize the application
-    let barberProfiles;
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        barberProfiles = new DynamicBarberProfiles();
-      });
-    } else {
-      barberProfiles = new DynamicBarberProfiles();
-    }
-
-    // Global error handling
-    window.addEventListener('error', (event) => {
-      console.error('Global error caught:', event.error);
-    });
-
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', () => {
-      if (barberProfiles) {
-        barberProfiles.destroy();
-      }
-    });
-  </script>
 </body>
-</html>
+</html>3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                  </svg>
+                  <span class="text-sm text-zinc-600 dark:text-zinc-300">4.9</span>
+                </div>
+              </div>
+              <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-3">Fade Expert • 8 years exp.</p>
+              <p class="text-xs text-zinc-500 mb-4">The Original Gentlemen's Parlor • 1.2 mi</p>
+              <div class="flex items-center justify-between">
+                <span class="text-green-600 text-sm font-medium">Next: Today 4:30p</span>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  Book
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800">
+            <div class="aspect-square bg-gradient-to-br from-green-400 to-blue-500"></div>
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xl font-bold">Marcus</h3>
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                  </svg>
+                  <span class="text-sm text-zinc-600 dark:text-zinc-300">4.8</span>
+                </div>
+              </div>
+              <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-3">Classic Cuts • 12 years exp.</p>
+              <p class="text-xs text-zinc-500 mb-4">Downtown Barber Co • 2.1 mi</p>
+              <div class="flex items-center justify-between">
+                <span class="text-orange-600 text-sm font-medium">Next: Tomorrow 10:00a</span>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  Book
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800">
+            <div class="aspect-square bg-gradient-to-br from-purple-400 to-pink-500"></div>
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xl font-bold">Sofia</h3>
+                <div class="flex items-center">
+                  <svg class="w-4 h-4 text-yellow-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.
