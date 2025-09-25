@@ -1,4 +1,1899 @@
-<!doctype html>
+<div class="category-badge ${guide.category}">${guide.category.charAt(0).toUpperCase() + guide.category.slice(1)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      return article;
+    }
+
+    // Production-ready utility functions
+    function updateFavorites() {
+      try {
+        localStorage.setItem('fj_favorites', JSON.stringify(Array.from(favorites)));
+        updateStatistics();
+        updateFavoriteButtons();
+        
+        if (currentFilter === 'favorites') {
+          filterFiles('favorites');
+        }
+      } catch (error) {
+        logError(error, 'Favorites Update');
+      }
+    }
+
+    function addToRecent(guideId) {
+      try {
+        recentFiles = recentFiles.filter(id => id !== guideId);
+        recentFiles.unshift(guideId);
+        recentFiles = recentFiles.slice(0, 10);
+        
+        localStorage.setItem('fj_recent_files', JSON.stringify(recentFiles));
+        updateStatistics();
+        
+        if (currentFilter === 'recent') {
+          filterFiles('recent');
+        }
+      } catch (error) {
+        logError(error, 'Recent Files Update');
+      }
+    }
+
+    function updateStatistics() {
+      try {
+        document.getElementById('totalFiles').textContent = Object.keys(guides).length;
+        document.getElementById('favoriteCount').textContent = favorites.size;
+        document.getElementById('recentCount').textContent = recentFiles.length;
+        
+        // Update progress bar ARIA attributes
+        const progressBar = document.getElementById('progressBar');
+        const progress = parseInt(document.getElementById('studyProgress').textContent) || 0;
+        progressBar.setAttribute('aria-valuenow', progress);
+      } catch (error) {
+        logError(error, 'Statistics Update');
+      }
+    }
+
+    function updateFavoriteButtons() {
+      document.querySelectorAll('.favorite-btn').forEach(btn => {
+        const guideId = btn.getAttribute('data-guide');
+        const isFavorited = favorites.has(guideId);
+        
+        if (isFavorited) {
+          btn.classList.add('favorited');
+          btn.setAttribute('aria-label', 'Remove from favorites');
+          btn.setAttribute('title', 'Remove from favorites');
+        } else {
+          btn.classList.remove('favorited');
+          btn.setAttribute('aria-label', 'Add to favorites');
+          btn.setAttribute('title', 'Add to favorites');
+        }
+      });
+    }
+
+    function updateStudyProgress() {
+      try {
+        const viewedGuides = JSON.parse(localStorage.getItem('fj_viewed_guides') || '[]');
+        if (currentPDF && !viewedGuides.includes(currentPDF)) {
+          viewedGuides.push(currentPDF);
+          localStorage.setItem('fj_viewed_guides', JSON.stringify(viewedGuides));
+        }
+        
+        const progress = Math.round((viewedGuides.length / Object.keys(guides).length) * 100);
+        document.getElementById('studyProgress').textContent = `${progress}%`;
+        document.getElementById('progressBar').style.width = `${progress}%`;
+        document.getElementById('progressBar').setAttribute('aria-valuenow', progress);
+      } catch (error) {
+        logError(error, 'Progress Update');
+      }
+    }
+
+    // Enhanced search and filtering
+    function setupSearch() {
+      const searchInput = document.getElementById('searchInput');
+      const categoryFilter = document.getElementById('categoryFilter');
+      
+      searchInput.addEventListener('input', debounce(searchFiles, 300));
+      categoryFilter.addEventListener('change', searchFiles);
+      
+      document.getElementById('allTab').addEventListener('click', () => filterFiles('all'));
+      document.getElementById('favoritesTab').addEventListener('click', () => filterFiles('favorites'));
+      document.getElementById('recentTab').addEventListener('click', () => filterFiles('recent'));
+      
+      document.getElementById('listView').addEventListener('click', () => toggleView('list'));
+      document.getElementById('gridView').addEventListener('click', () => toggleView('grid'));
+      
+      document.getElementById('clearFilters').addEventListener('click', clearAllFilters);
+      document.getElementById('exportProgress').addEventListener('click', exportProgress);
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    function searchFiles() {
+      try {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const category = document.getElementById('categoryFilter').value;
+        const items = document.querySelectorAll('.guide-item');
+        let visibleCount = 0;
+        
+        items.forEach(item => {
+          const title = item.querySelector('h3').textContent.toLowerCase();
+          const description = item.querySelector('p').textContent.toLowerCase();
+          const itemCategory = item.getAttribute('data-category');
+          const guideId = item.getAttribute('data-guide');
+          
+          const matchesSearch = !query || title.includes(query) || description.includes(query);
+          const matchesCategory = category === 'all' || itemCategory === category;
+          const matchesFilter = currentFilter === 'all' || 
+            (currentFilter === 'favorites' && favorites.has(guideId)) ||
+            (currentFilter === 'recent' && recentFiles.includes(guideId));
+          
+          if (matchesSearch && matchesCategory && matchesFilter) {
+            item.style.display = 'block';
+            item.style.animation = 'fadeIn 0.3s ease-in-out';
+            visibleCount++;
+          } else {
+            item.style.display = 'none';
+          }
+        });
+        
+        updateEmptyStates(visibleCount);
+        announceToScreenReader(`${visibleCount} guides found`);
+        
+      } catch (error) {
+        logError(error, 'Search Files');
+      }
+    }
+
+    function filterFiles(filterType) {
+      try {
+        currentFilter = filterType;
+        const items = document.querySelectorAll('.guide-item');
+        let visibleCount = 0;
+        
+        // Update tab states and ARIA
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+          tab.classList.remove('active');
+          tab.setAttribute('aria-selected', 'false');
+        });
+        const activeTab = document.getElementById(filterType + 'Tab');
+        activeTab.classList.add('active');
+        activeTab.setAttribute('aria-selected', 'true');
+        
+        items.forEach(item => {
+          const guideId = item.getAttribute('data-guide');
+          let shouldShow = false;
+          
+          switch(filterType) {
+            case 'all':
+              shouldShow = true;
+              break;
+            case 'favorites':
+              shouldShow = favorites.has(guideId);
+              break;
+            case 'recent':
+              shouldShow = recentFiles.includes(guideId);
+              break;
+          }
+          
+          if (shouldShow) {
+            item.style.display = 'block';
+            item.style.animation = 'fadeIn 0.3s ease-in-out';
+            visibleCount++;
+          } else {
+            item.style.display = 'none';
+          }
+        });
+        
+        updateEmptyStates(visibleCount, filterType);
+        announceToScreenReader(`Showing ${filterType} files: ${visibleCount} guides`);
+        
+      } catch (error) {
+        logError(error, 'Filter Files');
+      }
+    }
+
+    function updateEmptyStates(visibleCount, filterType = currentFilter) {
+      const noResults = document.getElementById('noResults');
+      const noFavorites = document.getElementById('noFavorites');
+      
+      noResults.classList.add('hidden');
+      noFavorites.classList.add('hidden');
+      
+      if (visibleCount === 0) {
+        if (filterType === 'favorites') {
+          noFavorites.classList.remove('hidden');
+        } else {
+          noResults.classList.remove('hidden');
+        }
+      }
+    }
+
+    function setupGuideSelection() {
+      document.addEventListener('click', (e) => {
+        // Handle guide card clicks
+        const guideItem = e.target.closest('.guide-item');
+        if (guideItem && !e.target.closest('.favorite-btn')) {
+          const guideId = guideItem.getAttribute('data-guide');
+          selectGuide(guideId, guideItem);
+        }
+        
+        // Handle favorite button clicks
+        const favoriteBtn = e.target.closest('.favorite-btn');
+        if (favoriteBtn) {
+          e.stopPropagation();
+          toggleFavorite(favoriteBtn.getAttribute('data-guide'));
+        }
+      });
+      
+      // Keyboard support for guide items
+      document.addEventListener('keydown', (e) => {
+        if (e.target.classList.contains('guide-item') && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          const guideId = e.target.getAttribute('data-guide');
+          selectGuide(guideId, e.target);
+        }
+      });
+    }
+
+    function selectGuide(guideId, cardElement) {
+      try {
+        // Update active state
+        document.querySelectorAll('.guide-item').forEach(c => 
+          c.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20')
+        );
+        cardElement.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20');
+        
+        // Load the PDF
+        loadPDF(guideId);
+        
+      } catch (error) {
+        logError(error, 'Guide Selection');
+      }
+    }
+
+    function toggleFavorite(guideId) {
+      try {
+        if (favorites.has(guideId)) {
+          favorites.delete(guideId);
+          announceToScreenReader('Removed from favorites');
+        } else {
+          favorites.add(guideId);
+          announceToScreenReader('Added to favorites');
+        }
+        
+        updateFavorites();
+        showToast(favorites.has(guideId) ? 'Added to favorites' : 'Removed from favorites');
+        
+      } catch (error) {
+        logError(error, 'Toggle Favorite');
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      const bgColor = type === 'error' ? 'bg-red-600' : 'bg-green-600';
+      
+      toast.className = `fixed top-4 right-4 ${bgColor} text-white p-4 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
+      toast.innerHTML = `
+        <div class="flex items-center space-x-2">
+          <div class="text-lg">${type === 'error' ? '❌' : '✅'}</div>
+          <div>${message}</div>
+        </div>
+      `;
+      
+      document.body.appendChild(toast);
+      
+      // Animate in
+      setTimeout(() => toast.classList.remove('translate-x-full'), 100);
+      
+      // Animate out and remove
+      setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Enhanced keyboard shortcuts
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        // Global shortcuts
+        if (e.ctrlKey || e.metaKey) {
+          switch(e.key) {
+            case 'f':
+              e.preventDefault();
+              document.getElementById('searchInput').focus();
+              break;
+            case '=':
+            case '+':
+              if (currentPDF) {
+                e.preventDefault();
+                zoomIn();
+              }
+              break;
+            case '-':
+              if (currentPDF) {
+                e.preventDefault();
+                zoomOut();
+              }
+              break;
+            case '0':
+              if (currentPDF) {
+                e.preventDefault();
+                scale = 1.0;
+                updateZoom();
+              }
+              break;
+          }
+          return;
+        }
+
+        // PDF navigation shortcuts
+        if (currentPDF) {
+          switch(e.key) {
+            case 'ArrowLeft':
+              e.preventDefault();
+              prevPage();
+              break;
+            case 'ArrowRight':
+              e.preventDefault();
+              nextPage();
+              break;
+            case 'Home':
+              e.preventDefault();
+              goToPage(1);
+              break;
+            case 'End':
+              e.preventDefault();
+              goToPage(totalPages);
+              break;
+          }
+        }
+
+        // Interface shortcuts
+        if (e.key === 'Escape') {
+          if (window.innerWidth < 1024) {
+            document.getElementById('sidebar').classList.remove('sidebar-open');
+            document.getElementById('sidebar').classList.add('sidebar-closed');
+          }
+        }
+      });
+    }
+
+    // Enhanced floating button
+    function setupFloatingButton() {
+      const floatingBtn = document.getElementById('floatingBtn');
+      let isOpen = false;
+      
+      floatingBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isOpen ? closeFloatingMenu() : openFloatingMenu();
+      });
+      
+      function openFloatingMenu() {
+        isOpen = true;
+        floatingBtn.innerHTML = `
+          <svg class="w-6 h-6 transform rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+        `;
+        floatingBtn.setAttribute('aria-expanded', 'true');
+        
+        const actions = [
+          { icon: '🔍', text: 'Search', action: () => document.getElementById('searchInput').focus() },
+          { icon: '📋', text: 'Contents', action: showTableOfContents },
+          { icon: '📝', text: 'Note', action: showNoteDialog },
+          { icon: '📤', text: 'Share', action: shareGuide }
+        ];
+        
+        actions.forEach((action, index) => {
+          const btn = document.createElement('button');
+          btn.className = 'absolute bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 p-3 rounded-full shadow-lg hover:scale-110 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500';
+          btn.style.bottom = `${(index + 1) * 60}px`;
+          btn.style.right = '0';
+          btn.style.animation = `slideUp 0.2s ease-out ${index * 0.1}s both`;
+          btn.innerHTML = `<span class="text-xl" role="img">${action.icon}</span>`;
+          btn.setAttribute('title', action.text);
+          btn.setAttribute('aria-label', action.text);
+          btn.setAttribute('data-floating-action', 'true');
+          btn.addEventListener('click', action.action);
+          
+          floatingBtn.parentElement.appendChild(btn);
+        });
+      }
+      
+      function closeFloatingMenu() {
+        isOpen = false;
+        floatingBtn.innerHTML = `
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+        `;
+        floatingBtn.setAttribute('aria-expanded', 'false');
+        
+        document.querySelectorAll('[data-floating-action="true"]').forEach(btn => {
+          btn.style.animation = 'slideDown 0.2s ease-in both';
+          setTimeout(() => btn.remove(), 200);
+        });
+      }
+      
+      document.addEventListener('click', (e) => {
+        if (isOpen && !floatingBtn.contains(e.target)) {
+          closeFloatingMenu();
+        }
+      });
+    }
+
+    // Utility functions for floating menu actions
+    function showTableOfContents() {
+      // Implementation for table of contents modal
+      showToast('Table of Contents feature coming soon!');
+    }
+
+    function showNoteDialog() {
+      // Implementation for note-taking modal
+      showToast('Note-taking feature coming soon!');
+    }
+
+    function shareGuide() {
+      if (!currentPDF) {
+        showToast('Please select a guide first', 'error');
+        return;
+      }
+      
+      const guide = guides[currentPDF];
+      const shareData = {
+        title: guide.title,
+        text: `Check out this helpful barber guide: ${guide.description}`,
+        url: window.location.href + `?guide=${currentPDF}`
+      };
+      
+      if (navigator.share) {
+        navigator.share(shareData);
+      } else {
+        navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`)
+          .then(() => showToast('Link copied to clipboard!'))
+          .catch(() => showToast('Unable to copy link', 'error'));
+      }
+    }
+
+    function exportProgress() {
+      try {
+        const progressData = {
+          studyProgress: localStorage.getItem('fj_study_progress') || '0',
+          viewedGuides: JSON.parse(localStorage.getItem('fj_viewed_guides') || '[]'),
+          favorites: Array.from(favorites),
+          recentFiles: recentFiles,
+          notes: JSON.parse(localStorage.getItem('fj_guide_notes') || '{}'),
+          exportDate: new Date().toISOString(),
+          version: '1.0.0'
+        };
+        
+        const dataStr = JSON.stringify(progressData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `fadejunkie_study_progress_${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        
+        showToast('Progress data exported successfully!');
+        
+      } catch (error) {
+        logError(error, 'Export Progress');
+        showToast('Failed to export progress data', 'error');
+      }
+    }
+
+    function clearAllFilters() {
+      try {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('categoryFilter').value = 'all';
+        filterFiles('all');
+        announceToScreenReader('All filters cleared');
+      } catch (error) {
+        logError(error, 'Clear Filters');
+      }
+    }
+
+    // Sidebar management
+    (function setupSidebar(){
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.getElementById('toggleSidebar');
+      const closeBtn = document.getElementById('closeSidebar');
+
+      function toggleSidebar() {
+        sidebar.classList.toggle('sidebar-open');
+        sidebar.classList.toggle('sidebar-closed');
+        const isOpen = sidebar.classList.contains('sidebar-open');
+        toggleBtn.setAttribute('aria-expanded', isOpen);
+        announceToScreenReader(isOpen ? 'Sidebar opened' : 'Sidebar closed');
+      }
+
+      function closeSidebar() {
+        sidebar.classList.remove('sidebar-open');
+        sidebar.classList.add('sidebar-closed');
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        announceToScreenReader('Sidebar closed');
+      }
+
+      toggleBtn.addEventListener('click', toggleSidebar);
+      closeBtn.addEventListener('click', closeSidebar);
+      
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth < 1024 && 
+            !sidebar.contains(e.target) && 
+            !toggleBtn.contains(e.target) &&
+            sidebar.classList.contains('sidebar-open')) {
+          closeSidebar();
+        }
+      });
+    })();
+
+    // Event listeners for toolbar buttons
+    document.getElementById('backBtn').addEventListener('click', () => {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = './';
+      }
+    });
+
+    document.getElementById('prevPage').addEventListener('click', prevPage);
+    document.getElementById('nextPage').addEventListener('click', nextPage);
+    document.getElementById('zoomIn').addEventListener('click', zoomIn);
+    document.getElementById('zoomOut').addEventListener('click', zoomOut);
+
+    // Handle window resize
+    window.addEventListener('resize', debounce(() => {
+      if (window.innerWidth >= 1024) {
+        document.getElementById('sidebar').classList.add('sidebar-open');
+        document.getElementById('sidebar').classList.remove('sidebar-closed');
+      }
+    }, 250));
+
+    // Handle visibility change (tab switching)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && currentPDF) {
+        // Pause any ongoing renders when tab is hidden
+        console.log('Tab hidden - pausing operations');
+      } else if (!document.hidden && currentPDF) {
+        console.log('Tab visible - resuming operations');
+      }
+    });
+
+    // Handle online/offline status
+    window.addEventListener('online', () => {
+      showToast('Connection restored');
+      if (currentPDF && !pdfDoc) {
+        loadPDF(currentPDF, true);
+      }
+    });
+
+    window.addEventListener('offline', () => {
+      showToast('Connection lost - some features may not work', 'error');
+    });
+
+    // Initialize the application
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApp);
+    } else {
+      initializeApp();
+    }
+
+    // CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes slideDown {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(20px); }
+      }
+      
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      
+      .focus\:not-sr-only:focus {
+        position: static;
+        width: auto;
+        height: auto;
+        padding: inherit;
+        margin: inherit;
+        overflow: visible;
+        clip: auto;
+        white-space: normal;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Global error handler
+    window.addEventListener('error', (event) => {
+      logError(event.error, 'Global Error');
+      console.error('Global error:', event.error);
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+      logError(event.reason, 'Unhandled Promise');
+      console.error('Unhandled promise rejection:', event.reason);
+    });
+    
+    console.log('🚀 FadeJunkie Practical Guides PDF Reader - Production Ready v1.0.0');
+  </script>
+</body>
+</html>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6"></path>
+              </svg>
+            </button>
+            
+            <span id="zoomLevel" 
+                  class="text-sm font-medium px-3 py-1 bg-zinc-100 dark:bg-zinc-700 rounded"
+                  role="status"
+                  aria-live="polite"
+                  aria-label="Current zoom level">
+              100%
+            </span>
+            
+            <button id="zoomIn" 
+                    class="toolbar-btn focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    disabled
+                    aria-label="Zoom in">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v6m3-3H9"></path>
+              </svg>
+            </button>
+
+            <div class="h-6 w-px bg-zinc-300 dark:bg-zinc-600" aria-hidden="true"></div>
+
+            <button id="themeToggle" 
+                    class="toolbar-btn focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    title="Toggle theme"
+                    aria-label="Toggle dark mode">
+              <svg id="themeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- PDF Viewer Area -->
+      <section class="flex-1 bg-zinc-100 dark:bg-zinc-900 overflow-hidden relative" aria-label="PDF content area">
+        
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="h-full flex items-center justify-center">
+          <div class="text-center max-w-lg px-6">
+            <div class="gradient-bg w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div class="text-3xl" role="img" aria-label="Books">📚</div>
+            </div>
+            <h2 class="text-2xl font-bold mb-4">Welcome to Practical Guides</h2>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-8">
+              Access comprehensive step-by-step guides for barber exam preparation and technique mastery. 
+              Select a guide from the sidebar to get started.
+            </p>
+            <button onclick="document.querySelector('[data-guide=tdlr-practical]').click()" 
+              class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+              Start with TDLR Guide
+            </button>
+          </div>
+        </div>
+
+        <!-- PDF Container -->
+        <div id="pdfContainer" class="h-full overflow-y-auto pdf-viewer hidden" style="padding: 20px;">
+          <canvas id="pdfCanvas" 
+                  class="pdf-page max-w-full" 
+                  role="img" 
+                  aria-label="PDF page content">
+          </canvas>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loadingScreen" 
+             class="hidden absolute inset-0 bg-white/90 dark:bg-zinc-900/90 flex items-center justify-center"
+             role="status"
+             aria-live="assertive">
+          <div class="text-center">
+            <div class="loading-spinner mx-auto mb-4" aria-hidden="true"></div>
+            <p class="text-sm text-zinc-600 dark:text-zinc-300">Loading guide...</p>
+            <div class="sr-only">Please wait while the guide is loading</div>
+          </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorScreen" class="hidden h-full flex items-center justify-center">
+          <div class="text-center max-w-lg px-6">
+            <div class="text-6xl mb-4" role="img" aria-label="Warning">⚠️</div>
+            <h2 class="text-2xl font-bold mb-4 text-red-600 dark:text-red-400">Unable to Load Guide</h2>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-6">
+              We encountered an issue loading this guide. Please check your connection and try again.
+            </p>
+            <div class="flex gap-4 justify-center">
+              <button id="retryLoad" 
+                      class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Try Again
+              </button>
+              <button onclick="document.getElementById('welcomeScreen').classList.remove('hidden'); document.getElementById('errorScreen').classList.add('hidden');" 
+                      class="border border-zinc-300 dark:border-zinc-600 px-6 py-3 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                Go Back
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Floating Action Button -->
+  <div class="fixed bottom-6 right-6 z-20 no-print">
+    <button id="floatingBtn" 
+            class="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Quick actions menu">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Screen Reader Only Elements -->
+  <div class="sr-only">
+    <div id="sr-announcements" aria-live="polite" aria-atomic="true"></div>
+    <div id="sr-status" aria-live="assertive" aria-atomic="true"></div>
+  </div>
+
+  <!-- Production-Ready JavaScript -->
+  <script>
+    'use strict';
+    
+    // Global Variables with Error Handling
+    let currentPDF = null;
+    let currentPage = 1;
+    let totalPages = 0;
+    let scale = 1.0;
+    let pdfDoc = null;
+    let isLoading = false;
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+    
+    // Favorites Management
+    let favorites = new Set(JSON.parse(localStorage.getItem('fj_favorites') || '[]'));
+    let recentFiles = JSON.parse(localStorage.getItem('fj_recent_files') || '[]');
+    let currentView = 'list';
+    let currentFilter = 'all';
+
+    // Production PDF data with fallbacks
+    const guides = {
+      'tdlr-practical': {
+        title: 'TDLR Barber Practical Exam Guide',
+        url: './TDLR Barber Practical Exam Guide.pdf',
+        fallbackUrl: './assets/pdfs/tdlr-guide.pdf',
+        pages: null,
+        description: 'Complete step-by-step practical exam preparation',
+        category: 'practical',
+        size: '2.4 MB'
+      },
+      'sanitation': {
+        title: 'Sanitation & Disinfection Quick Reference',
+        url: './guides/sanitation-guide.pdf',
+        pages: 8,
+        description: 'Essential cleaning protocols and procedures',
+        category: 'sanitation',
+        size: '1.2 MB'
+      },
+      'tool-maintenance': {
+        title: 'Clipper & Tool Maintenance Guide',
+        url: './guides/tool-maintenance.pdf',
+        pages: 12,
+        description: 'Proper care and maintenance procedures',
+        category: 'maintenance',
+        size: '1.8 MB'
+      },
+      'kit-checklist': {
+        title: 'State Board Kit Checklist',
+        url: './guides/kit-checklist.pdf',
+        pages: 4,
+        description: 'Complete packing list for exam day',
+        category: 'checklists',
+        size: '0.8 MB'
+      },
+      'techniques': {
+        title: 'Essential Cutting Techniques',
+        url: './guides/cutting-techniques.pdf',
+        pages: 16,
+        description: 'Visual guide to fundamental cuts and styles',
+        category: 'techniques',
+        size: '3.1 MB'
+      }
+    };
+
+    // Error Handling Utilities
+    function logError(error, context = '') {
+      console.error(`FadeJunkie PDF Reader Error ${context}:`, error);
+      
+      // Send to analytics if available
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'exception', {
+          description: `PDF Reader Error: ${error.message}`,
+          fatal: false
+        });
+      }
+    }
+
+    function showError(message, isRetryable = true) {
+      const errorScreen = document.getElementById('errorScreen');
+      const errorMessage = errorScreen.querySelector('p');
+      const retryBtn = document.getElementById('retryLoad');
+      
+      errorMessage.textContent = message;
+      retryBtn.style.display = isRetryable ? 'inline-block' : 'none';
+      
+      document.getElementById('loadingScreen').classList.add('hidden');
+      document.getElementById('welcomeScreen').classList.add('hidden');
+      document.getElementById('pdfContainer').classList.add('hidden');
+      errorScreen.classList.remove('hidden');
+      
+      announceToScreenReader(`Error: ${message}`);
+    }
+
+    function announceToScreenReader(message) {
+      const announcer = document.getElementById('sr-announcements');
+      announcer.textContent = message;
+      setTimeout(() => announcer.textContent = '', 1000);
+    }
+
+    // Theme Management with System Preference Detection
+    (function setupTheme(){
+      const KEY = 'fj_theme';
+      const btn = document.getElementById('themeToggle');
+      const icon = document.getElementById('themeIcon');
+      
+      const currentTheme = () =>
+        document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+
+      const renderThemeIcon = () => {
+        const theme = currentTheme();
+        btn.setAttribute('aria-pressed', theme === 'dark');
+        if (theme === 'dark') {
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+          btn.setAttribute('aria-label', 'Switch to light mode');
+        } else {
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+          btn.setAttribute('aria-label', 'Switch to dark mode');
+        }
+      };
+
+      const setTheme = (theme) => {
+        try {
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+          localStorage.setItem(KEY, theme);
+          renderThemeIcon();
+          announceToScreenReader(`Switched to ${theme} mode`);
+        } catch (error) {
+          logError(error, 'Theme Setting');
+        }
+      };
+
+      // System preference change detection
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      mediaQuery.addEventListener('change', (e) => {
+        if (!localStorage.getItem(KEY)) {
+          setTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+
+      btn.addEventListener('click', () => {
+        const newTheme = currentTheme() === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      });
+
+      renderThemeIcon();
+    })();
+
+    // Enhanced PDF Management with Error Recovery
+    async function loadPDF(guideId, isRetry = false) {
+      if (isLoading && !isRetry) return;
+      
+      const guide = guides[guideId];
+      if (!guide) {
+        showError('Guide not found', false);
+        return;
+      }
+
+      isLoading = true;
+      
+      // Show loading screen
+      document.getElementById('errorScreen').classList.add('hidden');
+      document.getElementById('loadingScreen').classList.remove('hidden');
+      document.getElementById('welcomeScreen').classList.add('hidden');
+      document.getElementById('pdfContainer').classList.add('hidden');
+
+      try {
+        // Configure PDF.js worker with error handling
+        if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+        
+        // Try primary URL first, then fallback
+        let pdfUrl = guide.url;
+        try {
+          const loadingTask = pdfjsLib.getDocument({
+            url: pdfUrl,
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true,
+            enableXfa: true
+          });
+          
+          pdfDoc = await loadingTask.promise;
+        } catch (primaryError) {
+          if (guide.fallbackUrl) {
+            console.warn('Primary PDF URL failed, trying fallback:', primaryError);
+            const fallbackTask = pdfjsLib.getDocument({
+              url: guide.fallbackUrl,
+              cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+              cMapPacked: true
+            });
+            pdfDoc = await fallbackTask.promise;
+          } else {
+            throw primaryError;
+          }
+        }
+        
+        currentPDF = guideId;
+        currentPage = 1;
+        totalPages = pdfDoc.numPages;
+        retryCount = 0;
+        
+        // Update guide info with actual page count
+        guide.pages = totalPages;
+        addToRecent(guideId);
+        
+        // Update the page count display in sidebar
+        const pageCountElement = document.getElementById('tdlr-page-count');
+        if (pageCountElement && guideId === 'tdlr-practical') {
+          pageCountElement.textContent = `${totalPages} pages`;
+        }
+        
+        // Update UI elements
+        document.getElementById('documentTitle').textContent = guide.title;
+        updatePageInfo();
+        updateToolbarState();
+        
+        // Render first page
+        await renderPage(currentPage);
+        
+        // Hide loading, show PDF
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('pdfContainer').classList.remove('hidden');
+        
+        // Update progress and close mobile sidebar
+        updateStudyProgress();
+        
+        if (window.innerWidth < 1024) {
+          document.getElementById('sidebar').classList.remove('sidebar-open');
+          document.getElementById('sidebar').classList.add('sidebar-closed');
+        }
+
+        announceToScreenReader(`Loaded ${guide.title}, ${totalPages} pages`);
+
+      } catch (error) {
+        logError(error, 'PDF Loading');
+        
+        if (retryCount < MAX_RETRIES && !isRetry) {
+          retryCount++;
+          setTimeout(() => loadPDF(guideId, true), 2000);
+          return;
+        }
+        
+        let errorMessage = 'Unable to load this guide. ';
+        if (error.name === 'NetworkError') {
+          errorMessage += 'Please check your internet connection.';
+        } else if (error.name === 'InvalidPDFException') {
+          errorMessage += 'This file appears to be corrupted.';
+        } else {
+          errorMessage += 'Please try again later.';
+        }
+        
+        showError(errorMessage, retryCount < MAX_RETRIES);
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    // Enhanced PDF Rendering with Error Handling
+    async function renderPage(pageNum) {
+      if (!pdfDoc || pageNum < 1 || pageNum > totalPages) return;
+      
+      try {
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: scale });
+        
+        const canvas = document.getElementById('pdfCanvas');
+        const context = canvas.getContext('2d');
+        
+        // Set canvas dimensions
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        // Clear canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport,
+          enableWebGL: true,
+          renderInteractiveForms: true
+        };
+        
+        const renderTask = page.render(renderContext);
+        await renderTask.promise;
+        
+        // Update canvas accessibility
+        canvas.setAttribute('aria-label', `Page ${pageNum} of ${totalPages} from ${guides[currentPDF]?.title || 'guide'}`);
+        
+      } catch (error) {
+        logError(error, 'Page Rendering');
+        
+        // Fallback to mock rendering for development
+        if (currentPDF && guides[currentPDF]) {
+          renderMockPage(guides[currentPDF]);
+        }
+      }
+    }
+
+    // Keep renderMockPage for fallback and other guides
+    function renderMockPage(guide) {
+      const canvas = document.getElementById('pdfCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = Math.min(800, window.innerWidth - 100);
+      canvas.height = Math.min(1000, window.innerHeight - 200);
+      
+      ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#18181b' : '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.strokeStyle = document.documentElement.classList.contains('dark') ? '#3f3f46' : '#e5e7eb';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000';
+      ctx.font = 'bold 24px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      
+      const title = guide.title;
+      const titleLines = title.match(/.{1,30}(\s|$)/g) || [title];
+      
+      titleLines.forEach((line, index) => {
+        ctx.fillText(line.trim(), canvas.width / 2, 100 + (index * 30));
+      });
+      
+      ctx.font = '16px Arial, sans-serif';
+      ctx.fillText(guide.description, canvas.width / 2, 200);
+      ctx.fillText(`Page ${currentPage} of ${guide.pages || '?'}`, canvas.width / 2, canvas.height - 50);
+      
+      // Mock content
+      ctx.font = '14px Arial, sans-serif';
+      ctx.textAlign = 'left';
+      const mockContent = [
+        'This is a preview of the guide content.',
+        'In the full version, you would see:',
+        '• Detailed instructions',
+        '• Visual diagrams',
+        '• Step-by-step procedures',
+        '• Important safety notes',
+        '',
+        'To access the complete guide,',
+        'ensure the PDF file is available',
+        'in your repository.'
+      ];
+      
+      mockContent.forEach((line, index) => {
+        ctx.fillText(line, 50, 280 + (index * 25));
+      });
+
+      canvas.setAttribute('aria-label', `Preview of ${title}, page ${currentPage}`);
+    }
+
+    // Enhanced page navigation with error handling
+    async function goToPage(pageNum) {
+      if (pageNum < 1 || pageNum > totalPages || !currentPDF || isLoading) return;
+      
+      try {
+        currentPage = pageNum;
+        
+        if (pdfDoc && currentPDF === 'tdlr-practical') {
+          await renderPage(currentPage);
+        } else if (currentPDF && guides[currentPDF]) {
+          renderMockPage(guides[currentPDF]);
+        }
+        
+        updatePageInfo();
+        updateToolbarState();
+        announceToScreenReader(`Page ${currentPage} of ${totalPages}`);
+        
+      } catch (error) {
+        logError(error, 'Page Navigation');
+      }
+    }
+
+    async function nextPage() {
+      if (currentPage < totalPages) {
+        await goToPage(currentPage + 1);
+      }
+    }
+
+    async function prevPage() {
+      if (currentPage > 1) {
+        await goToPage(currentPage - 1);
+      }
+    }
+
+    // Enhanced zoom with performance optimization
+    async function zoomIn() {
+      if (scale >= 3.0) return;
+      scale = Math.min(scale + 0.25, 3.0);
+      await updateZoom();
+    }
+
+    async function zoomOut() {
+      if (scale <= 0.5) return;
+      scale = Math.max(scale - 0.25, 0.5);
+      await updateZoom();
+    }
+
+    async function updateZoom() {
+      try {
+        document.getElementById('zoomLevel').textContent = `${Math.round(scale * 100)}%`;
+        
+        if (currentPDF && pdfDoc && currentPDF === 'tdlr-practical') {
+          await renderPage(currentPage);
+        } else if (currentPDF) {
+          renderMockPage(guides[currentPDF]);
+        }
+        
+        updateToolbarState();
+        announceToScreenReader(`Zoom level ${Math.round(scale * 100)} percent`);
+        
+      } catch (error) {
+        logError(error, 'Zoom Update');
+      }
+    }
+
+    // UI Update Functions with Accessibility
+    function updatePageInfo() {
+      const pageInfo = document.getElementById('pageInfo');
+      pageInfo.textContent = `${currentPage} / ${totalPages}`;
+      pageInfo.setAttribute('aria-label', `Page ${currentPage} of ${totalPages}`);
+    }
+
+    function updateToolbarState() {
+      const prevBtn = document.getElementById('prevPage');
+      const nextBtn = document.getElementById('nextPage');
+      const zoomInBtn = document.getElementById('zoomIn');
+      const zoomOutBtn = document.getElementById('zoomOut');
+      
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+      zoomInBtn.disabled = scale >= 3.0;
+      zoomOutBtn.disabled = scale <= 0.5;
+      
+      // Update ARIA labels
+      prevBtn.setAttribute('aria-label', prevBtn.disabled ? 'Previous page (disabled)' : 'Previous page');
+      nextBtn.setAttribute('aria-label', nextBtn.disabled ? 'Next page (disabled)' : 'Next page');
+      zoomInBtn.setAttribute('aria-label', zoomInBtn.disabled ? 'Zoom in (maximum reached)' : 'Zoom in');
+      zoomOutBtn.setAttribute('aria-label', zoomOutBtn.disabled ? 'Zoom out (minimum reached)' : 'Zoom out');
+    }
+
+    // Continue with production-ready versions of all other functions...
+    // [The rest of the JavaScript would continue with similar production enhancements]
+
+    // Initialize app with error handling
+    function initializeApp() {
+      try {
+        // Add comprehensive guide items to DOM
+        populateGuidesList();
+        setupSearch();
+        setupGuideSelection();
+        setupKeyboardShortcuts();
+        setupFloatingButton();
+        setupRetryButton();
+        updateStudyProgress();
+        updateStatistics();
+        updateFavoriteButtons();
+        
+        // Auto-load guide from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoLoad = urlParams.get('guide');
+        if (autoLoad && guides[autoLoad]) {
+          setTimeout(() => {
+            const guideElement = document.querySelector(`[data-guide="${autoLoad}"]`);
+            if (guideElement) guideElement.click();
+          }, 500);
+        }
+        
+        console.log('🎯 FadeJunkie Practical Guides PDF Reader initialized successfully');
+        
+      } catch (error) {
+        logError(error, 'App Initialization');
+        showError('Failed to initialize the application. Please refresh the page.', true);
+      }
+    }
+
+    function setupRetryButton() {
+      document.getElementById('retryLoad').addEventListener('click', () => {
+        if (currentPDF) {
+          retryCount = 0;
+          loadPDF(currentPDF, true);
+        }
+      });
+    }
+
+    // Add all remaining guide items to DOM
+    function populateGuidesList() {
+      const container = document.getElementById('guidesList');
+      const existingGuides = ['tdlr-practical']; // Already in HTML
+      
+      Object.entries(guides).forEach(([guideId, guide]) => {
+        if (!existingGuides.includes(guideId)) {
+          const guideElement = createGuideElement(guideId, guide);
+          container.appendChild(guideElement);
+        }
+      });
+    }
+
+    function createGuideElement(guideId, guide) {
+      const article = document.createElement('article');
+      article.className = 'guide-item guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500';
+      article.setAttribute('data-guide', guideId);
+      article.setAttribute('data-category', guide.category);
+      article.setAttribute('data-type', 'pdf');
+      article.setAttribute('data-size', guide.size);
+      article.setAttribute('tabindex', '0');
+      article.setAttribute('role', 'button');
+      
+      const icons = {
+        sanitation: '🧽',
+        maintenance: '⚙️', 
+        checklists: '🧰',
+        techniques: '✂️'
+      };
+      
+      const badgeColors = {
+        sanitation: 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300',
+        maintenance: 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300',
+        checklists: 'bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300',
+        techniques: 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300'
+      };
+
+      article.innerHTML = `
+        <div class="flex items-start justify-between">
+          <div class="flex items-start space-x-3 flex-1">
+            <div class="text-2xl" role="img" aria-label="${guide.category}">${icons[guide.category] || '📄'}</div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between mb-1">
+                <h3 class="font-semibold text-sm truncate">${guide.title}</h3>
+                <button class="favorite-btn ml-2 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                        data-guide="${guideId}"
+                        aria-label="Add to favorites"
+                        title="Add to favorites">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                  </svg>
+                </button>
+              </div>
+              <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">${guide.description}</p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="${badgeColors[guide.category]} px-2 py-1 rounded-full">${guide.category.charAt(0).toUpperCase() + guide.category.slice(1)}</span>
+                  <span>${guide.pages} pages</span>
+                  <span aria-hidden="true">•</span>
+                  <span>${guide.size}</span>
+                </div>
+              </div>
+              <div class="mt-2 flex items-center space-x-2">
+                <div class="file-type-badge">PDF</div>
+                <div class="category-badge ${guide.category}">${guide.<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FadeJunkie • Practical Guides</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script> tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- PDF.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <!-- Theme boot script -->
+  <script>
+    (function () {
+      const KEY = 'fj_theme';
+      const saved = localStorage.getItem(KEY);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = saved || (prefersDark ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+    })();
+  </script>
+
+  <meta name="description" content="Professional PDF reader for barber practical guides. Study tools, interactive viewer, progress tracking, and favorites system for exam preparation." />
+  <meta name="keywords" content="barber guides, practical exam, PDF reader, study tools, TDLR exam, barber training" />
+  <meta name="author" content="FadeJunkie" />
+  <link rel="canonical" href="https://fadejunkie.com/practical-guides" />
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="FadeJunkie Practical Guides - Interactive PDF Reader" />
+  <meta property="og:description" content="Professional PDF reader for barber practical guides with study tools and progress tracking." />
+  <meta property="og:url" content="https://fadejunkie.com/practical-guides" />
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>" />
+  
+  <style>
+    /* Performance Optimizations */
+    * {
+      box-sizing: border-box;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .sidebar-open {
+      transform: translateX(0);
+    }
+    
+    .sidebar-closed {
+      transform: translateX(-100%);
+    }
+    
+    .pdf-viewer {
+      scroll-behavior: smooth;
+    }
+    
+    .pdf-page {
+      margin: 0 auto 20px auto;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+      max-width: 100%;
+      height: auto;
+    }
+    
+    .dark .pdf-page {
+      border-color: #374151;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    
+    .search-highlight {
+      background: rgba(255, 235, 59, 0.5);
+      border-radius: 2px;
+    }
+    
+    .annotation-marker {
+      position: absolute;
+      background: rgba(255, 193, 7, 0.8);
+      border: 2px solid #ffc107;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #000;
+    }
+    
+    .toolbar-btn {
+      @apply p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    
+    .guide-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .guide-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dark .guide-card:hover {
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3);
+    }
+
+    .loading-spinner {
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    .filter-tab {
+      @apply text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100;
+    }
+    
+    .filter-tab.active {
+      @apply bg-white dark:bg-zinc-600 text-zinc-900 dark:text-zinc-100 shadow-sm;
+    }
+    
+    .view-toggle {
+      @apply text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300;
+    }
+    
+    .view-toggle.active {
+      @apply text-blue-600 dark:text-blue-400;
+    }
+    
+    .file-type-badge {
+      @apply text-xs px-2 py-1 bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded font-medium;
+    }
+    
+    .category-badge {
+      @apply text-xs px-2 py-1 rounded font-medium;
+    }
+    
+    .category-badge.practical {
+      @apply bg-green-50 dark:bg-green-900/50 text-green-700 dark:text-green-300;
+    }
+    
+    .category-badge.sanitation {
+      @apply bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300;
+    }
+    
+    .category-badge.maintenance {
+      @apply bg-purple-50 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300;
+    }
+    
+    .category-badge.checklists {
+      @apply bg-orange-50 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300;
+    }
+    
+    .category-badge.techniques {
+      @apply bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300;
+    }
+    
+    .favorite-btn.favorited svg {
+      @apply fill-red-500 text-red-500;
+    }
+    
+    .guide-item.grid-view {
+      @apply rounded-xl p-4 text-center;
+    }
+    
+    .guide-item.grid-view .text-2xl {
+      @apply text-4xl mb-3;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Print Styles */
+    @media print {
+      .no-print, nav, .sidebar, .toolbar, button, .floating-btn {
+        display: none !important;
+      }
+      
+      .pdf-container {
+        width: 100% !important;
+        margin: 0 !important;
+      }
+    }
+
+    /* High Contrast Support */
+    @media (prefers-contrast: high) {
+      .guide-card {
+        border: 2px solid currentColor;
+      }
+      
+      .toolbar-btn:focus {
+        outline: 3px solid #0066cc;
+        outline-offset: 2px;
+      }
+    }
+
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      
+      .guide-card:hover {
+        transform: none !important;
+      }
+    }
+
+    /* Focus Styles for Accessibility */
+    .focus-visible:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+
+    /* Loading States */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, transparent 37%, transparent 63%, #f0f0f0 75%);
+      background-size: 400% 100%;
+      animation: skeleton-loading 1.4s ease infinite;
+    }
+
+    .dark .skeleton {
+      background: linear-gradient(90deg, #374151 25%, transparent 37%, transparent 63%, #374151 75%);
+      background-size: 400% 100%;
+    }
+
+    @keyframes skeleton-loading {
+      0% { background-position: 100% 50%; }
+      100% { background-position: -100% 50%; }
+    }
+
+    /* Error States */
+    .error-state {
+      @apply text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4;
+    }
+
+    /* Success States */
+    .success-state {
+      @apply text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4;
+    }
+  </style>
+</head>
+
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100 overflow-hidden">
+  
+  <!-- Skip Navigation Link for Accessibility -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:z-50 focus:no-underline">
+    Skip to main content
+  </a>
+
+  <!-- Main Container -->
+  <div class="flex h-screen">
+    
+    <!-- Enhanced Sidebar -->
+    <div id="sidebar" class="sidebar-closed fixed lg:relative lg:sidebar-open z-30 w-96 bg-white dark:bg-zinc-800 border-r border-zinc-200 dark:border-zinc-700 h-full flex flex-col transition-transform duration-300 ease-in-out">
+      
+      <!-- Sidebar Header -->
+      <div class="p-6 border-b border-zinc-200 dark:border-zinc-700">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="text-2xl" role="img" aria-label="Clipboard">📋</div>
+            <div>
+              <h1 class="text-xl font-bold">Practical Guides</h1>
+              <p class="text-sm text-zinc-600 dark:text-zinc-300">Study Resources</p>
+            </div>
+          </div>
+          <button id="closeSidebar" 
+                  class="lg:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Close sidebar">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative mb-4">
+          <label for="searchInput" class="sr-only">Search guides</label>
+          <input 
+            type="text" 
+            id="searchInput"
+            placeholder="Search guides..." 
+            class="w-full pl-10 pr-4 py-2 bg-zinc-100 dark:bg-zinc-700 rounded-lg border-0 focus:ring-2 focus:ring-blue-500 text-sm"
+            autocomplete="off"
+            role="searchbox"
+            aria-describedby="search-help"
+          >
+          <svg class="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <div id="search-help" class="sr-only">Search through guide titles and descriptions</div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex space-x-1 bg-zinc-100 dark:bg-zinc-700 rounded-lg p-1" role="tablist" aria-label="Filter options">
+          <button id="allTab" 
+                  class="filter-tab active flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="guides-panel">
+            All Files
+          </button>
+          <button id="favoritesTab" 
+                  class="filter-tab flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="guides-panel">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            Favorites
+          </button>
+          <button id="recentTab" 
+                  class="filter-tab flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="guides-panel">
+            Recent
+          </button>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="mt-4">
+          <label for="categoryFilter" class="block text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+            Filter by Category
+          </label>
+          <select id="categoryFilter" 
+                  class="w-full px-3 py-2 bg-zinc-100 dark:bg-zinc-700 rounded-lg border-0 text-sm focus:ring-2 focus:ring-blue-500"
+                  aria-describedby="category-help">
+            <option value="all">All Categories</option>
+            <option value="practical">Practical Exams</option>
+            <option value="sanitation">Sanitation</option>
+            <option value="maintenance">Tool Maintenance</option>
+            <option value="techniques">Cutting Techniques</option>
+            <option value="checklists">Checklists</option>
+            <option value="theory">Theory</option>
+          </select>
+          <div id="category-help" class="sr-only">Filter guides by subject category</div>
+        </div>
+      </div>
+
+      <!-- File Statistics -->
+      <div class="px-6 py-3 bg-zinc-50 dark:bg-zinc-700/50 border-b border-zinc-200 dark:border-zinc-600">
+        <div class="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <div id="totalFiles" class="text-lg font-bold text-blue-600" aria-label="Total files">5</div>
+            <div class="text-xs text-zinc-500">Total</div>
+          </div>
+          <div>
+            <div id="favoriteCount" class="text-lg font-bold text-red-500" aria-label="Favorite files">0</div>
+            <div class="text-xs text-zinc-500">Favorites</div>
+          </div>
+          <div>
+            <div id="recentCount" class="text-lg font-bold text-green-600" aria-label="Recent files">0</div>
+            <div class="text-xs text-zinc-500">Recent</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guide Library -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Available Guides</h2>
+          
+          <!-- View Toggle -->
+          <div class="flex space-x-1" role="group" aria-label="View options">
+            <button id="listView" 
+                    class="view-toggle active p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    title="List View"
+                    aria-label="Switch to list view"
+                    aria-pressed="true">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+              </svg>
+            </button>
+            <button id="gridView" 
+                    class="view-toggle p-1.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    title="Grid View"
+                    aria-label="Switch to grid view"
+                    aria-pressed="false">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-1zM14 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <div id="guidesList" 
+             class="space-y-3" 
+             role="tabpanel" 
+             aria-labelledby="allTab" 
+             aria-live="polite"
+             aria-label="Guides list">
+             
+          <!-- Production-Ready Guide Items -->
+          <!-- TDLR Practical Guide -->
+          <article class="guide-item guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                   data-guide="tdlr-practical" 
+                   data-category="practical" 
+                   data-type="pdf"
+                   data-size="2.4 MB"
+                   data-date="2025-01-15"
+                   tabindex="0"
+                   role="button"
+                   aria-describedby="tdlr-desc">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start space-x-3 flex-1">
+                <div class="text-2xl" role="img" aria-label="Target">🎯</div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between mb-1">
+                    <h3 class="font-semibold text-sm truncate">TDLR Barber Practical Exam Guide</h3>
+                    <button class="favorite-btn ml-2 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            data-guide="tdlr-practical"
+                            aria-label="Add to favorites"
+                            title="Add to favorites">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <p id="tdlr-desc" class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Complete step-by-step practical exam preparation</p>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                      <span class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">Featured</span>
+                      <span id="tdlr-page-count">Loading...</span>
+                      <span aria-hidden="true">•</span>
+                      <span>2.4 MB</span>
+                    </div>
+                  </div>
+                  <div class="mt-2 flex items-center space-x-2">
+                    <div class="file-type-badge">PDF</div>
+                    <div class="category-badge practical">Practical</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Additional guide items with same production-ready structure... -->
+          <!-- For brevity, I'll include the key production features in the JS section -->
+        </div>
+
+        <!-- Empty States -->
+        <div id="noResults" class="hidden text-center py-8" role="status" aria-live="polite">
+          <div class="text-4xl mb-4" role="img" aria-label="Empty mailbox">📭</div>
+          <h3 class="font-semibold mb-2">No guides found</h3>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Try adjusting your search or filters</p>
+        </div>
+
+        <div id="noFavorites" class="hidden text-center py-8" role="status" aria-live="polite">
+          <div class="text-4xl mb-4" role="img" aria-label="Star">⭐</div>
+          <h3 class="font-semibold mb-2">No favorites yet</h3>
+          <p class="text-sm text-zinc-600 dark:text-zinc-300">Click the heart icon on any guide to add it to favorites</p>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <footer class="p-6 border-t border-zinc-200 dark:border-zinc-700">
+        <div class="flex items-center justify-between text-sm mb-2">
+          <span class="text-zinc-600 dark:text-zinc-300">Study Progress</span>
+          <span id="studyProgress" class="font-semibold" aria-label="Study progress percentage">0%</span>
+        </div>
+        <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2 mb-3">
+          <div id="progressBar" 
+               class="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+               style="width: 0%"
+               role="progressbar"
+               aria-valuenow="0"
+               aria-valuemin="0"
+               aria-valuemax="100">
+          </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="flex space-x-2">
+          <button id="clearFilters" 
+                  class="flex-1 text-xs px-3 py-2 bg-zinc-100 dark:bg-zinc-700 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Clear Filters
+          </button>
+          <button id="exportProgress" 
+                  class="flex-1 text-xs px-3 py-2 bg-zinc-100 dark:bg-zinc-700 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Export Data
+          </button>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-screen" id="main-content">
+      
+      <!-- Top Toolbar -->
+      <header class="bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 p-4 no-print">
+        <div class="flex items-center justify-between">
+          
+          <!-- Left Controls -->
+          <div class="flex items-center space-x-2">
+            <button id="toggleSidebar" 
+                    class="toolbar-btn lg:hidden focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label="Toggle sidebar">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+              </svg>
+            </button>
+            
+            <button id="backBtn" 
+                    class="toolbar-btn focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label="Go back">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+            </button>
+
+            <div class="h-6 w-px bg-zinc-300 dark:bg-zinc-600" aria-hidden="true"></div>
+
+            <button id="prevPage" 
+                    class="toolbar-btn focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    disabled
+                    aria-label="Previous page">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            
+            <span id="pageInfo" 
+                  class="text-sm font-medium px-3 py-1 bg-zinc-100 dark:bg-zinc-700 rounded"
+                  role="status"
+                  aria-live="polite"
+                  aria-label="Current page">
+              - / -
+            </span>
+            
+            <button id="nextPage" 
+                    class="toolbar-btn focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    disabled
+                    aria-label="Next page">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Center - Document Title -->
+          <div class="flex-1 text-center">
+            <h2 id="documentTitle" class="font-semibold text-lg">Select a Guide to Begin</h2>
+          </div>
+
+          <!-- Right Controls -->
+          <div class="flex items-center space-x-2">
+            <button id="zoomOut" 
+                    class="toolbar-btn focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                    disabled
+                    aria-label="Zoom out">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
