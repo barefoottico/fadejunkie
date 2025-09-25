@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FadeJunkie • Practical Guides</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script> tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- PDF.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <!-- Theme boot script -->
+  <script>
+    (function () {
+      const KEY = 'fj_theme';
+      const saved = localStorage.getItem(KEY);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = saved || (prefersDark ? 'dark' : 'light');
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+    })();
+  </script>
+
+  <meta name="description" content="Step-by-step practical guides for barber exam preparation and technique mastery. Interactive PDF viewer with study tools." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>" />
+  
+  <style>
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .sidebar-open {
+      transform: translateX(0);
+    }
+    
+    .sidebar-closed {
+      transform: translateX(-100%);
+    }
+    
+    .pdf-viewer {
+      scroll-behavior: smooth;
+    }
+    
+    .pdf-page {
+      margin: 0 auto 20px auto;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .dark .pdf-page {
+      border-color: #374151;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    
+    .search-highlight {
+      background: rgba(255, 235, 59, 0.5);
+      border-radius: 2px;
+    }
+    
+    .annotation-marker {
+      position: absolute;
+      background: rgba(255, 193, 7, 0.8);
+      border: 2px solid #ffc107;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #000;
+    }
+    
+    .toolbar-btn {
+      @apply p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    
+    .guide-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .guide-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dark .guide-card:hover {
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3);
+    }
+
+    .loading-spinner {
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100 overflow-hidden">
+  
+  <!-- Main Container -->
+  <div class="flex h-screen">
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar-closed fixed lg:relative lg:sidebar-open z-30 w-80 bg-white dark:bg-zinc-800 border-r border-zinc-200 dark:border-zinc-700 h-full flex flex-col transition-transform duration-300 ease-in-out">
+      
+      <!-- Sidebar Header -->
+      <div class="p-6 border-b border-zinc-200 dark:border-zinc-700">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="text-2xl">📋</div>
+            <div>
+              <h1 class="text-xl font-bold">Practical Guides</h1>
+              <p class="text-sm text-zinc-600 dark:text-zinc-300">Study Resources</p>
+            </div>
+          </div>
+          <button id="closeSidebar" class="lg:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative">
+          <input 
+            type="text" 
+            id="searchInput"
+            placeholder="Search guides..." 
+            class="w-full pl-10 pr-4 py-2 bg-zinc-100 dark:bg-zinc-700 rounded-lg border-0 focus:ring-2 focus:ring-blue-500 text-sm"
+          >
+          <svg class="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Guide Library -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-4">Available Guides</h2>
+        
+        <div id="guidesList" class="space-y-3">
+          <!-- TDLR Practical Guide -->
+          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="tdlr-practical">
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">🎯</div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm mb-1">TDLR Barber Practical Exam Guide</h3>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Complete step-by-step practical exam preparation</p>
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">Featured</span>
+                  <span>24 pages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sanitation Guide -->
+          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="sanitation">
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">🧽</div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm mb-1">Sanitation & Disinfection Quick Reference</h3>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Essential cleaning protocols and procedures</p>
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">Quick Ref</span>
+                  <span>8 pages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tool Maintenance -->
+          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="tool-maintenance">
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">⚙️</div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm mb-1">Clipper & Tool Maintenance Guide</h3>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Proper care and maintenance procedures</p>
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full">Maintenance</span>
+                  <span>12 pages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- State Board Kit -->
+          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="kit-checklist">
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">🧰</div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm mb-1">State Board Kit Checklist</h3>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Complete packing list for exam day</p>
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded-full">Checklist</span>
+                  <span>4 pages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technique Reference -->
+          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="techniques">
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">✂️</div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm mb-1">Essential Cutting Techniques</h3>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Visual guide to fundamental cuts and styles</p>
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-full">Techniques</span>
+                  <span>16 pages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="p-6 border-t border-zinc-200 dark:border-zinc-700">
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-zinc-600 dark:text-zinc-300">Study Progress</span>
+          <span id="studyProgress" class="font-semibold">0%</span>
+        </div>
+        <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2 mt-2">
+          <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col h-screen">
+      
+      <!-- Top Toolbar -->
+      <div class="bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 p-4">
+        <div class="flex items-center justify-between">
+          
+          <!-- Left Controls -->
+          <div class="flex items-center space-x-2">
+            <button id="toggleSidebar" class="toolbar-btn lg:hidden">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+              </svg>
+            </button>
+            
+            <button id="backBtn" class="toolbar-btn">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+            </button>
+
+            <div class="h-6 w-px bg-zinc-300 dark:bg-zinc-600"></div>
+
+            <button id="prevPage" class="toolbar-btn" disabled>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            
+            <span id="pageInfo" class="text-sm font-medium px-3 py-1 bg-zinc-100 dark:bg-zinc-700 rounded">
+              - / -
+            </span>
+            
+            <button id="nextPage" class="toolbar-btn" disabled>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Center - Document Title -->
+          <div class="flex-1 text-center">
+            <h2 id="documentTitle" class="font-semibold text-lg">Select a Guide to Begin</h2>
+          </div>
+
+          <!-- Right Controls -->
+          <div class="flex items-center space-x-2">
+            <button id="zoomOut" class="toolbar-btn" disabled>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6"></path>
+              </svg>
+            </button>
+            
+            <span id="zoomLevel" class="text-sm font-medium px-3 py-1 bg-zinc-100 dark:bg-zinc-700 rounded">
+              100%
+            </span>
+            
+            <button id="zoomIn" class="toolbar-btn" disabled>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v6m3-3H9"></path>
+              </svg>
+            </button>
+
+            <div class="h-6 w-px bg-zinc-300 dark:bg-zinc-600"></div>
+
+            <button id="themeToggle" class="toolbar-btn" title="Toggle theme">
+              <svg id="themeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PDF Viewer Area -->
+      <div class="flex-1 bg-zinc-100 dark:bg-zinc-900 overflow-hidden relative">
+        
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="h-full flex items-center justify-center">
+          <div class="text-center max-w-lg">
+            <div class="gradient-bg w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div class="text-3xl">📚</div>
+            </div>
+            <h2 class="text-2xl font-bold mb-4">Welcome to Practical Guides</h2>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-8">
+              Access comprehensive step-by-step guides for barber exam preparation and technique mastery. 
+              Select a guide from the sidebar to get started.
+            </p>
+            <button onclick="document.querySelector('[data-guide=tdlr-practical]').click()" 
+              class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+              Start with TDLR Guide
+            </button>
+          </div>
+        </div>
+
+        <!-- PDF Container -->
+        <div id="pdfContainer" class="h-full overflow-y-auto pdf-viewer hidden" style="padding: 20px;">
+          <canvas id="pdfCanvas" class="pdf-page max-w-full"></canvas>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="hidden absolute inset-0 bg-white/90 dark:bg-zinc-900/90 flex items-center justify-center">
+          <div class="text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p class="text-sm text-zinc-600 dark:text-zinc-300">Loading guide...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <div class="fixed bottom-6 right-6 z-20">
+    <button id="floatingBtn" class="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+    </button>
+  </div>
+
+  <script>
+    // Global Variables
+    let currentPDF = null;
+    let currentPage = 1;
+    let totalPages = 0;
+    let scale = 1.0;
+    let pdfDoc = null;
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Sample PDF data (in real implementation, these would be actual PDF URLs)
+    const guides = {
+      'tdlr-practical': {
+        title: 'TDLR Barber Practical Exam Guide',
+        url: 'https://example.com/tdlr-guide.pdf', // Replace with actual PDF
+        pages: 24,
+        description: 'Complete step-by-step practical exam preparation'
+      },
+      'sanitation': {
+        title: 'Sanitation & Disinfection Quick Reference',
+        url: 'https://example.com/sanitation-guide.pdf',
+        pages: 8,
+        description: 'Essential cleaning protocols and procedures'
+      },
+      'tool-maintenance': {
+        title: 'Clipper & Tool Maintenance Guide',
+        url: 'https://example.com/tool-maintenance.pdf',
+        pages: 12,
+        description: 'Proper care and maintenance procedures'
+      },
+      'kit-checklist': {
+        title: 'State Board Kit Checklist',
+        url: 'https://example.com/kit-checklist.pdf',
+        pages: 4,
+        description: 'Complete packing list for exam day'
+      },
+      'techniques': {
+        title: 'Essential Cutting Techniques',
+        url: 'https://example.com/techniques-guide.pdf',
+        pages: 16,
+        description: 'Visual guide to fundamental cuts and styles'
+      }
+    };
+
+    // Theme Management
+    (function setupTheme(){
+      const KEY = 'fj_theme';
+      const btn = document.getElementById('themeToggle');
+      const icon = document.getElementById('themeIcon');
+      
+      const currentTheme = () =>
+        document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+
+      const renderThemeIcon = () => {
+        const theme = currentTheme();
+        if (theme === 'dark') {
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+        } else {
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+        }
+      };
+
+      const setTheme = (theme) => {
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem(KEY, theme);
+        renderThemeIcon();
+      };
+
+      btn.addEventListener('click', () => {
+        const newTheme = currentTheme() === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      });
+
+      renderThemeIcon();
+    })();
+
+    // Sidebar Management
+    (function setupSidebar(){
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.getElementById('toggleSidebar');
+      const closeBtn = document.getElementById('closeSidebar');
+
+      function toggleSidebar() {
+        sidebar.classList.toggle('sidebar-open');
+        sidebar.classList.toggle('sidebar-closed');
+      }
+
+      function closeSidebar() {
+        sidebar.classList.remove('sidebar-open');
+        sidebar.classList.add('sidebar-closed');
+      }
+
+      toggleBtn.addEventListener('click', toggleSidebar);
+      closeBtn.addEventListener('click', closeSidebar);
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth < 1024 && 
+            !sidebar.contains(e.target) && 
+            !toggleBtn.contains(e.target) &&
+            sidebar.classList.contains('sidebar-open')) {
+          closeSidebar();
+        }
+      });
+    })();
+
+    // PDF Management
+    async function loadPDF(guideId) {
+      const guide = guides[guideId];
+      if (!guide) return;
+
+      // Show loading screen
+      document.getElementById('loadingScreen').classList.remove('hidden');
+      document.getElementById('welcomeScreen').classList.add('hidden');
+      document.getElementById('pdfContainer').classList.add('hidden');
+
+      try {
+        // For demonstration, we'll create a mock PDF viewer
+        // In a real implementation, you'd load the actual PDF here
+        await simulatePDFLoad(guide);
+        
+        currentPDF = guideId;
+        currentPage = 1;
+        totalPages = guide.pages;
+        
+        document.getElementById('documentTitle').textContent = guide.title;
+        updatePageInfo();
+        updateToolbarState();
+        
+        // Hide loading, show PDF
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('pdfContainer').classList.remove('hidden');
+        
+        // Update progress
+        updateStudyProgress();
+        
+        // Close sidebar on mobile
+        if (window.innerWidth < 1024) {
+          document.getElementById('sidebar').classList.remove('sidebar-open');
+          document.getElementById('sidebar').classList.add('sidebar-closed');
+        }
+
+      } catch (error) {
+        console.error('Error loading PDF:', error);
+        document.getElementById('loadingScreen').classList.add('hidden');
+        alert('Error loading guide. Please try again.');
+      }
+    }
+
+    // Simulate PDF loading (replace with actual PDF.js implementation)
+    async function simulatePDFLoad(guide) {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          // Create a mock PDF page
+          renderMockPage(guide);
+          resolve();
+        }, 1500);
+      });
+    }
+
+    // Render mock PDF page (replace with actual PDF rendering)
+    function renderMockPage(guide) {
+      const canvas = document.getElementById('pdfCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas size
+      canvas.width = 800;
+      canvas.height = 1000;
+      
+      // Draw mock content
+      ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#18181b' : '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw border
+      ctx.strokeStyle = document.documentElement.classList.contains('dark') ? '#3f3f46' : '#e5e7eb';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw title
+      ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000';
+      ctx.font = 'bold 36px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(guide.title, canvas.width / 2, 100);
+      
+      // Draw subtitle
+      ctx.font = '18px Arial';
+      ctx.fillText(guide.description, canvas.width / 2, 150);
+      
+      // Draw mock content sections
+      ctx.font = '24px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Page ${currentPage} of ${totalPages}`, 50, 250);
+      
+      // Draw mock content
+      const mockContent = [
+        '1. Preparation and Setup',
+        '   • Sanitize work area',
+        '   • Organize tools',
+        '   • Check equipment',
+        '',
+        '2. Client Consultation',
+        '   • Assess hair type',
+        '   • Discuss desired style',
+        '   • Explain process',
+        '',
+        '3. Technical Execution',
+        '   • Follow safety protocols',
+        '   • Use proper technique',
+        '   • Maintain cleanliness'
+      ];
+      
+      ctx.font = '16px Arial';
+      let yPos = 300;
+      mockContent.forEach(line => {
+        ctx.fillText(line, 50, yPos);
+        yPos += 25;
+      });
+      
+      // Draw page number
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`- ${currentPage} -`, canvas.width / 2, canvas.height - 30);
+    }
+
+    // Page Navigation
+    function goToPage(pageNum) {
+      if (pageNum < 1 || pageNum > totalPages || !currentPDF) return;
+      
+      currentPage = pageNum;
+      const guide = guides[currentPDF];
+      renderMockPage(guide);
+      updatePageInfo();
+      updateToolbarState();
+    }
+
+    function nextPage() {
+      if (currentPage < totalPages) {
+        goToPage(currentPage + 1);
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        goToPage(currentPage - 1);
+      }
+    }
+
+    // Zoom Controls
+    function zoomIn() {
+      scale = Math.min(scale + 0.25, 3.0);
+      updateZoom();
+    }
+
+    function zoomOut() {
+      scale = Math.max(scale - 0.25, 0.5);
+      updateZoom();
+    }
+
+    function updateZoom() {
+      const canvas = document.getElementById('pdfCanvas');
+      canvas.style.transform = `scale(${scale})`;
+      canvas.style.transformOrigin = 'top center';
+      
+      document.getElementById('zoomLevel').textContent = `${Math.round(scale * 100)}%`;
+      
+      // Re-render current page at new scale
+      if (currentPDF) {
+        const guide = guides[currentPDF];
+        renderMockPage(guide);
+      }
+    }
+
+    // UI Update Functions
+    function updatePageInfo() {
+      document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+    }
+
+    function updateToolbarState() {
+      document.getElementById('prevPage').disabled = currentPage <= 1;
+      document.getElementById('nextPage').disabled = currentPage >= totalPages;
+      document.getElementById('zoomIn').disabled = scale >= 3.0;
+      document.getElementById('zoomOut').disabled = scale <= 0.5;
+    }
+
+    function updateStudyProgress() {
+      // Simulate progress based on guides viewed
+      const viewedGuides = JSON.parse(localStorage.getItem('fj_viewed_guides') || '[]');
+      if (currentPDF && !viewedGuides.includes(currentPDF)) {
+        viewedGuides.push(currentPDF);
+        localStorage.setItem('fj_viewed_guides', JSON.stringify(viewedGuides));
+      }
+      
+      const progress = Math.round((viewedGuides.length / Object.keys(guides).length) * 100);
+      document.getElementById('studyProgress').textContent = `${progress}%`;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+    }
+
+    // Search Functionality
+    function setupSearch() {
+      const searchInput = document.getElementById('searchInput');
+      const guideCards = document.querySelectorAll('.guide-card');
+
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        
+        guideCards.forEach(card => {
+          const title = card.querySelector('h3').textContent.toLowerCase();
+          const description = card.querySelector('p').textContent.toLowerCase();
+          
+          if (title.includes(query) || description.includes(query)) {
+            card.style.display = 'block';
+            card.style.animation = 'fadeIn 0.3s ease-in-out';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // Guide Selection
+    function setupGuideSelection() {
+      document.querySelectorAll('.guide-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const guideId = card.getAttribute('data-guide');
+          
+          // Update active state
+          document.querySelectorAll('.guide-card').forEach(c => 
+            c.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20')
+          );
+          card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20');
+          
+          // Load the PDF
+          loadPDF(guideId);
+        });
+      });
+    }
+
+    // Keyboard Shortcuts
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        if (!currentPDF) return;
+        
+        switch(e.key) {
+          case 'ArrowLeft':
+            e.preventDefault();
+            prevPage();
+            break;
+          case 'ArrowRight':
+            e.preventDefault();
+            nextPage();
+            break;
+          case '=':
+          case '+':
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault();
+              zoomIn();
+            }
+            break;
+          case '-':
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault();
+              zoomOut();
+            }
+            break;
+          case '0':
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault();
+              scale = 1.0;
+              updateZoom();
+            }
+            break;
+          case 'Escape':
+            // Close sidebar on mobile
+            if (window.innerWidth < 1024) {
+              document.getElementById('sidebar').classList.remove('sidebar-open');
+              document.getElementById('sidebar').classList.add('sidebar-closed');
+            }
+            break;
+        }
+      });
+    }
+
+    // Floating Action Button
+    function setupFloatingButton() {
+      const floatingBtn = document.getElementById('floatingBtn');
+      const actions = [
+        { icon: '🔍', text: 'Search', action: () => document.getElementById('searchInput').focus() },
+        { icon: '📋', text: 'Table of Contents', action: showTableOfContents },
+        { icon: '📝', text: 'Add Note', action: showNoteDialog },
+        { icon: '📤', text: 'Share', action: shareGuide }
+      ];
+      
+      let isOpen = false;
+      
+      floatingBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        if (isOpen) {
+          closeFloatingMenu();
+        } else {
+          openFloatingMenu();
+        }
+      });
+      
+      function openFloatingMenu() {
+        isOpen = true;
+        floatingBtn.innerHTML = `
+          <svg class="w-6 h-6 transform rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+        `;
+        
+        actions.forEach((action, index) => {
+          const btn = document.createElement('button');
+          btn.className = 'absolute bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 p-3 rounded-full shadow-lg hover:scale-110 transition-all';
+          btn.style.bottom = `${(index + 1) * 60}px`;
+          btn.style.right = '0';
+          btn.style.animation = `slideUp 0.2s ease-out ${index * 0.1}s both`;
+          btn.innerHTML = `
+            <span class="text-xl">${action.icon}</span>
+            <span class="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-zinc-900 text-white px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">${action.text}</span>
+          `;
+          btn.addEventListener('click', action.action);
+          btn.setAttribute('data-floating-action', 'true');
+          
+          floatingBtn.parentElement.appendChild(btn);
+        });
+      }
+      
+      function closeFloatingMenu() {
+        isOpen = false;
+        floatingBtn.innerHTML = `
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+        `;
+        
+        document.querySelectorAll('[data-floating-action="true"]').forEach(btn => {
+          btn.style.animation = 'slideDown 0.2s ease-in both';
+          setTimeout(() => btn.remove(), 200);
+        });
+      }
+      
+      // Close menu when clicking elsewhere
+      document.addEventListener('click', () => {
+        if (isOpen) closeFloatingMenu();
+      });
+    }
+
+    // Action Functions
+    function showTableOfContents() {
+      if (!currentPDF) return;
+      
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm';
+      modal.innerHTML = `
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold">Table of Contents</h2>
+            <button onclick="this.closest('.fixed').remove()" class="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="space-y-2">
+            ${generateTableOfContents()}
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+    }
+
+    function generateTableOfContents() {
+      if (!currentPDF) return '';
+      
+      const guide = guides[currentPDF];
+      const sections = {
+        'tdlr-practical': [
+          { title: 'Introduction & Overview', page: 1 },
+          { title: 'Required Equipment', page: 3 },
+          { title: 'Setup & Sanitation', page: 6 },
+          { title: 'Client Consultation', page: 9 },
+          { title: 'Cutting Techniques', page: 12 },
+          { title: 'Styling & Finishing', page: 18 },
+          { title: 'Clean-up Procedures', page: 21 }
+        ],
+        'sanitation': [
+          { title: 'Disinfection Protocols', page: 1 },
+          { title: 'EPA Approved Products', page: 3 },
+          { title: 'Tool Cleaning Steps', page: 5 },
+          { title: 'Quick Reference Chart', page: 7 }
+        ],
+        'tool-maintenance': [
+          { title: 'Daily Maintenance', page: 1 },
+          { title: 'Weekly Deep Clean', page: 4 },
+          { title: 'Blade Care', page: 7 },
+          { title: 'Troubleshooting', page: 10 }
+        ],
+        'kit-checklist': [
+          { title: 'Required Items', page: 1 },
+          { title: 'Optional Supplies', page: 2 },
+          { title: 'Packing Tips', page: 3 },
+          { title: 'Final Checklist', page: 4 }
+        ],
+        'techniques': [
+          { title: 'Basic Cuts', page: 1 },
+          { title: 'Fade Techniques', page: 5 },
+          { title: 'Beard Trimming', page: 9 },
+          { title: 'Advanced Styles', page: 13 }
+        ]
+      };
+      
+      const tocSections = sections[currentPDF] || [];
+      
+      return tocSections.map(section => `
+        <button onclick="goToPage(${section.page}); this.closest('.fixed').remove();" 
+          class="w-full text-left p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+          <div class="font-medium">${section.title}</div>
+          <div class="text-sm text-zinc-500">Page ${section.page}</div>
+        </button>
+      `).join('');
+    }
+
+    function showNoteDialog() {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm';
+      modal.innerHTML = `
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 max-w-md w-full">
+          <h2 class="text-xl font-bold mb-4">Add Study Note</h2>
+          <textarea 
+            placeholder="Add your notes for this page..." 
+            class="w-full h-32 p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 resize-none"
+          ></textarea>
+          <div class="flex justify-end space-x-3 mt-4">
+            <button onclick="this.closest('.fixed').remove()" 
+              class="px-4 py-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+              Cancel
+            </button>
+            <button onclick="saveNote(this)" 
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              Save Note
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      modal.querySelector('textarea').focus();
+    }
+
+    function saveNote(btn) {
+      const modal = btn.closest('.fixed');
+      const noteText = modal.querySelector('textarea').value;
+      
+      if (noteText.trim()) {
+        // Save note to localStorage
+        const notes = JSON.parse(localStorage.getItem('fj_guide_notes') || '{}');
+        const noteKey = `${currentPDF}_page_${currentPage}`;
+        notes[noteKey] = {
+          text: noteText,
+          page: currentPage,
+          guide: currentPDF,
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem('fj_guide_notes', JSON.stringify(notes));
+        
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50';
+        toast.textContent = 'Note saved successfully!';
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 3000);
+      }
+      
+      modal.remove();
+    }
+
+    function shareGuide() {
+      if (!currentPDF) return;
+      
+      const guide = guides[currentPDF];
+      const shareData = {
+        title: guide.title,
+        text: `Check out this helpful barber guide: ${guide.description}`,
+        url: window.location.href
+      };
+      
+      if (navigator.share) {
+        navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`).then(() => {
+          const toast = document.createElement('div');
+          toast.className = 'fixed top-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50';
+          toast.textContent = 'Link copied to clipboard!';
+          document.body.appendChild(toast);
+          
+          setTimeout(() => toast.remove(), 3000);
+        });
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.history.back();
+    });
+
+    document.getElementById('prevPage').addEventListener('click', prevPage);
+    document.getElementById('nextPage').addEventListener('click', nextPage);
+    document.getElementById('zoomIn').addEventListener('click', zoomIn);
+    document.getElementById('zoomOut').addEventListener('click', zoomOut);
+
+    // Initialize App
+    function initializeApp() {
+      setupSearch();
+      setupGuideSelection();
+      setupKeyboardShortcuts();
+      setupFloatingButton();
+      updateStudyProgress();
+      
+      // Auto-load TDLR guide if specified in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const autoLoad = urlParams.get('guide');
+      if (autoLoad && guides[autoLoad]) {
+        setTimeout(() => {
+          document.querySelector(`[data-guide="${autoLoad}"]`).click();
+        }, 500);
+      }
+      
+      console.log('🎯 Practical Guides PDF Reader initialized successfully!');
+    }
+
+    // Start the app when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApp);
+    } else {
+      initializeApp();
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+        document.getElementById('sidebar').classList.add('sidebar-open');
+        document.getElementById('sidebar').classList.remove('sidebar-closed');
+      }
+    });
+
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes slideUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(20px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      @keyframes slideDown {
+        from { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+        to { 
+          opacity: 0; 
+          transform: translateY(20px); 
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
