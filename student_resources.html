@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FadeJunkie • Test Prep Resources</title>
+  <title>FadeJunkie • Practical Guides</title>
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script> tailwind.config = { darkMode: 'class' };</script>
+
+  <!-- PDF.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <!-- Theme boot script -->
   <script>
@@ -21,370 +24,391 @@
     })();
   </script>
 
-  <meta name="description" content="Comprehensive test prep resources for barber students. Interactive flashcards, practice exams, study guides, and state board preparation tools." />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💈</text></svg>" />
+  <meta name="description" content="Step-by-step practical guides for barber exam preparation and technique mastery. Interactive PDF viewer with study tools." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>" />
   
   <style>
     .gradient-bg {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
     
-    .card-hover {
+    .sidebar-open {
+      transform: translateX(0);
+    }
+    
+    .sidebar-closed {
+      transform: translateX(-100%);
+    }
+    
+    .pdf-viewer {
+      scroll-behavior: smooth;
+    }
+    
+    .pdf-page {
+      margin: 0 auto 20px auto;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .dark .pdf-page {
+      border-color: #374151;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+    
+    .search-highlight {
+      background: rgba(255, 235, 59, 0.5);
+      border-radius: 2px;
+    }
+    
+    .annotation-marker {
+      position: absolute;
+      background: rgba(255, 193, 7, 0.8);
+      border: 2px solid #ffc107;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #000;
+    }
+    
+    .toolbar-btn {
+      @apply p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    
+    .guide-card {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    .card-hover:hover {
+    .guide-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
     }
     
-    .dark .card-hover:hover {
+    .dark .guide-card:hover {
       box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3);
     }
-    
-    .resource-chip {
-      transition: all 0.2s ease;
+
+    .loading-spinner {
+      border: 4px solid #f3f4f6;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
     }
-    
-    .resource-chip.active {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white;
-      transform: translateY(-1px);
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 
-<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
-  <main class="max-w-6xl mx-auto px-6 py-10">
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100 overflow-hidden">
+  
+  <!-- Main Container -->
+  <div class="flex h-screen">
+    
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar-closed fixed lg:relative lg:sidebar-open z-30 w-80 bg-white dark:bg-zinc-800 border-r border-zinc-200 dark:border-zinc-700 h-full flex flex-col transition-transform duration-300 ease-in-out">
+      
+      <!-- Sidebar Header -->
+      <div class="p-6 border-b border-zinc-200 dark:border-zinc-700">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <div class="text-2xl">📋</div>
+            <div>
+              <h1 class="text-xl font-bold">Practical Guides</h1>
+              <p class="text-sm text-zinc-600 dark:text-zinc-300">Study Resources</p>
+            </div>
+          </div>
+          <button id="closeSidebar" class="lg:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-700">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
 
-    <!-- Top Navigation Bar -->
-    <div class="flex justify-between items-center mb-8">
-      <!-- Theme toggle -->
-      <button id="themeToggle"
-        class="p-2 border-none bg-transparent hover:opacity-80 transition rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
-        aria-pressed="false" title="Toggle dark mode">
-        <svg id="themeIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-        </svg>
-      </button>
+        <!-- Search Bar -->
+        <div class="relative">
+          <input 
+            type="text" 
+            id="searchInput"
+            placeholder="Search guides..." 
+            class="w-full pl-10 pr-4 py-2 bg-zinc-100 dark:bg-zinc-700 rounded-lg border-0 focus:ring-2 focus:ring-blue-500 text-sm"
+          >
+          <svg class="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+      </div>
 
-      <!-- Back button -->
-      <a href="javascript:history.back()" 
-         class="flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-         title="Go back">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-        </svg>
-        <span class="text-sm font-medium">Back</span>
-      </a>
+      <!-- Guide Library -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <h2 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-4">Available Guides</h2>
+        
+        <div id="guidesList" class="space-y-3">
+          <!-- TDLR Practical Guide -->
+          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="tdlr-practical">
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">🎯</div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm mb-1">TDLR Barber Practical Exam Guide</h3>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Complete step-by-step practical exam preparation</p>
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">Featured</span>
+                  <span>24 pages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sanitation Guide -->
+          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="sanitation">
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">🧽</div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm mb-1">Sanitation & Disinfection Quick Reference</h3>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Essential cleaning protocols and procedures</p>
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">Quick Ref</span>
+                  <span>8 pages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tool Maintenance -->
+          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="tool-maintenance">
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">⚙️</div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm mb-1">Clipper & Tool Maintenance Guide</h3>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Proper care and maintenance procedures</p>
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-1 rounded-full">Maintenance</span>
+                  <span>12 pages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- State Board Kit -->
+          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="kit-checklist">
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">🧰</div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm mb-1">State Board Kit Checklist</h3>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Complete packing list for exam day</p>
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 px-2 py-1 rounded-full">Checklist</span>
+                  <span>4 pages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technique Reference -->
+          <div class="guide-card p-4 rounded-lg border border-zinc-200 dark:border-zinc-700 cursor-pointer" data-guide="techniques">
+            <div class="flex items-start space-x-3">
+              <div class="text-2xl">✂️</div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-sm mb-1">Essential Cutting Techniques</h3>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 mb-2">Visual guide to fundamental cuts and styles</p>
+                <div class="flex items-center space-x-2 text-xs text-zinc-500">
+                  <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded-full">Techniques</span>
+                  <span>16 pages</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="p-6 border-t border-zinc-200 dark:border-zinc-700">
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-zinc-600 dark:text-zinc-300">Study Progress</span>
+          <span id="studyProgress" class="font-semibold">0%</span>
+        </div>
+        <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2 mt-2">
+          <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
     </div>
 
-    <!-- Header Section -->
-    <header class="text-center mb-12">
-      <!-- Logo -->
-      <div class="flex items-center justify-center mb-6">
-        <div class="text-3xl mr-3">💈</div>
-        <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          FadeJunkie
-        </span>
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col h-screen">
+      
+      <!-- Top Toolbar -->
+      <div class="bg-white dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 p-4">
+        <div class="flex items-center justify-between">
+          
+          <!-- Left Controls -->
+          <div class="flex items-center space-x-2">
+            <button id="toggleSidebar" class="toolbar-btn lg:hidden">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+              </svg>
+            </button>
+            
+            <button id="backBtn" class="toolbar-btn">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              </svg>
+            </button>
+
+            <div class="h-6 w-px bg-zinc-300 dark:bg-zinc-600"></div>
+
+            <button id="prevPage" class="toolbar-btn" disabled>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+            </button>
+            
+            <span id="pageInfo" class="text-sm font-medium px-3 py-1 bg-zinc-100 dark:bg-zinc-700 rounded">
+              - / -
+            </span>
+            
+            <button id="nextPage" class="toolbar-btn" disabled>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Center - Document Title -->
+          <div class="flex-1 text-center">
+            <h2 id="documentTitle" class="font-semibold text-lg">Select a Guide to Begin</h2>
+          </div>
+
+          <!-- Right Controls -->
+          <div class="flex items-center space-x-2">
+            <button id="zoomOut" class="toolbar-btn" disabled>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6"></path>
+              </svg>
+            </button>
+            
+            <span id="zoomLevel" class="text-sm font-medium px-3 py-1 bg-zinc-100 dark:bg-zinc-700 rounded">
+              100%
+            </span>
+            
+            <button id="zoomIn" class="toolbar-btn" disabled>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v6m3-3H9"></path>
+              </svg>
+            </button>
+
+            <div class="h-6 w-px bg-zinc-300 dark:bg-zinc-600"></div>
+
+            <button id="themeToggle" class="toolbar-btn" title="Toggle theme">
+              <svg id="themeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <h1 class="text-4xl font-extrabold tracking-tight mb-4">Test Prep Resources</h1>
-      <p class="text-zinc-600 dark:text-zinc-300 text-lg max-w-3xl mx-auto">
-        Master your state board exam with our comprehensive study tools, practice tests, and interactive flashcards. 
-        Everything you need to pass with confidence.
-      </p>
-
-      <!-- Quick Stats -->
-      <div class="flex justify-center items-center space-x-8 mt-6 text-sm">
-        <div class="flex items-center space-x-2">
-          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span class="text-zinc-600 dark:text-zinc-300">300+ Questions</span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-          <span class="text-zinc-600 dark:text-zinc-300">Interactive Learning</span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-          <span class="text-zinc-600 dark:text-zinc-300">Progress Tracking</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- Featured Tools Section -->
-    <section class="mb-12">
-      <h2 class="text-2xl font-bold mb-6">Featured Study Tools</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- PDF Viewer Area -->
+      <div class="flex-1 bg-zinc-100 dark:bg-zinc-900 overflow-hidden relative">
         
-        <!-- Flashcards Tool -->
-        <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800">
-          <div class="gradient-bg h-32 relative">
-            <div class="absolute inset-0 flex items-center justify-center">
-              <div class="text-5xl">🧠</div>
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="h-full flex items-center justify-center">
+          <div class="text-center max-w-lg">
+            <div class="gradient-bg w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div class="text-3xl">📚</div>
             </div>
-          </div>
-          <div class="p-6">
-            <h3 class="text-xl font-bold mb-2">Interactive Flashcards</h3>
-            <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-4">
-              Study with our comprehensive flashcard system featuring 300+ questions from both Milady exams. 
-              Includes shuffle mode, starred cards, and progress tracking.
+            <h2 class="text-2xl font-bold mb-4">Welcome to Practical Guides</h2>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-8">
+              Access comprehensive step-by-step guides for barber exam preparation and technique mastery. 
+              Select a guide from the sidebar to get started.
             </p>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-4 text-xs text-zinc-500">
-                <span>✓ Open Play Mode</span>
-                <span>✓ Test Mode</span>
-                <span>✓ Chapter Filters</span>
-              </div>
-              <button onclick="launchFlashcards()" 
-                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                Start Learning
-              </button>
-            </div>
+            <button onclick="document.querySelector('[data-guide=tdlr-practical]').click()" 
+              class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+              Start with TDLR Guide
+            </button>
           </div>
         </div>
 
-        <!-- Practice Exams Tool -->
-        <div class="card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800">
-          <div class="bg-gradient-to-br from-green-500 to-blue-600 h-32 relative">
-            <div class="absolute inset-0 flex items-center justify-center">
-              <div class="text-5xl">📝</div>
-            </div>
-          </div>
-          <div class="p-6">
-            <h3 class="text-xl font-bold mb-2">Practice Exams</h3>
-            <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-4">
-              Take timed practice exams that simulate the real state board test environment. 
-              Choose from 20, 50, 100, or 150 question tests with detailed scoring.
-            </p>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-4 text-xs text-zinc-500">
-                <span>✓ Timed Tests</span>
-                <span>✓ Detailed Review</span>
-                <span>✓ Score Tracking</span>
-              </div>
-              <button onclick="launchPracticeTest()" 
-                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium">
-                Take Test
-              </button>
-            </div>
+        <!-- PDF Container -->
+        <div id="pdfContainer" class="h-full overflow-y-auto pdf-viewer hidden" style="padding: 20px;">
+          <canvas id="pdfCanvas" class="pdf-page max-w-full"></canvas>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="hidden absolute inset-0 bg-white/90 dark:bg-zinc-900/90 flex items-center justify-center">
+          <div class="text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p class="text-sm text-zinc-600 dark:text-zinc-300">Loading guide...</p>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </div>
 
-    <!-- Categories Filter -->
-    <section class="mb-8">
-      <h2 class="text-2xl font-bold mb-4">Browse by Category</h2>
-      <div class="flex flex-wrap gap-3">
-        <button data-filter="all" class="resource-chip active px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 text-sm font-medium bg-white dark:bg-zinc-800">
-          All Resources
-        </button>
-        <button data-filter="flashcards" class="resource-chip px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 text-sm font-medium bg-white dark:bg-zinc-800">
-          Flashcards
-        </button>
-        <button data-filter="practice-tests" class="resource-chip px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 text-sm font-medium bg-white dark:bg-zinc-800">
-          Practice Tests
-        </button>
-        <button data-filter="study-guides" class="resource-chip px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 text-sm font-medium bg-white dark:bg-zinc-800">
-          Study Guides
-        </button>
-        <button data-filter="practical" class="resource-chip px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 text-sm font-medium bg-white dark:bg-zinc-800">
-          Practical Prep
-        </button>
-        <button data-filter="downloads" class="resource-chip px-4 py-2 rounded-full border border-zinc-200 dark:border-zinc-700 text-sm font-medium bg-white dark:bg-zinc-800">
-          Downloads
-        </button>
-      </div>
-    </section>
-
-    <!-- Resources Grid -->
-    <section>
-      <div id="resources-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        
-        <!-- Milady Test Prep -->
-        <div class="resource-item card-hover rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-800" data-category="flashcards practice-tests">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-2xl">🎯</div>
-            <span class="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full font-medium">
-              Featured
-            </span>
-          </div>
-          <h3 class="text-lg font-bold mb-2">Milady Barber Test Prep</h3>
-          <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-4">
-            Complete study system with flashcards and practice exams covering all Milady chapters. 
-            Open Play and Test Mode available.
-          </p>
-          <div class="flex items-center justify-between">
-            <div class="text-xs text-zinc-500">
-              <div>✓ 300+ Questions</div>
-              <div>✓ Two Exam Sets</div>
-            </div>
-            <button onclick="launchFlashcards()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-              Launch
-            </button>
-          </div>
-        </div>
-
-        <!-- TDLR Practical Guide -->
-        <div class="resource-item card-hover rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-800" data-category="practical study-guides">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-2xl">📋</div>
-            <span class="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full font-medium">
-              Popular
-            </span>
-          </div>
-          <h3 class="text-lg font-bold mb-2">TDLR Practical Exam Guide</h3>
-          <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-4">
-            Step-by-step visual guide for the Texas practical exam. Kit checklist, timing, 
-            grading criteria, and expert tips.
-          </p>
-          <div class="flex items-center justify-between">
-            <div class="text-xs text-zinc-500">
-              <div>✓ Visual Guide</div>
-              <div>✓ Expert Tips</div>
-            </div>
-            <button onclick="openPracticalGuide()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-              View Guide
-            </button>
-          </div>
-        </div>
-
-        <!-- Quick Reference Cards -->
-        <div class="resource-item card-hover rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-800" data-category="flashcards downloads">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-2xl">🃏</div>
-            <span class="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full font-medium">
-              Free
-            </span>
-          </div>
-          <h3 class="text-lg font-bold mb-2">Quick Reference Cards</h3>
-          <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-4">
-            Printable reference cards covering key concepts, formulas, and procedures. 
-            Perfect for last-minute review.
-          </p>
-          <div class="flex items-center justify-between">
-            <div class="text-xs text-zinc-500">
-              <div>✓ Printable PDF</div>
-              <div>✓ Key Concepts</div>
-            </div>
-            <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
-              Download
-            </button>
-          </div>
-        </div>
-
-        <!-- State Board Simulator -->
-        <div class="resource-item card-hover rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-800" data-category="practice-tests">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-2xl">⏱️</div>
-            <span class="text-xs px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 rounded-full font-medium">
-              Realistic
-            </span>
-          </div>
-          <h3 class="text-lg font-bold mb-2">State Board Simulator</h3>
-          <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-4">
-            Full-length timed practice exam that replicates the actual state board test environment 
-            and difficulty level.
-          </p>
-          <div class="flex items-center justify-between">
-            <div class="text-xs text-zinc-500">
-              <div>✓ Timed Format</div>
-              <div>✓ Real Difficulty</div>
-            </div>
-            <button onclick="launchPracticeTest()" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium">
-              Start Exam
-            </button>
-          </div>
-        </div>
-
-        <!-- Study Schedule Template -->
-        <div class="resource-item card-hover rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-800" data-category="study-guides downloads">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-2xl">📅</div>
-            <span class="text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full font-medium">
-              Template
-            </span>
-          </div>
-          <h3 class="text-lg font-bold mb-2">Study Schedule Template</h3>
-          <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-4">
-            Customizable 8-week study plan template to organize your exam preparation 
-            and track your progress.
-          </p>
-          <div class="flex items-center justify-between">
-            <div class="text-xs text-zinc-500">
-              <div>✓ 8-Week Plan</div>
-              <div>✓ Progress Tracking</div>
-            </div>
-            <button class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
-              Download
-            </button>
-          </div>
-        </div>
-
-        <!-- Video Tutorials -->
-        <div class="resource-item card-hover rounded-2xl border border-zinc-200 dark:border-zinc-700 p-6 bg-white dark:bg-zinc-800" data-category="study-guides practical">
-          <div class="flex items-center justify-between mb-4">
-            <div class="text-2xl">🎥</div>
-            <span class="text-xs px-2 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded-full font-medium">
-              Coming Soon
-            </span>
-          </div>
-          <h3 class="text-lg font-bold mb-2">Video Tutorials</h3>
-          <p class="text-zinc-600 dark:text-zinc-300 text-sm mb-4">
-            Step-by-step video tutorials covering practical techniques and theory explanations 
-            from licensed instructors.
-          </p>
-          <div class="flex items-center justify-between">
-            <div class="text-xs text-zinc-500">
-              <div>✓ HD Quality</div>
-              <div>✓ Expert Instructors</div>
-            </div>
-            <button disabled class="bg-zinc-400 text-white px-4 py-2 rounded-lg cursor-not-allowed text-sm font-medium">
-              Coming Soon
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- Call to Action -->
-    <section class="mt-16 text-center">
-      <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl p-12 text-white">
-        <div class="text-4xl mb-4">🚀</div>
-        <h2 class="text-3xl font-bold mb-4">Ready to Ace Your Exam?</h2>
-        <p class="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-          Join thousands of students who have successfully passed their state board exams using our comprehensive study tools.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <button onclick="launchFlashcards()" class="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold hover:bg-zinc-50 transition-colors">
-            Start with Flashcards
-          </button>
-          <button onclick="launchPracticeTest()" class="bg-white/20 border border-white/30 text-white px-8 py-4 rounded-xl font-bold hover:bg-white/30 transition-colors">
-            Take Practice Test
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Footer Links -->
-    <footer class="mt-16 pt-8 border-t border-zinc-200 dark:border-zinc-700">
-      <div class="flex flex-col md:flex-row justify-between items-center">
-        <div class="text-sm text-zinc-600 dark:text-zinc-300 mb-4 md:mb-0">
-          © 2025 FadeJunkie. All rights reserved.
-        </div>
-        <div class="flex space-x-6 text-sm">
-          <a href="#" class="text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">Help Center</a>
-          <a href="#" class="text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">Contact Support</a>
-          <a href="#" class="text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">Study Tips</a>
-        </div>
-      </div>
-    </footer>
-
-  </main>
+  <!-- Floating Action Button -->
+  <div class="fixed bottom-6 right-6 z-20">
+    <button id="floatingBtn" class="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+    </button>
+  </div>
 
   <script>
+    // Global Variables
+    let currentPDF = null;
+    let currentPage = 1;
+    let totalPages = 0;
+    let scale = 1.0;
+    let pdfDoc = null;
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // PDF data with actual file URLs
+    const guides = {
+      'tdlr-practical': {
+        title: 'TDLR Barber Practical Exam Guide',
+        url: './TDLR Barber Practical Exam Guide.pdf', // Actual PDF from your repo
+        pages: null, // Will be determined when PDF loads
+        description: 'Complete step-by-step practical exam preparation'
+      },
+      'sanitation': {
+        title: 'Sanitation & Disinfection Quick Reference',
+        url: 'https://example.com/sanitation-guide.pdf',
+        pages: 8,
+        description: 'Essential cleaning protocols and procedures'
+      },
+      'tool-maintenance': {
+        title: 'Clipper & Tool Maintenance Guide',
+        url: 'https://example.com/tool-maintenance.pdf',
+        pages: 12,
+        description: 'Proper care and maintenance procedures'
+      },
+      'kit-checklist': {
+        title: 'State Board Kit Checklist',
+        url: 'https://example.com/kit-checklist.pdf',
+        pages: 4,
+        description: 'Complete packing list for exam day'
+      },
+      'techniques': {
+        title: 'Essential Cutting Techniques',
+        url: 'https://example.com/techniques-guide.pdf',
+        pages: 16,
+        description: 'Visual guide to fundamental cuts and styles'
+      }
+    };
+
     // Theme Management
     (function setupTheme(){
       const KEY = 'fj_theme';
@@ -421,167 +445,665 @@
       renderThemeIcon();
     })();
 
-    // Category Filtering
-    (function setupFiltering(){
-      const chips = document.querySelectorAll('.resource-chip');
-      const items = document.querySelectorAll('.resource-item');
+    // Sidebar Management
+    (function setupSidebar(){
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.getElementById('toggleSidebar');
+      const closeBtn = document.getElementById('closeSidebar');
 
-      function filterItems(category) {
-        items.forEach(item => {
-          const categories = item.getAttribute('data-category').split(' ');
-          if (category === 'all' || categories.includes(category)) {
-            item.style.display = 'block';
-            item.style.animation = 'fadeIn 0.3s ease-in-out';
-          } else {
-            item.style.display = 'none';
-          }
-        });
-
-        // Update active chip
-        chips.forEach(chip => {
-          chip.classList.remove('active');
-          if (chip.getAttribute('data-filter') === category) {
-            chip.classList.add('active');
-          }
-        });
+      function toggleSidebar() {
+        sidebar.classList.toggle('sidebar-open');
+        sidebar.classList.toggle('sidebar-closed');
       }
 
-      chips.forEach(chip => {
-        chip.addEventListener('click', () => {
-          const category = chip.getAttribute('data-filter');
-          filterItems(category);
-        });
+      function closeSidebar() {
+        sidebar.classList.remove('sidebar-open');
+        sidebar.classList.add('sidebar-closed');
+      }
+
+      toggleBtn.addEventListener('click', toggleSidebar);
+      closeBtn.addEventListener('click', closeSidebar);
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth < 1024 && 
+            !sidebar.contains(e.target) && 
+            !toggleBtn.contains(e.target) &&
+            sidebar.classList.contains('sidebar-open')) {
+          closeSidebar();
+        }
       });
     })();
 
-    // Navigation Functions
-    function launchFlashcards() {
-      // In a real app, this would navigate to the flashcard system
-      // For now, we'll simulate opening the existing index.html flashcard system
-      window.open('./index.html', '_blank');
-    }
+    // PDF Management - Real PDF.js Implementation
+    async function loadPDF(guideId) {
+      const guide = guides[guideId];
+      if (!guide) return;
 
-    function launchPracticeTest() {
-      // Navigate directly to test mode in the flashcard system
-      window.open('./index.html#test-mode', '_blank');
-    }
+      // Show loading screen
+      document.getElementById('loadingScreen').classList.remove('hidden');
+      document.getElementById('welcomeScreen').classList.add('hidden');
+      document.getElementById('pdfContainer').classList.add('hidden');
 
-    function openPracticalGuide() {
-      // Open the practical exam guide
-      window.open('https://fadejunkietdlrprep.my.canva.site/tbba', '_blank');
-    }
-
-    // Enhanced Interactions
-    (function setupInteractions(){
-      // Add loading states to buttons
-      document.querySelectorAll('button').forEach(btn => {
-        if (!btn.disabled && !btn.id) {
-          btn.addEventListener('click', function() {
-            if (this.textContent.includes('Download')) {
-              const originalText = this.textContent;
-              this.textContent = 'Preparing...';
-              this.disabled = true;
-              
-              setTimeout(() => {
-                this.textContent = 'Downloaded!';
-                setTimeout(() => {
-                  this.textContent = originalText;
-                  this.disabled = false;
-                }, 1500);
-              }, 2000);
-            }
-          });
-        }
-      });
-
-      // Intersection Observer for animations
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.style.animation = 'slideUp 0.6s ease-out';
-          }
-        });
-      }, { threshold: 0.1 });
-
-      document.querySelectorAll('.card-hover').forEach(card => {
-        observer.observe(card);
-      });
-
-      // Progress tracking simulation
-      let studyProgress = parseInt(localStorage.getItem('fj_study_progress') || '0');
-      
-      function updateProgress() {
-        studyProgress = Math.min(studyProgress + Math.floor(Math.random() * 10) + 5, 100);
-        localStorage.setItem('fj_study_progress', studyProgress.toString());
+      try {
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         
-        if (studyProgress >= 100) {
-          showCompletionMessage();
+        // Load the actual PDF
+        const loadingTask = pdfjsLib.getDocument(guide.url);
+        pdfDoc = await loadingTask.promise;
+        
+        currentPDF = guideId;
+        currentPage = 1;
+        totalPages = pdfDoc.numPages;
+        
+        // Update guide info with actual page count
+        guide.pages = totalPages;
+        
+        // Update UI elements
+        document.getElementById('documentTitle').textContent = guide.title;
+        updatePageInfo();
+        updateToolbarState();
+        
+        // Render first page
+        await renderPage(currentPage);
+        
+        // Hide loading, show PDF
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('pdfContainer').classList.remove('hidden');
+        
+        // Update progress
+        updateStudyProgress();
+        
+        // Close sidebar on mobile
+        if (window.innerWidth < 1024) {
+          document.getElementById('sidebar').classList.remove('sidebar-open');
+          document.getElementById('sidebar').classList.add('sidebar-closed');
         }
-      }
 
-      function showCompletionMessage() {
-        const message = document.createElement('div');
-        message.className = 'fixed top-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50';
-        message.innerHTML = `
+      } catch (error) {
+        console.error('Error loading PDF:', error);
+        document.getElementById('loadingScreen').classList.add('hidden');
+        
+        // Show error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'fixed top-4 right-4 bg-red-600 text-white p-4 rounded-lg shadow-lg z-50';
+        errorDiv.innerHTML = `
           <div class="flex items-center space-x-2">
-            <div class="text-xl">🎉</div>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
             <div>
-              <div class="font-bold">Great job!</div>
-              <div class="text-sm opacity-90">You're making excellent progress!</div>
+              <div class="font-bold">Error Loading PDF</div>
+              <div class="text-sm">Please check if the file exists in your repository</div>
             </div>
           </div>
         `;
-        document.body.appendChild(message);
-        
-        setTimeout(() => message.remove(), 5000);
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 5000);
       }
+    }
 
-      // Track resource usage
-      document.querySelectorAll('.resource-item button').forEach(btn => {
-        btn.addEventListener('click', updateProgress);
+    // Render PDF Page - Real Implementation
+    async function renderPage(pageNum) {
+      if (!pdfDoc) return;
+      
+      try {
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: scale });
+        
+        const canvas = document.getElementById('pdfCanvas');
+        const context = canvas.getContext('2d');
+        
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        
+        await page.render(renderContext).promise;
+        
+      } catch (error) {
+        console.error('Error rendering page:', error);
+        // Fallback to mock rendering for other guides
+        renderMockPage(guides[currentPDF]);
+      }
+    }
+
+    // Simulate PDF loading (replace with actual PDF.js implementation)
+    async function simulatePDFLoad(guide) {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          // Create a mock PDF page
+          renderMockPage(guide);
+          resolve();
+        }, 1500);
       });
-    })();
+    }
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-      if (e.ctrlKey || e.metaKey) {
+    // Render mock PDF page (replace with actual PDF rendering)
+    function renderMockPage(guide) {
+      const canvas = document.getElementById('pdfCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas size
+      canvas.width = 800;
+      canvas.height = 1000;
+      
+      // Draw mock content
+      ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#18181b' : '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw border
+      ctx.strokeStyle = document.documentElement.classList.contains('dark') ? '#3f3f46' : '#e5e7eb';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw title
+      ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#ffffff' : '#000000';
+      ctx.font = 'bold 36px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(guide.title, canvas.width / 2, 100);
+      
+      // Draw subtitle
+      ctx.font = '18px Arial';
+      ctx.fillText(guide.description, canvas.width / 2, 150);
+      
+      // Draw mock content sections
+      ctx.font = '24px Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Page ${currentPage} of ${totalPages}`, 50, 250);
+      
+      // Draw mock content
+      const mockContent = [
+        '1. Preparation and Setup',
+        '   • Sanitize work area',
+        '   • Organize tools',
+        '   • Check equipment',
+        '',
+        '2. Client Consultation',
+        '   • Assess hair type',
+        '   • Discuss desired style',
+        '   • Explain process',
+        '',
+        '3. Technical Execution',
+        '   • Follow safety protocols',
+        '   • Use proper technique',
+        '   • Maintain cleanliness'
+      ];
+      
+      ctx.font = '16px Arial';
+      let yPos = 300;
+      mockContent.forEach(line => {
+        ctx.fillText(line, 50, yPos);
+        yPos += 25;
+      });
+      
+      // Draw page number
+      ctx.font = '14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(`- ${currentPage} -`, canvas.width / 2, canvas.height - 30);
+    }
+
+    // Page Navigation
+    function goToPage(pageNum) {
+      if (pageNum < 1 || pageNum > totalPages || !currentPDF) return;
+      
+      currentPage = pageNum;
+      const guide = guides[currentPDF];
+      renderMockPage(guide);
+      updatePageInfo();
+      updateToolbarState();
+    }
+
+    function nextPage() {
+      if (currentPage < totalPages) {
+        goToPage(currentPage + 1);
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        goToPage(currentPage - 1);
+      }
+    }
+
+    // Zoom Controls
+    function zoomIn() {
+      scale = Math.min(scale + 0.25, 3.0);
+      updateZoom();
+    }
+
+    function zoomOut() {
+      scale = Math.max(scale - 0.25, 0.5);
+      updateZoom();
+    }
+
+    function updateZoom() {
+      const canvas = document.getElementById('pdfCanvas');
+      canvas.style.transform = `scale(${scale})`;
+      canvas.style.transformOrigin = 'top center';
+      
+      document.getElementById('zoomLevel').textContent = `${Math.round(scale * 100)}%`;
+      
+      // Re-render current page at new scale
+      if (currentPDF) {
+        const guide = guides[currentPDF];
+        renderMockPage(guide);
+      }
+    }
+
+    // UI Update Functions
+    function updatePageInfo() {
+      document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+    }
+
+    function updateToolbarState() {
+      document.getElementById('prevPage').disabled = currentPage <= 1;
+      document.getElementById('nextPage').disabled = currentPage >= totalPages;
+      document.getElementById('zoomIn').disabled = scale >= 3.0;
+      document.getElementById('zoomOut').disabled = scale <= 0.5;
+    }
+
+    function updateStudyProgress() {
+      // Simulate progress based on guides viewed
+      const viewedGuides = JSON.parse(localStorage.getItem('fj_viewed_guides') || '[]');
+      if (currentPDF && !viewedGuides.includes(currentPDF)) {
+        viewedGuides.push(currentPDF);
+        localStorage.setItem('fj_viewed_guides', JSON.stringify(viewedGuides));
+      }
+      
+      const progress = Math.round((viewedGuides.length / Object.keys(guides).length) * 100);
+      document.getElementById('studyProgress').textContent = `${progress}%`;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+    }
+
+    // Search Functionality
+    function setupSearch() {
+      const searchInput = document.getElementById('searchInput');
+      const guideCards = document.querySelectorAll('.guide-card');
+
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        
+        guideCards.forEach(card => {
+          const title = card.querySelector('h3').textContent.toLowerCase();
+          const description = card.querySelector('p').textContent.toLowerCase();
+          
+          if (title.includes(query) || description.includes(query)) {
+            card.style.display = 'block';
+            card.style.animation = 'fadeIn 0.3s ease-in-out';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // Guide Selection
+    function setupGuideSelection() {
+      document.querySelectorAll('.guide-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const guideId = card.getAttribute('data-guide');
+          
+          // Update active state
+          document.querySelectorAll('.guide-card').forEach(c => 
+            c.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20')
+          );
+          card.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50', 'dark:bg-blue-900/20');
+          
+          // Load the PDF
+          loadPDF(guideId);
+        });
+      });
+    }
+
+    // Keyboard Shortcuts
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        if (!currentPDF) return;
+        
         switch(e.key) {
-          case '1':
+          case 'ArrowLeft':
             e.preventDefault();
-            launchFlashcards();
+            prevPage();
             break;
-          case '2':
+          case 'ArrowRight':
             e.preventDefault();
-            launchPracticeTest();
+            nextPage();
             break;
-          case '/':
-            e.preventDefault();
-            document.querySelector('input[type="search"]')?.focus();
+          case '=':
+          case '+':
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault();
+              zoomIn();
+            }
+            break;
+          case '-':
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault();
+              zoomOut();
+            }
+            break;
+          case '0':
+            if (e.ctrlKey || e.metaKey) {
+              e.preventDefault();
+              scale = 1.0;
+              updateZoom();
+            }
+            break;
+          case 'Escape':
+            // Close sidebar on mobile
+            if (window.innerWidth < 1024) {
+              document.getElementById('sidebar').classList.remove('sidebar-open');
+              document.getElementById('sidebar').classList.add('sidebar-closed');
+            }
             break;
         }
+      });
+    }
+
+    // Floating Action Button
+    function setupFloatingButton() {
+      const floatingBtn = document.getElementById('floatingBtn');
+      const actions = [
+        { icon: '🔍', text: 'Search', action: () => document.getElementById('searchInput').focus() },
+        { icon: '📋', text: 'Table of Contents', action: showTableOfContents },
+        { icon: '📝', text: 'Add Note', action: showNoteDialog },
+        { icon: '📤', text: 'Share', action: shareGuide }
+      ];
+      
+      let isOpen = false;
+      
+      floatingBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        
+        if (isOpen) {
+          closeFloatingMenu();
+        } else {
+          openFloatingMenu();
+        }
+      });
+      
+      function openFloatingMenu() {
+        isOpen = true;
+        floatingBtn.innerHTML = `
+          <svg class="w-6 h-6 transform rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+        `;
+        
+        actions.forEach((action, index) => {
+          const btn = document.createElement('button');
+          btn.className = 'absolute bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 p-3 rounded-full shadow-lg hover:scale-110 transition-all';
+          btn.style.bottom = `${(index + 1) * 60}px`;
+          btn.style.right = '0';
+          btn.style.animation = `slideUp 0.2s ease-out ${index * 0.1}s both`;
+          btn.innerHTML = `
+            <span class="text-xl">${action.icon}</span>
+            <span class="absolute right-full mr-3 top-1/2 transform -translate-y-1/2 bg-zinc-900 text-white px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">${action.text}</span>
+          `;
+          btn.addEventListener('click', action.action);
+          btn.setAttribute('data-floating-action', 'true');
+          
+          floatingBtn.parentElement.appendChild(btn);
+        });
+      }
+      
+      function closeFloatingMenu() {
+        isOpen = false;
+        floatingBtn.innerHTML = `
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+        `;
+        
+        document.querySelectorAll('[data-floating-action="true"]').forEach(btn => {
+          btn.style.animation = 'slideDown 0.2s ease-in both';
+          setTimeout(() => btn.remove(), 200);
+        });
+      }
+      
+      // Close menu when clicking elsewhere
+      document.addEventListener('click', () => {
+        if (isOpen) closeFloatingMenu();
+      });
+    }
+
+    // Action Functions
+    function showTableOfContents() {
+      if (!currentPDF) return;
+      
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm';
+      modal.innerHTML = `
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold">Table of Contents</h2>
+            <button onclick="this.closest('.fixed').remove()" class="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="space-y-2">
+            ${generateTableOfContents()}
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+    }
+
+    function generateTableOfContents() {
+      if (!currentPDF) return '';
+      
+      const guide = guides[currentPDF];
+      const sections = {
+        'tdlr-practical': [
+          { title: 'Introduction & Overview', page: 1 },
+          { title: 'Required Equipment', page: 3 },
+          { title: 'Setup & Sanitation', page: 6 },
+          { title: 'Client Consultation', page: 9 },
+          { title: 'Cutting Techniques', page: 12 },
+          { title: 'Styling & Finishing', page: 18 },
+          { title: 'Clean-up Procedures', page: 21 }
+        ],
+        'sanitation': [
+          { title: 'Disinfection Protocols', page: 1 },
+          { title: 'EPA Approved Products', page: 3 },
+          { title: 'Tool Cleaning Steps', page: 5 },
+          { title: 'Quick Reference Chart', page: 7 }
+        ],
+        'tool-maintenance': [
+          { title: 'Daily Maintenance', page: 1 },
+          { title: 'Weekly Deep Clean', page: 4 },
+          { title: 'Blade Care', page: 7 },
+          { title: 'Troubleshooting', page: 10 }
+        ],
+        'kit-checklist': [
+          { title: 'Required Items', page: 1 },
+          { title: 'Optional Supplies', page: 2 },
+          { title: 'Packing Tips', page: 3 },
+          { title: 'Final Checklist', page: 4 }
+        ],
+        'techniques': [
+          { title: 'Basic Cuts', page: 1 },
+          { title: 'Fade Techniques', page: 5 },
+          { title: 'Beard Trimming', page: 9 },
+          { title: 'Advanced Styles', page: 13 }
+        ]
+      };
+      
+      const tocSections = sections[currentPDF] || [];
+      
+      return tocSections.map(section => `
+        <button onclick="goToPage(${section.page}); this.closest('.fixed').remove();" 
+          class="w-full text-left p-3 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+          <div class="font-medium">${section.title}</div>
+          <div class="text-sm text-zinc-500">Page ${section.page}</div>
+        </button>
+      `).join('');
+    }
+
+    function showNoteDialog() {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm';
+      modal.innerHTML = `
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 max-w-md w-full">
+          <h2 class="text-xl font-bold mb-4">Add Study Note</h2>
+          <textarea 
+            placeholder="Add your notes for this page..." 
+            class="w-full h-32 p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 resize-none"
+          ></textarea>
+          <div class="flex justify-end space-x-3 mt-4">
+            <button onclick="this.closest('.fixed').remove()" 
+              class="px-4 py-2 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+              Cancel
+            </button>
+            <button onclick="saveNote(this)" 
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              Save Note
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      modal.querySelector('textarea').focus();
+    }
+
+    function saveNote(btn) {
+      const modal = btn.closest('.fixed');
+      const noteText = modal.querySelector('textarea').value;
+      
+      if (noteText.trim()) {
+        // Save note to localStorage
+        const notes = JSON.parse(localStorage.getItem('fj_guide_notes') || '{}');
+        const noteKey = `${currentPDF}_page_${currentPage}`;
+        notes[noteKey] = {
+          text: noteText,
+          page: currentPage,
+          guide: currentPDF,
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem('fj_guide_notes', JSON.stringify(notes));
+        
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-600 text-white p-4 rounded-lg shadow-lg z-50';
+        toast.textContent = 'Note saved successfully!';
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.remove(), 3000);
+      }
+      
+      modal.remove();
+    }
+
+    function shareGuide() {
+      if (!currentPDF) return;
+      
+      const guide = guides[currentPDF];
+      const shareData = {
+        title: guide.title,
+        text: `Check out this helpful barber guide: ${guide.description}`,
+        url: window.location.href
+      };
+      
+      if (navigator.share) {
+        navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`).then(() => {
+          const toast = document.createElement('div');
+          toast.className = 'fixed top-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50';
+          toast.textContent = 'Link copied to clipboard!';
+          document.body.appendChild(toast);
+          
+          setTimeout(() => toast.remove(), 3000);
+        });
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.history.back();
+    });
+
+    document.getElementById('prevPage').addEventListener('click', prevPage);
+    document.getElementById('nextPage').addEventListener('click', nextPage);
+    document.getElementById('zoomIn').addEventListener('click', zoomIn);
+    document.getElementById('zoomOut').addEventListener('click', zoomOut);
+
+    // Initialize App
+    function initializeApp() {
+      setupSearch();
+      setupGuideSelection();
+      setupKeyboardShortcuts();
+      setupFloatingButton();
+      updateStudyProgress();
+      
+      // Auto-load TDLR guide if specified in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const autoLoad = urlParams.get('guide');
+      if (autoLoad && guides[autoLoad]) {
+        setTimeout(() => {
+          document.querySelector(`[data-guide="${autoLoad}"]`).click();
+        }, 500);
+      }
+      
+      console.log('🎯 Practical Guides PDF Reader initialized successfully!');
+    }
+
+    // Start the app when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeApp);
+    } else {
+      initializeApp();
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+        document.getElementById('sidebar').classList.add('sidebar-open');
+        document.getElementById('sidebar').classList.remove('sidebar-closed');
       }
     });
 
-    console.log('🎯 Test Prep Resources page loaded successfully!');
+    // Add CSS animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      
+      @keyframes slideUp {
+        from { 
+          opacity: 0; 
+          transform: translateY(20px); 
+        }
+        to { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+      }
+      
+      @keyframes slideDown {
+        from { 
+          opacity: 1; 
+          transform: translateY(0); 
+        }
+        to { 
+          opacity: 0; 
+          transform: translateY(20px); 
+        }
+      }
+    `;
+    document.head.appendChild(style);
   </script>
-
-  <!-- CSS Animations -->
-  <style>
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes slideUp {
-      from { 
-        opacity: 0; 
-        transform: translateY(20px); 
-      }
-      to { 
-        opacity: 1; 
-        transform: translateY(0); 
-      }
-    }
-  </style>
 </body>
 </html>
