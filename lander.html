@@ -1,4 +1,122 @@
-<!doctype html>
+// Show completion screen
+      function showCompletionScreen() {
+        debugLog('Showing completion screen');
+        
+        const config = pathConfig[currentPath];
+        
+        let completionHTML = `
+          <div class="text-center">
+            <div class="text-4xl mb-4">🎉</div>
+            <h3 class="text-xl font-bold mb-4">Perfect! Here's what's next:</h3>
+            <div class="text-left space-y-3 mb-6">
+              ${config.nextSteps.map(step => `
+                <div class="flex items-start">
+                  <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span class="text-sm">${step}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        
+        questionContent.innerHTML = completionHTML;
+        backBtn.classList.add('hidden');
+        nextBtn.textContent = 'Continue';
+        nextBtn.className = 'px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all';
+        
+        // Store path data temporarily
+        const pathData = {
+          path: currentPath,
+          responses: userResponses,
+          completedAt: new Date().toISOString()
+        };
+        
+        try {
+          localStorage.setItem('fj_path_data', JSON.stringify(pathData));
+          debugLog('Path data saved to localStorage:', pathData);
+        } catch (error) {
+          debugLog('ERROR saving to localStorage:', error);
+        }
+      }
+
+      // Account Setup System
+      function showAccountSetup() {
+        debugLog('Showing account setup modal');
+        
+        const accountModal = document.getElementById('accountModal');
+        const accountModalIcon = document.getElementById('accountModalIcon');
+        const accountModalSubtitle = document.getElementById('accountModalSubtitle');
+        const benefitsList = document.getElementById('benefitsList');
+        
+        if (!accountModal) {
+          debugLog('ERROR: Account modal not found');
+          return;
+        }
+        
+        const config = pathConfig[currentPath];
+        
+        // Update modal content based on path
+        const pathNames = {
+          student: 'student',
+          barber: 'barber',
+          client: 'client'
+        };
+        
+        accountModalIcon.textContent = config.icon;
+        accountModalSubtitle.textContent = `Get the most out of your ${pathNames[currentPath]} experience`;
+        
+        // Populate benefits
+        benefitsList.innerHTML = config.accountBenefits.map(benefit => `
+          <div class="flex items-center">
+            <svg class="w-4 h-4 mr-2 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            ${benefit}
+          </div>
+        `).join('');
+        
+        // Hide path modal and show account modal
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        accountModal.classList.remove('hidden');
+        accountModal.classList.add('flex');
+        
+        debugLog('Account setup modal shown');
+      }
+
+      // Account form validation
+      function setupAccountFormValidation() {
+        const emailInput = document.getElementById('signupEmail');
+        const passwordInput = document.getElementById('signupPassword');
+        const confirmInput = document.getElementById('confirmPassword');
+        const agreeCheckbox = document.getElementById('agreeTerms');
+        const createBtn = document.getElementById('createAccountBtn');
+        const emailError = document.getElementById('emailError');
+        const confirmError = document.getElementById('confirmError');
+        const strengthIndicator = document.getElementById('passwordStrength');
+        const strengthBars = [
+          document.getElementById('strengthBar1'),
+          document.getElementById('strengthBar2'),
+          document.getElementById('strengthBar3')
+        ];
+        const strengthText = document.getElementById('strengthText');
+
+        function validateEmail(email) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(email);
+        }
+
+        function checkPasswordStrength(password) {
+          let strength = 0;
+          if (password.length >= 8) strength++;
+          if (/[A-Z]/.test(password)) strength++;
+          if (/[a-z]/.test(password)) strength++;
+          if (/[0-9]/.test(password)) strength++;
+          if (/[^A-Za-z0-9]/.test(password)) strength++;
+          
+          return Math.min<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -162,6 +280,141 @@
     </div>
   </div>
 
+  <!-- Account Setup Modal -->
+  <div id="accountModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto border border-zinc-200 dark:border-zinc-700 relative">
+      
+      <!-- Close Button -->
+      <button id="closeAccountModal" class="absolute top-4 right-4 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      
+      <!-- Modal Header -->
+      <div class="text-center mb-6">
+        <div id="accountModalIcon" class="text-4xl mb-4">🚀</div>
+        <h2 class="text-2xl font-bold mb-2">Create Your Account</h2>
+        <p id="accountModalSubtitle" class="text-zinc-600 dark:text-zinc-300">Get the most out of your student experience</p>
+      </div>
+
+      <!-- Account Benefits -->
+      <div id="accountBenefits" class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+        <h3 class="font-semibold mb-2 text-blue-900 dark:text-blue-100">With an account you get:</h3>
+        <div id="benefitsList" class="space-y-1 text-sm text-blue-800 dark:text-blue-200">
+          <!-- Benefits will be populated based on user path -->
+        </div>
+      </div>
+
+      <!-- Account Setup Content -->
+      <div id="accountContent">
+        
+        <!-- Social Login Options -->
+        <div class="space-y-3 mb-6">
+          <button id="googleSignup" class="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 dark:border-zinc-600 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+          </button>
+          
+          <button id="appleSignup" class="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 dark:border-zinc-600 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            Continue with Apple
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="relative mb-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-zinc-200 dark:border-zinc-700"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white dark:bg-zinc-900 text-zinc-500">or</span>
+          </div>
+        </div>
+
+        <!-- Email/Password Form -->
+        <form id="emailSignupForm" class="space-y-4 mb-6">
+          <div>
+            <input 
+              type="email" 
+              id="signupEmail" 
+              placeholder="Enter your email" 
+              required
+              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <div id="emailError" class="text-red-500 text-xs mt-1 hidden"></div>
+          </div>
+          
+          <div>
+            <input 
+              type="password" 
+              id="signupPassword" 
+              placeholder="Create password (min 8 characters)" 
+              required
+              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <div id="passwordStrength" class="mt-2 hidden">
+              <div class="flex space-x-1">
+                <div class="h-2 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700">
+                  <div id="strengthBar1" class="h-full rounded transition-colors duration-300"></div>
+                </div>
+                <div class="h-2 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700">
+                  <div id="strengthBar2" class="h-full rounded transition-colors duration-300"></div>
+                </div>
+                <div class="h-2 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700">
+                  <div id="strengthBar3" class="h-full rounded transition-colors duration-300"></div>
+                </div>
+              </div>
+              <div id="strengthText" class="text-xs mt-1 text-zinc-500"></div>
+            </div>
+          </div>
+          
+          <div>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              placeholder="Confirm your password" 
+              required
+              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <div id="confirmError" class="text-red-500 text-xs mt-1 hidden"></div>
+          </div>
+          
+          <label class="flex items-start space-x-3 cursor-pointer">
+            <input type="checkbox" id="agreeTerms" required class="mt-1">
+            <span class="text-sm text-zinc-600 dark:text-zinc-300">
+              I agree to the <a href="#" class="text-blue-600 hover:underline">Terms of Service</a> and <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a>
+            </span>
+          </label>
+          
+          <button 
+            type="submit" 
+            id="createAccountBtn"
+            class="w-full px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled
+          >
+            Create My Account
+          </button>
+        </form>
+
+        <!-- Guest Mode Option -->
+        <div class="text-center">
+          <button id="guestMode" class="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 text-sm underline">
+            Continue as Guest
+          </button>
+          <p class="text-xs text-zinc-500 mt-1">Limited features, no data sync</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Debug flag
     const DEBUG = true;
@@ -215,6 +468,12 @@
           title: 'Welcome, Student!',
           subtitle: 'Let\'s set up your study plan in just 3 minutes',
           timeCommitment: 'About 3 minutes',
+          accountBenefits: [
+            'Save your study progress across devices',
+            'Get personalized exam reminders',
+            'Access exclusive study materials',
+            'Connect with study groups in your area'
+          ],
           questions: [
             {
               question: 'What\'s your current education status?',
@@ -257,6 +516,12 @@
           title: 'Welcome, Barber!',
           subtitle: 'Let\'s create your professional profile in just 5 minutes',
           timeCommitment: 'About 5 minutes',
+          accountBenefits: [
+            'Build your professional profile',
+            'Receive client booking requests',
+            'Access business analytics dashboard',
+            'Join the barber community network'
+          ],
           questions: [
             {
               question: 'What\'s your current status?',
@@ -300,6 +565,12 @@
           title: 'Welcome, Client!',
           subtitle: 'Let\'s find your perfect barber in just 2 minutes',
           timeCommitment: 'About 2 minutes',
+          accountBenefits: [
+            'Save your favorite barbers',
+            'Get personalized recommendations',
+            'Quick rebooking with appointment history',
+            'Exclusive deals and early access'
+          ],
           questions: [
             {
               question: 'How often do you get haircuts?',
@@ -497,22 +768,303 @@
         
         questionContent.innerHTML = completionHTML;
         backBtn.classList.add('hidden');
-        nextBtn.textContent = 'Enter Dashboard';
+        nextBtn.textContent = 'Continue';
         nextBtn.className = 'px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all';
         
-        // Store user data
-        const userData = {
+        // Store path data temporarily
+        const pathData = {
           path: currentPath,
           responses: userResponses,
           completedAt: new Date().toISOString()
         };
         
         try {
-          localStorage.setItem('fj_user_data', JSON.stringify(userData));
-          debugLog('User data saved to localStorage:', userData);
+          localStorage.setItem('fj_path_data', JSON.stringify(pathData));
+          debugLog('Path data saved to localStorage:', pathData);
         } catch (error) {
           debugLog('ERROR saving to localStorage:', error);
         }
+      }
+
+      // Account Setup System
+      function showAccountSetup() {
+        debugLog('Showing account setup modal');
+        
+        const accountModal = document.getElementById('accountModal');
+        const accountModalIcon = document.getElementById('accountModalIcon');
+        const accountModalSubtitle = document.getElementById('accountModalSubtitle');
+        const benefitsList = document.getElementById('benefitsList');
+        
+        if (!accountModal) {
+          debugLog('ERROR: Account modal not found');
+          return;
+        }
+        
+        const config = pathConfig[currentPath];
+        
+        // Update modal content based on path
+        const pathNames = {
+          student: 'student',
+          barber: 'barber',
+          client: 'client'
+        };
+        
+        accountModalIcon.textContent = config.icon;
+        accountModalSubtitle.textContent = `Get the most out of your ${pathNames[currentPath]} experience`;
+        
+        // Populate benefits
+        benefitsList.innerHTML = config.accountBenefits.map(benefit => `
+          <div class="flex items-center">
+            <svg class="w-4 h-4 mr-2 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            ${benefit}
+          </div>
+        `).join('');
+        
+        // Hide path modal and show account modal
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        accountModal.classList.remove('hidden');
+        accountModal.classList.add('flex');
+        
+        // Setup form validation
+        setupAccountFormValidation();
+        
+        debugLog('Account setup modal shown');
+      }
+
+      // Account form validation
+      function setupAccountFormValidation() {
+        const emailInput = document.getElementById('signupEmail');
+        const passwordInput = document.getElementById('signupPassword');
+        const confirmInput = document.getElementById('confirmPassword');
+        const agreeCheckbox = document.getElementById('agreeTerms');
+        const createBtn = document.getElementById('createAccountBtn');
+        const emailError = document.getElementById('emailError');
+        const confirmError = document.getElementById('confirmError');
+        const strengthIndicator = document.getElementById('passwordStrength');
+        const strengthBars = [
+          document.getElementById('strengthBar1'),
+          document.getElementById('strengthBar2'),
+          document.getElementById('strengthBar3')
+        ];
+        const strengthText = document.getElementById('strengthText');
+
+        function validateEmail(email) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(email);
+        }
+
+        function checkPasswordStrength(password) {
+          let strength = 0;
+          if (password.length >= 8) strength++;
+          if (/[A-Z]/.test(password)) strength++;
+          if (/[a-z]/.test(password)) strength++;
+          if (/[0-9]/.test(password)) strength++;
+          if (/[^A-Za-z0-9]/.test(password)) strength++;
+          
+          return Math.min(strength / 2, 3); // Scale to 0-3
+        }
+
+        function updatePasswordStrength(password) {
+          if (password.length === 0) {
+            strengthIndicator.classList.add('hidden');
+            return;
+          }
+          
+          strengthIndicator.classList.remove('hidden');
+          const strength = checkPasswordStrength(password);
+          
+          // Reset bars
+          strengthBars.forEach(bar => {
+            bar.className = 'h-full rounded transition-colors duration-300';
+          });
+          
+          // Update bars based on strength
+          if (strength >= 1) {
+            strengthBars[0].className += ' bg-red-500';
+            strengthText.textContent = 'Weak';
+            strengthText.className = 'text-xs mt-1 text-red-500';
+          }
+          if (strength >= 2) {
+            strengthBars[0].className += ' bg-yellow-500';
+            strengthBars[1].className += ' bg-yellow-500';
+            strengthText.textContent = 'Medium';
+            strengthText.className = 'text-xs mt-1 text-yellow-600';
+          }
+          if (strength >= 3) {
+            strengthBars.forEach(bar => {
+              bar.className += ' bg-green-500';
+            });
+            strengthText.textContent = 'Strong';
+            strengthText.className = 'text-xs mt-1 text-green-600';
+          }
+        }
+
+        function validateForm() {
+          const email = emailInput.value.trim();
+          const password = passwordInput.value;
+          const confirmPassword = confirmInput.value;
+          const agreed = agreeCheckbox.checked;
+          
+          let isValid = true;
+          
+          // Email validation
+          if (email && !validateEmail(email)) {
+            emailError.textContent = 'Please enter a valid email address';
+            emailError.classList.remove('hidden');
+            isValid = false;
+          } else {
+            emailError.classList.add('hidden');
+          }
+          
+          // Password confirmation
+          if (password && confirmPassword && password !== confirmPassword) {
+            confirmError.textContent = 'Passwords do not match';
+            confirmError.classList.remove('hidden');
+            isValid = false;
+          } else {
+            confirmError.classList.add('hidden');
+          }
+          
+          // Enable/disable submit button
+          const allFilled = email && password && confirmPassword && agreed;
+          const strongPassword = checkPasswordStrength(password) >= 2;
+          
+          createBtn.disabled = !(allFilled && isValid && strongPassword);
+        }
+
+        // Event listeners
+        emailInput.addEventListener('input', validateForm);
+        passwordInput.addEventListener('input', (e) => {
+          updatePasswordStrength(e.target.value);
+          validateForm();
+        });
+        confirmInput.addEventListener('input', validateForm);
+        agreeCheckbox.addEventListener('change', validateForm);
+      }
+
+      // Create account function
+      function createAccount(email, password) {
+        debugLog('Creating account for:', email);
+        
+        // Get stored path data
+        let pathData = {};
+        try {
+          const stored = localStorage.getItem('fj_path_data');
+          if (stored) {
+            pathData = JSON.parse(stored);
+          }
+        } catch (error) {
+          debugLog('Error retrieving path data:', error);
+        }
+        
+        // Create user account data
+        const userData = {
+          id: 'user_' + Date.now(),
+          email: email,
+          accountType: 'registered',
+          path: pathData.path || currentPath,
+          responses: pathData.responses || userResponses,
+          createdAt: new Date().toISOString(),
+          preferences: {
+            theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+          }
+        };
+        
+        try {
+          localStorage.setItem('fj_user_data', JSON.stringify(userData));
+          localStorage.removeItem('fj_path_data'); // Clean up temporary data
+          debugLog('User account created successfully:', userData);
+          
+          showAccountSuccess();
+        } catch (error) {
+          debugLog('ERROR creating account:', error);
+          alert('Failed to create account. Please try again.');
+        }
+      }
+
+      // Show account creation success
+      function showAccountSuccess() {
+        const accountModal = document.getElementById('accountModal');
+        const accountContent = document.getElementById('accountContent');
+        
+        accountContent.innerHTML = `
+          <div class="text-center">
+            <div class="text-4xl mb-4">🎉</div>
+            <h3 class="text-xl font-bold mb-4">Account Created!</h3>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-6">
+              Welcome to FadeJunkie! Your account has been created successfully.
+            </p>
+            <button id="enterDashboardBtn" class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all">
+              Enter Dashboard
+            </button>
+          </div>
+        `;
+        
+        // Add event listener for dashboard button
+        document.getElementById('enterDashboardBtn').addEventListener('click', () => {
+          closeAccountModal();
+          showDashboard();
+        });
+      }
+
+      // Continue as guest
+      function continueAsGuest() {
+        debugLog('User choosing guest mode');
+        
+        // Get stored path data
+        let pathData = {};
+        try {
+          const stored = localStorage.getItem('fj_path_data');
+          if (stored) {
+            pathData = JSON.parse(stored);
+          }
+        } catch (error) {
+          debugLog('Error retrieving path data:', error);
+        }
+        
+        // Create guest user data
+        const guestData = {
+          id: 'guest_' + Date.now(),
+          accountType: 'guest',
+          path: pathData.path || currentPath,
+          responses: pathData.responses || userResponses,
+          createdAt: new Date().toISOString(),
+          limitations: [
+            'No data sync across devices',
+            'Limited access to community features',
+            'No booking history or favorites'
+          ]
+        };
+        
+        try {
+          localStorage.setItem('fj_user_data', JSON.stringify(guestData));
+          localStorage.removeItem('fj_path_data'); // Clean up temporary data
+          debugLog('Guest session created:', guestData);
+          
+          closeAccountModal();
+          showDashboard();
+        } catch (error) {
+          debugLog('ERROR creating guest session:', error);
+        }
+      }
+
+      // Close account modal
+      function closeAccountModal() {
+        const accountModal = document.getElementById('accountModal');
+        accountModal.classList.add('hidden');
+        accountModal.classList.remove('flex');
+        document.body.style.overflow = 'auto';
+      }
+
+      // Show dashboard (placeholder)
+      function showDashboard() {
+        const userData = JSON.parse(localStorage.getItem('fj_user_data') || '{}');
+        const pathType = userData.path || 'student';
+        
+        alert(`Welcome to your ${pathType} dashboard! This would normally navigate to the ${pathType} dashboard page.`);
       }
 
       // Previous step handler
@@ -565,9 +1117,8 @@
       // Set up modal event listeners
       if (nextBtn) {
         nextBtn.addEventListener('click', () => {
-          if (nextBtn.textContent === 'Enter Dashboard') {
-            alert(`Welcome to your ${currentPath} dashboard! This would normally navigate to the dashboard page.`);
-            closeModalHandler();
+          if (nextBtn.textContent === 'Continue') {
+            showAccountSetup();
           } else {
             nextStep();
           }
@@ -582,11 +1133,76 @@
         closeModalBtn.addEventListener('click', closeModalHandler);
       }
 
-      // Close modal when clicking backdrop
+      // Account modal event listeners
+      const accountModal = document.getElementById('accountModal');
+      const closeAccountModalBtn = document.getElementById('closeAccountModal');
+      const emailSignupForm = document.getElementById('emailSignupForm');
+      const googleSignupBtn = document.getElementById('googleSignup');
+      const appleSignupBtn = document.getElementById('appleSignup');
+      const guestModeBtn = document.getElementById('guestMode');
+
+      if (closeAccountModalBtn) {
+        closeAccountModalBtn.addEventListener('click', closeAccountModal);
+      }
+
+      if (emailSignupForm) {
+        emailSignupForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const email = document.getElementById('signupEmail').value;
+          const password = document.getElementById('signupPassword').value;
+          
+          // Show loading state
+          const submitBtn = document.getElementById('createAccountBtn');
+          const originalText = submitBtn.textContent;
+          submitBtn.textContent = 'Creating Account...';
+          submitBtn.disabled = true;
+          
+          // Simulate account creation delay
+          setTimeout(() => {
+            createAccount(email, password);
+          }, 1500);
+        });
+      }
+
+      if (googleSignupBtn) {
+        googleSignupBtn.addEventListener('click', () => {
+          debugLog('Google signup clicked');
+          // Simulate Google OAuth
+          const email = 'user@gmail.com'; // In real app, this comes from OAuth
+          setTimeout(() => {
+            createAccount(email, 'oauth_google');
+          }, 1000);
+        });
+      }
+
+      if (appleSignupBtn) {
+        appleSignupBtn.addEventListener('click', () => {
+          debugLog('Apple signup clicked');
+          // Simulate Apple OAuth
+          const email = 'user@icloud.com'; // In real app, this comes from OAuth
+          setTimeout(() => {
+            createAccount(email, 'oauth_apple');
+          }, 1000);
+        });
+      }
+
+      if (guestModeBtn) {
+        guestModeBtn.addEventListener('click', continueAsGuest);
+      }
+
+      // Close modals when clicking backdrop
       if (modal) {
         modal.addEventListener('click', (e) => {
           if (e.target === modal) {
             closeModalHandler();
+          }
+        });
+      }
+
+      if (accountModal) {
+        accountModal.addEventListener('click', (e) => {
+          if (e.target === accountModal) {
+            closeAccountModal();
           }
         });
       }
