@@ -1,577 +1,4 @@
-// Path Selection Modal System (existing code continues...)
-      const modal = document.getElementById('pathModal');
-      const modalIcon = document.getElementById('modalIcon');
-      const modalTitle = document.getElementById('modalTitle');
-      const modalSubtitle = document.getElementById('modalSubtitle');
-      const currentStepEl = document.getElementById('currentStep');
-      const totalStepsEl = document.getElementById('totalSteps');
-      const timeCommitment = document.getElementById('timeCommitment');
-      const progressBar = document.getElementById('progressBar');
-      const questionContent = document.getElementById('questionContent');
-      const backBtn = document.getElementById('backBtn');
-      const nextBtn = document.getElementById('nextBtn');
-      const closeModalBtn = document.getElementById('closeModal');
-
-      // Check if all elements exist
-      const elements = {
-        modal, modalIcon, modalTitle, modalSubtitle, currentStepEl, 
-        totalStepsEl, timeCommitment, progressBar, questionContent, 
-        backBtn, nextBtn, closeModalBtn
-      };
-      
-      for (const [name, element] of Object.entries(elements)) {
-        if (!element) {
-          debugLog(`ERROR: Element ${name} not found!`);
-          return;
-        }
-      }
-      
-      debugLog('All modal elements found successfully');
-
-      let currentPath = '';
-      let currentStepIndex = 0;
-      let userResponses = {};
-
-      const pathConfig = {
-        student: {
-          icon: '📚',
-          title: 'Welcome, Student!',
-          subtitle: 'Let\'s set up your study plan in just 3 minutes',
-          timeCommitment: 'About 3 minutes',
-          accountBenefits: [
-            'Save your study progress across devices',
-            'Get personalized exam reminders',
-            'Access exclusive study materials',
-            'Connect with study groups in your area'
-          ],
-          questions: [
-            {
-              question: 'What\'s your current education status?',
-              type: 'radio',
-              options: [
-                'High school graduate',
-                'Some college',
-                'College graduate',
-                'Other'
-              ]
-            },
-            {
-              question: 'Which state do you plan to get licensed in?',
-              type: 'select',
-              options: [
-                'Texas', 'California', 'Florida', 'New York', 'Illinois',
-                'Pennsylvania', 'Ohio', 'Georgia', 'North Carolina', 'Michigan',
-                'Other'
-              ]
-            },
-            {
-              question: 'When do you want to start your barbering career?',
-              type: 'radio',
-              options: [
-                'Within 6 months',
-                '6-12 months',
-                '1+ years',
-                'Just exploring options'
-              ]
-            }
-          ],
-          nextSteps: [
-            'Access personalized study materials for your state',
-            'Get practice exams tailored to your timeline',
-            'Connect with barber schools in your area'
-          ]
-        },
-        barber: {
-          icon: '💈',
-          title: 'Welcome, Barber!',
-          subtitle: 'Let\'s create your professional profile in just 5 minutes',
-          timeCommitment: 'About 5 minutes',
-          accountBenefits: [
-            'Build your professional profile',
-            'Receive client booking requests',
-            'Access business analytics dashboard',
-            'Join the barber community network'
-          ],
-          questions: [
-            {
-              question: 'What\'s your current status?',
-              type: 'radio',
-              options: [
-                'Licensed barber',
-                'Shop owner',
-                'Seeking license',
-                'Student barber'
-              ]
-            },
-            {
-              question: 'What\'s your main goal with FadeJunkie?',
-              type: 'radio',
-              options: [
-                'Get more clients',
-                'Increase my rates',
-                'Network with peers',
-                'Learn new techniques'
-              ]
-            },
-            {
-              question: 'How do you currently take appointments?',
-              type: 'radio',<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FadeJunkie — Find your lane</title>
-  
-  <!-- Tailwind CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { 
-        extend: { 
-          colors: { 
-            brand: {
-              50: '#f8fafc',
-              100: '#f1f5f9',
-              500: '#64748b',
-              600: '#475569',
-              900: '#0f172a'
-            }
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.5s ease-in-out',
-            'slide-up': 'slideUp 0.3s ease-out',
-            'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
-          }
-        } 
-      }
-    }
-  </script>
-  
-  <style>
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    @keyframes slideUp {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
-      50% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-    }
-    
-    .gradient-text {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    
-    .card-hover {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .card-hover:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
-    }
-    
-    /* Tutorial overlay styles */
-    .tutorial-backdrop {
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(2px);
-    }
-    
-    .tutorial-spotlight {
-      border: 3px solid #3b82f6;
-      border-radius: 12px;
-      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
-      animation: pulseGlow 2s ease-in-out infinite;
-    }
-    
-    .tutorial-tooltip {
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    }
-    
-    .tutorial-tooltip-arrow {
-      position: absolute;
-      width: 12px;
-      height: 12px;
-      background: inherit;
-      border: inherit;
-      transform: rotate(45deg);
-    }
-    
-    .tutorial-tooltip-arrow.top {
-      bottom: -6px;
-      border-bottom: none;
-      border-right: none;
-    }
-    
-    .tutorial-tooltip-arrow.bottom {
-      top: -6px;
-      border-top: none;
-      border-left: none;
-    }
-    
-    .tutorial-tooltip-arrow.left {
-      right: -6px;
-      border-right: none;
-      border-bottom: none;
-    }
-    
-    .tutorial-tooltip-arrow.right {
-      left: -6px;
-      border-left: none;
-      border-top: none;
-    }
-  </style>
-</head>
-
-<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100 min-h-screen">
-  
-  <!-- Navigation Header -->
-  <nav id="main-navigation" class="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-700">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <!-- Logo -->
-        <div class="flex items-center">
-          <div class="text-2xl">💈</div>
-          <span class="ml-2 text-xl font-bold gradient-text">FadeJunkie</span>
-        </div>
-        
-        <!-- Navigation Links (Desktop) -->
-        <div class="hidden md:flex items-center space-x-8">
-          <a href="#home" class="text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">Home</a>
-          <a href="#features" class="text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">Features</a>
-          <a href="#about" class="text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">About</a>
-          <a href="#contact" class="text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">Contact</a>
-        </div>
-        
-        <!-- Actions -->
-        <div class="flex items-center space-x-4">
-          <!-- Theme Toggle -->
-          <button id="themeToggle" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" title="Toggle theme">
-            <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-            </svg>
-          </button>
-          
-          <!-- Tutorial Restart Button -->
-          <button id="restartTutorial" class="hidden sm:inline-flex items-center px-3 py-2 text-xs border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-            Help
-          </button>
-          
-          <!-- Sign In Button -->
-          <button class="hidden sm:inline-flex items-center px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-            Sign In
-          </button>
-          
-          <!-- Mobile Menu Button -->
-          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="md:hidden hidden bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700">
-      <div class="px-4 py-2 space-y-2">
-        <a href="#home" class="block px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Home</a>
-        <a href="#features" class="block px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Features</a>
-        <a href="#about" class="block px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">About</a>
-        <a href="#contact" class="block px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Contact</a>
-        <div class="border-t border-zinc-200 dark:border-zinc-700 pt-2">
-          <a href="#signin" class="block px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Sign In</a>
-        </div>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Hero Section -->
-  <section id="home" class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-zinc-900 dark:to-zinc-800 pt-16">
-    <div class="max-w-4xl mx-auto px-6 text-center">
-      <div class="animate-fade-in">
-        <h1 class="text-4xl sm:text-6xl font-black leading-tight mb-6">
-          One community. <br>
-          <span class="gradient-text">Three paths.</span> <br>
-          Find your lane.
-        </h1>
-        <p class="text-xl text-zinc-600 dark:text-zinc-300 mb-12 max-w-2xl mx-auto">
-          Whether you're studying for boards, building a book, or booking a clean fade — FadeJunkie points you in the right direction.
-        </p>
-      </div>
-      
-      <!-- Path Cards -->
-      <div id="path-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
-        <button id="student-card" class="group card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-800 text-left w-full">
-          <div class="text-4xl mb-4">📚</div>
-          <h3 class="text-xl font-bold mb-2">I'm a Student</h3>
-          <p class="text-zinc-600 dark:text-zinc-300 mb-4">Master your craft with study tools, practice tests, and school resources.</p>
-          <div class="flex items-center text-blue-600 group-hover:translate-x-1 transition-transform">
-            <span class="text-sm font-medium">Get started</span>
-            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </div>
-        </button>
-        
-        <button id="barber-card" class="group card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-800 text-left w-full">
-          <div class="text-4xl mb-4">💈</div>
-          <h3 class="text-xl font-bold mb-2">I'm a Barber</h3>
-          <p class="text-zinc-600 dark:text-zinc-300 mb-4">Build your brand, connect with clients, and grow your business.</p>
-          <div class="flex items-center text-blue-600 group-hover:translate-x-1 transition-transform">
-            <span class="text-sm font-medium">Join now</span>
-            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </div>
-        </button>
-        
-        <button id="client-card" class="group card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-800 text-left w-full">
-          <div class="text-4xl mb-4">🧑‍🦱</div>
-          <h3 class="text-xl font-bold mb-2">I'm a Client</h3>
-          <p class="text-zinc-600 dark:text-zinc-300 mb-4">Find skilled barbers near you and book your next cut.</p>
-          <div class="flex items-center text-blue-600 group-hover:translate-x-1 transition-transform">
-            <span class="text-sm font-medium">Find barbers</span>
-            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </div>
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Tutorial Overlay System -->
-  <div id="tutorialOverlay" class="fixed inset-0 z-[9999] hidden">
-    <!-- Tutorial Backdrop -->
-    <div id="tutorialBackdrop" class="absolute inset-0 tutorial-backdrop transition-all duration-500"></div>
-    
-    <!-- Tutorial Spotlight -->
-    <div id="tutorialSpotlight" class="absolute pointer-events-none tutorial-spotlight transition-all duration-500 opacity-0"></div>
-    
-    <!-- Tutorial Tooltip -->
-    <div id="tutorialTooltip" class="absolute z-10 max-w-sm bg-white dark:bg-zinc-900 rounded-2xl p-6 tutorial-tooltip border border-zinc-200 dark:border-zinc-700 opacity-0 transition-all duration-300">
-      <!-- Tooltip Arrow -->
-      <div id="tooltipArrow" class="tutorial-tooltip-arrow bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"></div>
-      
-      <!-- Tooltip Content -->
-      <div id="tooltipContent">
-        <h3 id="tooltipTitle" class="text-lg font-bold mb-2 text-zinc-900 dark:text-zinc-100"></h3>
-        <p id="tooltipDescription" class="text-sm text-zinc-600 dark:text-zinc-300 mb-4"></p>
-      </div>
-      
-      <!-- Tutorial Navigation -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <span id="tutorialProgress" class="text-xs text-zinc-500">Step 1 of 6</span>
-          <div id="tutorialDots" class="flex space-x-1">
-            <!-- Progress dots will be dynamically generated -->
-          </div>
-        </div>
-        
-        <div class="flex space-x-2">
-          <button id="tutorialSkip" class="px-3 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">Skip</button>
-          <button id="tutorialPrev" class="px-3 py-1 text-xs border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors hidden">Back</button>
-          <button id="tutorialNext" class="px-4 py-1 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Next</button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Accessibility announcements -->
-    <div id="tutorialAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-  </div>
-
-  <!-- Path Selection Modal -->
-  <div id="pathModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-    <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto border border-zinc-200 dark:border-zinc-700 relative">
-      
-      <!-- Close Button -->
-      <button id="closeModal" class="absolute top-4 right-4 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-      
-      <!-- Modal Header -->
-      <div class="text-center mb-6">
-        <div id="modalIcon" class="text-4xl mb-4">📚</div>
-        <h2 id="modalTitle" class="text-2xl font-bold mb-2">Welcome, Student!</h2>
-        <p id="modalSubtitle" class="text-zinc-600 dark:text-zinc-300">Let's set up your study plan in just 3 minutes</p>
-      </div>
-
-      <!-- Progress Indicator -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between text-sm text-zinc-500 mb-2">
-          <span>Step <span id="currentStep">1</span> of <span id="totalSteps">3</span></span>
-          <span id="timeCommitment">About 3 minutes</span>
-        </div>
-        <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
-          <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 33.33%"></div>
-        </div>
-      </div>
-
-      <!-- Question Content -->
-      <div id="questionContent" class="mb-8">
-        <!-- Question content will be dynamically inserted here -->
-      </div>
-
-      <!-- Navigation Buttons -->
-      <div class="flex justify-between">
-        <button id="backBtn" class="px-6 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors hidden">
-          Back
-        </button>
-        <div class="flex-1"></div>
-        <button id="nextBtn" class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors">
-          Next
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Account Setup Modal -->
-  <div id="accountModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-    <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto border border-zinc-200 dark:border-zinc-700 relative">
-      
-      <!-- Close Button -->
-      <button id="closeAccountModal" class="absolute top-4 right-4 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
-      </button>
-      
-      <!-- Modal Header -->
-      <div class="text-center mb-6">
-        <div id="accountModalIcon" class="text-4xl mb-4">🚀</div>
-        <h2 class="text-2xl font-bold mb-2">Create Your Account</h2>
-        <p id="accountModalSubtitle" class="text-zinc-600 dark:text-zinc-300">Get the most out of your student experience</p>
-      </div>
-
-      <!-- Account Benefits -->
-      <div id="accountBenefits" class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-        <h3 class="font-semibold mb-2 text-blue-900 dark:text-blue-100">With an account you get:</h3>
-        <div id="benefitsList" class="space-y-1 text-sm text-blue-800 dark:text-blue-200">
-          <!-- Benefits will be populated based on user path -->
-        </div>
-      </div>
-
-      <!-- Account Setup Content -->
-      <div id="accountContent">
-        
-        <!-- Social Login Options -->
-        <div class="space-y-3 mb-6">
-          <button id="googleSignup" class="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 dark:border-zinc-600 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Continue with Google
-          </button>
-          
-          <button id="appleSignup" class="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 dark:border-zinc-600 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-            </svg>
-            Continue with Apple
-          </button>
-        </div>
-
-        <!-- Divider -->
-        <div class="relative mb-6">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-zinc-200 dark:border-zinc-700"></div>
-          </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-white dark:bg-zinc-900 text-zinc-500">or</span>
-          </div>
-        </div>
-
-        <!-- Email/Password Form -->
-        <form id="emailSignupForm" class="space-y-4 mb-6">
-          <div>
-            <input 
-              type="email" 
-              id="signupEmail" 
-              placeholder="Enter your email" 
-              required
-              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-            <div id="emailError" class="text-red-500 text-xs mt-1 hidden"></div>
-          </div>
-          
-          <div>
-            <input 
-              type="password" 
-              id="signupPassword" 
-              placeholder="Create password (min 8 characters)" 
-              required
-              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-            <div id="passwordStrength" class="mt-2 hidden">
-              <div class="flex space-x-1">
-                <div class="h-2 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700">
-                  <div id="strengthBar1" class="h-full rounded transition-colors duration-300"></div>
-                </div>
-                <div class="h-2 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700">
-                  <div id="strengthBar2" class="h-full rounded transition-colors duration-300"></div>
-                </div>
-                <div class="h-2 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700">
-                  <div id="strengthBar3" class="h-full rounded transition-colors duration-300"></div>
-                </div>
-              </div>
-              <div id="strengthText" class="text-xs mt-1 text-zinc-500"></div>
-            </div>
-          </div>
-          
-          <div>
-            <input 
-              type="password" 
-              id="confirmPassword" 
-              placeholder="Confirm your password" 
-              required
-              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-            <div id="confirmError" class="text-red-500 text-xs mt-1 hidden"></div>
-          </div>
-          
-          <label class="flex items-start space-x-3 cursor-pointer">
-            <input type="checkbox" id="agreeTerms" required class="mt-1">
-            <span class="text-sm text-zinc-600 dark:text-zinc-300">
-              I agree to the <a href="#" class="text-blue-600 hover:underline">Terms of Service</a> and <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a>
-            </span>
-          </label>
-          
-          <button 
-            type="submit" 
-            id="createAccountBtn"
-            class="w-full px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled
-          >
-            Create My Account
-          </button>
-        </form>
-
-        <!-- Guest Mode Option -->
-        <div class="text-center">
-          <button id="guestMode" class="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 text-sm underline">
-            Continue as Guest
-          </button>
-          <p class="text-xs text-zinc-500 mt-1">Limited features, no data sync</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
+<script>
     // Debug flag
     const DEBUG = true;
     function debugLog(message, data = null) {
@@ -1115,7 +542,7 @@
       showCompletionMessage() {
         // Create a temporary success message
         const message = document.createElement('div');
-        message.className = 'fixed top-4 right-4 z-[10000] bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300';
+        message.className = 'fixed top-20 right-4 z-[10000] bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300';
         message.innerHTML = `
           <div class="flex items-center">
             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -1134,7 +561,7 @@
         
         // Remove after delay
         setTimeout(() => {
-          message.style.transform = 'translateX(full)';
+          message.style.transform = 'translateX(100%)';
           setTimeout(() => {
             if (message.parentNode) {
               message.parentNode.removeChild(message);
@@ -1329,3 +756,1280 @@
           }
         });
       }
+
+      // Path Selection Modal System
+      const modal = document.getElementById('pathModal');
+      const modalIcon = document.getElementById('modalIcon');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalSubtitle = document.getElementById('modalSubtitle');
+      const currentStepEl = document.getElementById('currentStep');
+      const totalStepsEl = document.getElementById('totalSteps');
+      const timeCommitment = document.getElementById('timeCommitment');
+      const progressBar = document.getElementById('progressBar');
+      const questionContent = document.getElementById('questionContent');
+      const backBtn = document.getElementById('backBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const closeModalBtn = document.getElementById('closeModal');
+
+      // Check if all elements exist
+      const elements = {
+        modal, modalIcon, modalTitle, modalSubtitle, currentStepEl, 
+        totalStepsEl, timeCommitment, progressBar, questionContent, 
+        backBtn, nextBtn, closeModalBtn
+      };
+      
+      for (const [name, element] of Object.entries(elements)) {
+        if (!element) {
+          debugLog(`ERROR: Element ${name} not found!`);
+          return;
+        }
+      }
+      
+      debugLog('All modal elements found successfully');
+
+      let currentPath = '';
+      let currentStepIndex = 0;
+      let userResponses = {};
+
+      const pathConfig = {
+        student: {
+          icon: '📚',
+          title: 'Welcome, Student!',
+          subtitle: 'Let\'s set up your study plan in just 3 minutes',
+          timeCommitment: 'About 3 minutes',
+          accountBenefits: [
+            'Save your study progress across devices',
+            'Get personalized exam reminders',
+            'Access exclusive study materials',
+            'Connect with study groups in your area'
+          ],
+          questions: [
+            {
+              question: 'What\'s your current education status?',
+              type: 'radio',
+              options: [
+                'High school graduate',
+                'Some college',
+                'College graduate',
+                'Other'
+              ]
+            },
+            {
+              question: 'Which state do you plan to get licensed in?',
+              type: 'select',
+              options: [
+                'Texas', 'California', 'Florida', 'New York', 'Illinois',
+                'Pennsylvania', 'Ohio', 'Georgia', 'North Carolina', 'Michigan',
+                'Other'
+              ]
+            },
+            {
+              question: 'When do you want to start your barbering career?',
+              type: 'radio',
+              options: [
+                'Within 6 months',
+                '6-12 months',
+                '1+ years',
+                'Just exploring options'
+              ]
+            }
+          ],
+          nextSteps: [
+            'Access personalized study materials for your state',
+            'Get practice exams tailored to your timeline',
+            'Connect with barber schools in your area'
+          ]
+        },
+        barber: {
+          icon: '💈',
+          title: 'Welcome, Barber!',
+          subtitle: 'Let\'s create your professional profile in just 5 minutes',
+          timeCommitment: 'About 5 minutes',
+          accountBenefits: [
+            'Build your professional profile',
+            'Receive client booking requests',
+            'Access business analytics dashboard',
+            'Join the barber community network'
+          ],
+          questions: [
+            {
+              question: 'What\'s your current status?',
+              type: 'radio',
+              options: [
+                'Licensed barber',
+                'Shop owner',
+                'Seeking license',
+                'Student barber'
+              ]
+            },
+            {
+              question: 'What\'s your main goal with FadeJunkie?',
+              type: 'radio',
+              options: [
+                'Get more clients',
+                'Increase my rates',
+                'Network with peers',
+                'Learn new techniques'
+              ]
+            },
+            {
+              question: 'How do you currently take appointments?',
+              type: 'radio',
+              options: [
+                'Walk-ins only',
+                'Phone booking',
+                'Online booking system',
+                'Social media DMs'
+              ]
+            }
+          ],
+          nextSteps: [
+            'Create your professional profile with portfolio',
+            'Set your availability and booking preferences',
+            'Connect with local clients and barbers'
+          ]
+        },
+        client: {
+          icon: '🧑‍🦱',
+          title: 'Welcome, Client!',
+          subtitle: 'Let\'s find your perfect barber in just 2 minutes',
+          timeCommitment: 'About 2 minutes',
+          accountBenefits: [
+            'Save your favorite barbers',
+            'Get personalized recommendations',
+            'Quick rebooking with appointment history',
+            'Exclusive deals and early access'
+          ],
+          questions: [
+            {
+              question: 'How often do you get haircuts?',
+              type: 'radio',
+              options: [
+                'Weekly',
+                'Bi-weekly',
+                'Monthly',
+                'As needed'
+              ]
+            },
+            {
+              question: 'What\'s your typical budget per cut?',
+              type: 'radio',
+              options: [
+                '$15-25',
+                '$25-40',
+                '$40-60',
+                '$60+'
+              ]
+            },
+            {
+              question: 'What matters most to you?',
+              type: 'radio',
+              options: [
+                'Convenience/Location',
+                'Best price',
+                'Quality/Skill',
+                'Specific style expertise'
+              ]
+            }
+          ],
+          nextSteps: [
+            'Get personalized barber recommendations',
+            'Book appointments with top-rated professionals',
+            'Save your favorite barbers and styles'
+          ]
+        }
+      };
+
+      // Open modal for specific path
+      function openModal(path) {
+        debugLog('Opening modal for path:', path);
+        
+        if (!pathConfig[path]) {
+          debugLog('ERROR: Invalid path config for:', path);
+          return;
+        }
+        
+        currentPath = path;
+        currentStepIndex = 0;
+        userResponses = {};
+        
+        const config = pathConfig[path];
+        modalIcon.textContent = config.icon;
+        modalTitle.textContent = config.title;
+        modalSubtitle.textContent = config.subtitle;
+        timeCommitment.textContent = config.timeCommitment;
+        totalStepsEl.textContent = config.questions.length;
+        
+        renderCurrentQuestion();
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+        
+        debugLog('Modal opened successfully');
+      }
+
+      // Render current question
+      function renderCurrentQuestion() {
+        debugLog('Rendering question for step:', currentStepIndex);
+        
+        const config = pathConfig[currentPath];
+        const question = config.questions[currentStepIndex];
+        const totalSteps = config.questions.length;
+        
+        // Update progress
+        currentStepEl.textContent = currentStepIndex + 1;
+        const progressPercentage = ((currentStepIndex + 1) / totalSteps) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+        
+        // Render question
+        let questionHTML = `<h3 class="text-lg font-semibold mb-4">${question.question}</h3>`;
+        
+        if (question.type === 'radio') {
+          questionHTML += '<div class="space-y-3">';
+          question.options.forEach((option, index) => {
+            const isSelected = userResponses[currentStepIndex] === option;
+            const uniqueId = `q${currentStepIndex}_opt${index}`;
+            questionHTML += `
+              <label for="${uniqueId}" class="flex items-center p-3 border border-zinc-200 dark:border-zinc-700 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600' : ''}">
+                <input type="radio" id="${uniqueId}" name="question_${currentStepIndex}" value="${option}" class="sr-only" ${isSelected ? 'checked' : ''}>
+                <div class="w-4 h-4 border-2 border-zinc-300 dark:border-zinc-600 rounded-full mr-3 flex items-center justify-center ${isSelected ? 'border-blue-600' : ''}">
+                  ${isSelected ? '<div class="w-2 h-2 bg-blue-600 rounded-full"></div>' : ''}
+                </div>
+                <span class="text-sm">${option}</span>
+              </label>
+            `;
+          });
+          questionHTML += '</div>';
+        } else if (question.type === 'select') {
+          questionHTML += `
+            <select name="question_${currentStepIndex}" class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="">Select your state</option>
+              ${question.options.map(option => `
+                <option value="${option}" ${userResponses[currentStepIndex] === option ? 'selected' : ''}>${option}</option>
+              `).join('')}
+            </select>
+          `;
+        }
+        
+        questionContent.innerHTML = questionHTML;
+        
+        // Update navigation buttons
+        backBtn.classList.toggle('hidden', currentStepIndex === 0);
+        
+        if (currentStepIndex === totalSteps - 1) {
+          nextBtn.textContent = 'Complete Setup';
+          nextBtn.className = 'px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors';
+        } else {
+          nextBtn.textContent = 'Next';
+          nextBtn.className = 'px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors';
+        }
+        
+        // Add event listeners to new elements
+        attachQuestionEventListeners();
+        
+        debugLog('Question rendered successfully');
+      }
+
+      // Attach event listeners to question elements
+      function attachQuestionEventListeners() {
+        const radioInputs = questionContent.querySelectorAll('input[type="radio"]');
+        const selectInput = questionContent.querySelector('select');
+        
+        radioInputs.forEach(input => {
+          input.addEventListener('change', (e) => {
+            debugLog('Radio selected:', e.target.value);
+            userResponses[currentStepIndex] = e.target.value;
+            renderCurrentQuestion(); // Re-render to show selection
+          });
+        });
+        
+        if (selectInput) {
+          selectInput.addEventListener('change', (e) => {
+            debugLog('Select changed:', e.target.value);
+            userResponses[currentStepIndex] = e.target.value;
+          });
+        }
+      }
+
+      // Next button handler
+      function nextStep() {
+        debugLog('Next step clicked, current responses:', userResponses);
+        
+        const config = pathConfig[currentPath];
+        const totalSteps = config.questions.length;
+        
+        // Validate current step
+        if (!userResponses[currentStepIndex]) {
+          alert('Please select an answer before continuing.');
+          return;
+        }
+        
+        if (currentStepIndex < totalSteps - 1) {
+          currentStepIndex++;
+          renderCurrentQuestion();
+        } else {
+          showCompletionScreen();
+        }
+      }
+
+      // Show completion screen
+      function showCompletionScreen() {
+        debugLog('Showing completion screen');
+        
+        const config = pathConfig[currentPath];
+        
+        let completionHTML = `
+          <div class="text-center">
+            <div class="text-4xl mb-4">🎉</div>
+            <h3 class="text-xl font-bold mb-4">Perfect! Here's what's next:</h3>
+            <div class="text-left space-y-3 mb-6">
+              ${config.nextSteps.map(step => `
+                <div class="flex items-start">
+                  <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span class="text-sm">${step}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        
+        questionContent.innerHTML = completionHTML;
+        backBtn.classList.add('hidden');
+        nextBtn.textContent = 'Continue';
+        nextBtn.className = 'px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all';
+        
+        // Store path data temporarily
+        const pathData = {
+          path: currentPath,
+          responses: userResponses,
+          completedAt: new Date().toISOString()
+        };
+        
+        try {
+          localStorage.setItem('fj_path_data', JSON.stringify(pathData));
+          debugLog('Path data saved to localStorage:', pathData);
+        } catch (error) {
+          debugLog('ERROR saving to localStorage:', error);
+        }
+      }
+
+      // Account Setup System
+      function showAccountSetup() {
+        debugLog('Showing account setup modal');
+        
+        const accountModal = document.getElementById('accountModal');
+        const accountModalIcon = document.getElementById('accountModalIcon');
+        const accountModalSubtitle = document.getElementById('accountModalSubtitle');
+        const benefitsList = document.getElementById('benefitsList');
+        
+        if (!accountModal) {
+          debugLog('ERROR: Account modal not found');
+          return;
+        }
+        
+        const config = pathConfig[currentPath];
+        
+        // Update modal content based on path
+        const pathNames = {
+          student: 'student',
+          barber: 'barber',
+          client: 'client'
+        };
+        
+        accountModalIcon.textContent = config.icon;
+        accountModalSubtitle.textContent = `Get the most out of your ${pathNames[currentPath]} experience`;
+        
+        // Populate benefits
+        benefitsList.innerHTML = config.accountBenefits.map(benefit => `
+          <div class="flex items-center">
+            <svg class="w-4 h-4 mr-2 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+            </svg>
+            ${benefit}
+          </div>
+        `).join('');
+        
+        // Hide path modal and show account modal
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        accountModal.classList.remove('hidden');
+        accountModal.classList.add('flex');
+        
+        // Setup form validation
+        setupAccountFormValidation();
+        
+        debugLog('Account setup modal shown');
+      }
+
+      // Account form validation
+      function setupAccountFormValidation() {
+        const emailInput = document.getElementById('signupEmail');
+        const passwordInput = document.getElementById('signupPassword');
+        const confirmInput = document.getElementById('confirmPassword');
+        const agreeCheckbox = document.getElementById('agreeTerms');
+        const createBtn = document.getElementById('createAccountBtn');
+        const emailError = document.getElementById('emailError');
+        const confirmError = document.getElementById('confirmError');
+        const strengthIndicator = document.getElementById('passwordStrength');
+        const strengthBars = [
+          document.getElementById('strengthBar1'),
+          document.getElementById('strengthBar2'),
+          document.getElementById('strengthBar3')
+        ];
+        const strengthText = document.getElementById('strengthText');
+
+        function validateEmail(email) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(email);
+        }
+
+        function checkPasswordStrength(password) {
+          let strength = 0;
+          if (password.length >= 8) strength++;
+          if (/[A-Z]/.test(password)) strength++;
+          if (/[a-z]/.test(password)) strength++;
+          if (/[0-9]/.test(password)) strength++;
+          if (/[^A-Za-z0-9]/.test(password)) strength++;
+          
+          return Math.min(strength / 2, 3); // Scale to 0-3
+        }
+
+        function updatePasswordStrength(password) {
+          if (password.length === 0) {
+            strengthIndicator.classList.add('hidden');
+            return;
+          }
+          
+          strengthIndicator.classList.remove('hidden');
+          const strength = checkPasswordStrength(password);
+          
+          // Reset bars
+          strengthBars.forEach(bar => {
+            bar.className = 'h-full rounded transition-colors duration-300';
+          });
+          
+          // Update bars based on strength
+          if (strength >= 1) {
+            strengthBars[0].className += ' bg-red-500';
+            strengthText.textContent = 'Weak';
+            strengthText.className = 'text-xs mt-1 text-red-500';
+          }
+          if (strength >= 2) {
+            strengthBars[0].className += ' bg-yellow-500';
+            strengthBars[1].className += ' bg-yellow-500';
+            strengthText.textContent = 'Medium';
+            strengthText.className = 'text-xs mt-1 text-yellow-600';
+          }
+          if (strength >= 3) {
+            strengthBars.forEach(bar => {
+              bar.className += ' bg-green-500';
+            });
+            strengthText.textContent = 'Strong';
+            strengthText.className = 'text-xs mt-1 text-green-600';
+          }
+        }
+
+        function validateForm() {
+          const email = emailInput.value.trim();
+          const password = passwordInput.value;
+          const confirmPassword = confirmInput.value;
+          const agreed = agreeCheckbox.checked;
+          
+          let isValid = true;
+          
+          // Email validation
+          if (email && !validateEmail(email)) {
+            emailError.textContent = 'Please enter a valid email address';
+            emailError.classList.remove('hidden');
+            isValid = false;
+          } else {
+            emailError.classList.add('hidden');
+          }
+          
+          // Password confirmation
+          if (password && confirmPassword && password !== confirmPassword) {
+            confirmError.textContent = 'Passwords do not match';
+            confirmError.classList.remove('hidden');
+            isValid = false;
+          } else {
+            confirmError.classList.add('hidden');
+          }
+          
+          // Enable/disable submit button
+          const allFilled = email && password && confirmPassword && agreed;
+          const strongPassword = checkPasswordStrength(password) >= 2;
+          
+          createBtn.disabled = !(allFilled && isValid && strongPassword);
+        }
+
+        // Event listeners
+        emailInput.addEventListener('input', validateForm);
+        passwordInput.addEventListener('input', (e) => {
+          updatePasswordStrength(e.target.value);
+          validateForm();
+        });
+        confirmInput.addEventListener('input', validateForm);
+        agreeCheckbox.addEventListener('change', validateForm);
+      }
+
+      // Create account function
+      function createAccount(email, password) {
+        debugLog('Creating account for:', email);
+        
+        // Get stored path data
+        let pathData = {};
+        try {
+          const stored = localStorage.getItem('fj_path_data');
+          if (stored) {
+            pathData = JSON.parse(stored);
+          }
+        } catch (error) {
+          debugLog('Error retrieving path data:', error);
+        }
+        
+        // Create user account data
+        const userData = {
+          id: 'user_' + Date.now(),
+          email: email,
+          accountType: 'registered',
+          path: pathData.path || currentPath,
+          responses: pathData.responses || userResponses,
+          createdAt: new Date().toISOString(),
+          preferences: {
+            theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+          }
+        };
+        
+        try {
+          localStorage.setItem('fj_user_data', JSON.stringify(userData));
+          localStorage.removeItem('fj_path_data'); // Clean up temporary data
+          debugLog('User account created successfully:', userData);
+          
+          showAccountSuccess();
+        } catch (error) {
+          debugLog('ERROR creating account:', error);
+          alert('Failed to create account. Please try again.');
+        }
+      }
+
+      // Show account creation success
+      function showAccountSuccess() {
+        const accountModal = document.getElementById('accountModal');
+        const accountContent = document.getElementById('accountContent');
+        
+        accountContent.innerHTML = `
+          <div class="text-center">
+            <div class="text-4xl mb-4">🎉</div>
+            <h3 class="text-xl font-bold mb-4">Account Created!</h3>
+            <p class="text-zinc-600 dark:text-zinc-300 mb-6">
+              Welcome to FadeJunkie! Your account has been created successfully.
+            </p>
+            <button id="enterDashboardBtn" class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all">
+              Enter Dashboard
+            </button>
+          </div>
+        `;
+        
+        // Add event listener for dashboard button
+        document.getElementById('enterDashboardBtn').addEventListener('click', () => {
+          closeAccountModal();
+          startUserTutorial();
+        });
+      }
+
+      // Continue as guest
+      function continueAsGuest() {
+        debugLog('User choosing guest mode');
+        
+        // Get stored path data
+        let pathData = {};
+        try {
+          const stored = localStorage.getItem('fj_path_data');
+          if (stored) {
+            pathData = JSON.parse(stored);
+          }
+        } catch (error) {
+          debugLog('Error retrieving path data:', error);
+        }
+        
+        // Create guest user data
+        const guestData = {
+          id: 'guest_' + Date.now(),
+          accountType: 'guest',
+          path: pathData.path || currentPath,
+          responses: pathData.responses || userResponses,
+          createdAt: new Date().toISOString(),
+          limitations: [
+            'No data sync across devices',
+            'Limited access to community features',
+            'No booking history or favorites'
+          ]
+        };
+        
+        try {
+          localStorage.setItem('fj_user_data', JSON.stringify(guestData));
+          localStorage.removeItem('fj_path_data'); // Clean up temporary data
+          debugLog('Guest session created:', guestData);
+          
+          closeAccountModal();
+          startUserTutorial();
+        } catch (error) {
+          debugLog('ERROR creating guest session:', error);
+        }
+      }
+
+      // Start user-specific tutorial after account creation
+      function startUserTutorial() {
+        const userData = JSON.parse(localStorage.getItem('fj_user_data') || '{}');
+        const userPath = userData.path;
+        
+        if (userPath && TutorialSystem.tutorials[userPath]) {
+          setTimeout(() => {
+            TutorialSystem.start(userPath);
+          }, 500);
+        } else {
+          showDashboard();
+        }
+      }
+
+      // Close account modal
+      function closeAccountModal() {
+        const accountModal = document.getElementById('accountModal');
+        accountModal.classList.add('hidden');
+        accountModal.classList.remove('flex');
+        document.body.style.overflow = 'auto';
+      }
+
+      // Show dashboard (placeholder)
+      function showDashboard() {
+        const userData = JSON.parse(localStorage.getItem('fj_user_data') || '{}');
+        const pathType = userData.path || 'student';
+        
+        alert(`Welcome to your ${pathType} dashboard! This would normally navigate to the ${pathType} dashboard page.`);
+      }
+
+      // Previous step handler
+      function previousStep() {
+        if (currentStepIndex > 0) {
+          currentStepIndex--;
+          renderCurrentQuestion();
+        }
+      }
+
+      // Close modal handler
+      function closeModalHandler() {
+        debugLog('Closing modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        document.body.style.overflow = 'auto';
+        
+        // Reset modal state
+        currentPath = '';
+        currentStepIndex = 0;
+        userResponses = {};
+      }
+
+      // Set up event listeners for path cards
+      const studentCard = document.getElementById('student-card');
+      const barberCard = document.getElementById('barber-card');
+      const clientCard = document.getElementById('client-card');
+
+      if (studentCard) {
+        studentCard.addEventListener('click', () => {
+          debugLog('Student card clicked');
+          openModal('student');
+        });
+      }
+
+      if (barberCard) {
+        barberCard.addEventListener('click', () => {
+          debugLog('Barber card clicked');
+          openModal('barber');
+        });
+      }
+
+      if (clientCard) {
+        clientCard.addEventListener('click', () => {
+          debugLog('Client card clicked');
+          openModal('client');
+        });
+      }
+
+      // Set up modal event listeners
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          if (nextBtn.textContent === 'Continue') {
+            showAccountSetup();
+          } else {
+            nextStep();
+          }
+        });
+      }
+
+      if (backBtn) {
+        backBtn.addEventListener('click', previousStep);
+      }
+
+      if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeModalHandler);
+      }
+
+      // Account modal event listeners
+      const accountModal = document.getElementById('accountModal');
+      const closeAccountModalBtn = document.getElementById('closeAccountModal');
+      const emailSignupForm = document.getElementById('emailSignupForm');
+      const googleSignupBtn = document.getElementById('googleSignup');
+      const appleSignupBtn = document.getElementById('appleSignup');
+      const guestModeBtn = document.getElementById('guestMode');
+
+      if (closeAccountModalBtn) {
+        closeAccountModalBtn.addEventListener('click', closeAccountModal);
+      }
+
+      if (emailSignupForm) {
+        emailSignupForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const email = document.getElementById('signupEmail').value;
+          const password = document.getElementById('signupPassword').value;
+          
+          // Show loading state
+          const submitBtn = document.getElementById('createAccountBtn');
+          const originalText = submitBtn.textContent;
+          submitBtn.textContent = 'Creating Account...';
+          submitBtn.disabled = true;
+          
+          // Simulate account creation delay
+          setTimeout(() => {
+            createAccount(email, password);
+          }, 1500);
+        });
+      }
+
+      if (googleSignupBtn) {
+        googleSignupBtn.addEventListener('click', () => {
+          debugLog('Google signup clicked');
+          // Simulate Google OAuth
+          const email = 'user@gmail.com'; // In real app, this comes from OAuth
+          setTimeout(() => {
+            createAccount(email, 'oauth_google');
+          }, 1000);
+        });
+      }
+
+      if (appleSignupBtn) {
+        appleSignupBtn.addEventListener('click', () => {
+          debugLog('Apple signup clicked');
+          // Simulate Apple OAuth
+          const email = 'user@icloud.com'; // In real app, this comes from OAuth
+          setTimeout(() => {
+            createAccount(email, 'oauth_apple');
+          }, 1000);
+        });
+      }
+
+      if (guestModeBtn) {
+        guestModeBtn.addEventListener('click', continueAsGuest);
+      }
+
+      // Close modals when clicking backdrop
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeModalHandler();
+          }
+        });
+      }
+
+      if (accountModal) {
+        accountModal.addEventListener('click', (e) => {
+          if (e.target === accountModal) {
+            closeAccountModal();
+          }
+        });
+      }
+
+      // ESC key to close modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+          closeModalHandler();
+        }
+      });
+
+      debugLog('Modal system initialization complete');
+    });
+  </script>
+</body>
+</html><!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FadeJunkie — Find your lane</title>
+  
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { 
+        extend: { 
+          colors: { 
+            brand: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              500: '#64748b',
+              600: '#475569',
+              900: '#0f172a'
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-up': 'slideUp 0.3s ease-out',
+            'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+          }
+        } 
+      }
+    }
+  </script>
+  
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+      50% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+    }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Tutorial overlay styles */
+    .tutorial-backdrop {
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(2px);
+    }
+    
+    .tutorial-spotlight {
+      border: 3px solid #3b82f6;
+      border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75);
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+    
+    .tutorial-tooltip {
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    
+    .tutorial-tooltip-arrow {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: inherit;
+      border: inherit;
+      transform: rotate(45deg);
+    }
+    
+    .tutorial-tooltip-arrow.top {
+      bottom: -6px;
+      border-bottom: none;
+      border-right: none;
+    }
+    
+    .tutorial-tooltip-arrow.bottom {
+      top: -6px;
+      border-top: none;
+      border-left: none;
+    }
+    
+    .tutorial-tooltip-arrow.left {
+      right: -6px;
+      border-right: none;
+      border-bottom: none;
+    }
+    
+    .tutorial-tooltip-arrow.right {
+      left: -6px;
+      border-left: none;
+      border-top: none;
+    }
+
+    /* Screen reader only styles */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100 min-h-screen">
+  
+  <!-- Navigation Header -->
+  <nav id="main-navigation" class="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex items-center">
+          <div class="text-2xl">💈</div>
+          <span class="ml-2 text-xl font-bold gradient-text">FadeJunkie</span>
+        </div>
+        
+        <!-- Navigation Links (Desktop) -->
+        <div class="hidden md:flex items-center space-x-8">
+          <a href="#home" class="text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">Home</a>
+          <a href="#features" class="text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">Features</a>
+          <a href="#about" class="text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">About</a>
+          <a href="#contact" class="text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:text-blue-600 transition-colors">Contact</a>
+        </div>
+        
+        <!-- Actions -->
+        <div class="flex items-center space-x-4">
+          <!-- Theme Toggle -->
+          <button id="themeToggle" class="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" title="Toggle theme">
+            <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+          </button>
+          
+          <!-- Tutorial Restart Button -->
+          <button id="restartTutorial" class="hidden sm:inline-flex items-center px-3 py-2 text-xs border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+            Help
+          </button>
+          
+          <!-- Sign In Button -->
+          <button class="hidden sm:inline-flex items-center px-4 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+            Sign In
+          </button>
+          
+          <!-- Mobile Menu Button -->
+          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="md:hidden hidden bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700">
+      <div class="px-4 py-2 space-y-2">
+        <a href="#home" class="block px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Home</a>
+        <a href="#features" class="block px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Features</a>
+        <a href="#about" class="block px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">About</a>
+        <a href="#contact" class="block px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Contact</a>
+        <div class="border-t border-zinc-200 dark:border-zinc-700 pt-2">
+          <a href="#signin" class="block px-3 py-2 rounded-lg text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section id="home" class="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 dark:from-zinc-900 dark:to-zinc-800 pt-16">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <div class="animate-fade-in">
+        <h1 class="text-4xl sm:text-6xl font-black leading-tight mb-6">
+          One community. <br>
+          <span class="gradient-text">Three paths.</span> <br>
+          Find your lane.
+        </h1>
+        <p class="text-xl text-zinc-600 dark:text-zinc-300 mb-12 max-w-2xl mx-auto">
+          Whether you're studying for boards, building a book, or booking a clean fade — FadeJunkie points you in the right direction.
+        </p>
+      </div>
+      
+      <!-- Path Cards -->
+      <div id="path-cards" class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
+        <button id="student-card" class="group card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-800 text-left w-full">
+          <div class="text-4xl mb-4">📚</div>
+          <h3 class="text-xl font-bold mb-2">I'm a Student</h3>
+          <p class="text-zinc-600 dark:text-zinc-300 mb-4">Master your craft with study tools, practice tests, and school resources.</p>
+          <div class="flex items-center text-blue-600 group-hover:translate-x-1 transition-transform">
+            <span class="text-sm font-medium">Get started</span>
+            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </button>
+        
+        <button id="barber-card" class="group card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-800 text-left w-full">
+          <div class="text-4xl mb-4">💈</div>
+          <h3 class="text-xl font-bold mb-2">I'm a Barber</h3>
+          <p class="text-zinc-600 dark:text-zinc-300 mb-4">Build your brand, connect with clients, and grow your business.</p>
+          <div class="flex items-center text-blue-600 group-hover:translate-x-1 transition-transform">
+            <span class="text-sm font-medium">Join now</span>
+            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </button>
+        
+        <button id="client-card" class="group card-hover rounded-3xl border border-zinc-200 dark:border-zinc-700 p-8 bg-white dark:bg-zinc-800 text-left w-full">
+          <div class="text-4xl mb-4">🧑‍🦱</div>
+          <h3 class="text-xl font-bold mb-2">I'm a Client</h3>
+          <p class="text-zinc-600 dark:text-zinc-300 mb-4">Find skilled barbers near you and book your next cut.</p>
+          <div class="flex items-center text-blue-600 group-hover:translate-x-1 transition-transform">
+            <span class="text-sm font-medium">Find barbers</span>
+            <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </div>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tutorial Overlay System -->
+  <div id="tutorialOverlay" class="fixed inset-0 z-[9999] hidden">
+    <!-- Tutorial Backdrop -->
+    <div id="tutorialBackdrop" class="absolute inset-0 tutorial-backdrop transition-all duration-500"></div>
+    
+    <!-- Tutorial Spotlight -->
+    <div id="tutorialSpotlight" class="absolute pointer-events-none tutorial-spotlight transition-all duration-500 opacity-0"></div>
+    
+    <!-- Tutorial Tooltip -->
+    <div id="tutorialTooltip" class="absolute z-10 max-w-sm bg-white dark:bg-zinc-900 rounded-2xl p-6 tutorial-tooltip border border-zinc-200 dark:border-zinc-700 opacity-0 transition-all duration-300">
+      <!-- Tooltip Arrow -->
+      <div id="tooltipArrow" class="tutorial-tooltip-arrow bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700"></div>
+      
+      <!-- Tooltip Content -->
+      <div id="tooltipContent">
+        <h3 id="tooltipTitle" class="text-lg font-bold mb-2 text-zinc-900 dark:text-zinc-100"></h3>
+        <p id="tooltipDescription" class="text-sm text-zinc-600 dark:text-zinc-300 mb-4"></p>
+      </div>
+      
+      <!-- Tutorial Navigation -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <span id="tutorialProgress" class="text-xs text-zinc-500">Step 1 of 6</span>
+          <div id="tutorialDots" class="flex space-x-1">
+            <!-- Progress dots will be dynamically generated -->
+          </div>
+        </div>
+        
+        <div class="flex space-x-2">
+          <button id="tutorialSkip" class="px-3 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">Skip</button>
+          <button id="tutorialPrev" class="px-3 py-1 text-xs border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors hidden">Back</button>
+          <button id="tutorialNext" class="px-4 py-1 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Next</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Accessibility announcements -->
+    <div id="tutorialAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <!-- Path Selection Modal -->
+  <div id="pathModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto border border-zinc-200 dark:border-zinc-700 relative">
+      
+      <!-- Close Button -->
+      <button id="closeModal" class="absolute top-4 right-4 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      
+      <!-- Modal Header -->
+      <div class="text-center mb-6">
+        <div id="modalIcon" class="text-4xl mb-4">📚</div>
+        <h2 id="modalTitle" class="text-2xl font-bold mb-2">Welcome, Student!</h2>
+        <p id="modalSubtitle" class="text-zinc-600 dark:text-zinc-300">Let's set up your study plan in just 3 minutes</p>
+      </div>
+
+      <!-- Progress Indicator -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between text-sm text-zinc-500 mb-2">
+          <span>Step <span id="currentStep">1</span> of <span id="totalSteps">3</span></span>
+          <span id="timeCommitment">About 3 minutes</span>
+        </div>
+        <div class="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-2">
+          <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 33.33%"></div>
+        </div>
+      </div>
+
+      <!-- Question Content -->
+      <div id="questionContent" class="mb-8">
+        <!-- Question content will be dynamically inserted here -->
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="flex justify-between">
+        <button id="backBtn" class="px-6 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors hidden">
+          Back
+        </button>
+        <div class="flex-1"></div>
+        <button id="nextBtn" class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Setup Modal -->
+  <div id="accountModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto border border-zinc-200 dark:border-zinc-700 relative">
+      
+      <!-- Close Button -->
+      <button id="closeAccountModal" class="absolute top-4 right-4 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      
+      <!-- Modal Header -->
+      <div class="text-center mb-6">
+        <div id="accountModalIcon" class="text-4xl mb-4">🚀</div>
+        <h2 class="text-2xl font-bold mb-2">Create Your Account</h2>
+        <p id="accountModalSubtitle" class="text-zinc-600 dark:text-zinc-300">Get the most out of your student experience</p>
+      </div>
+
+      <!-- Account Benefits -->
+      <div id="accountBenefits" class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+        <h3 class="font-semibold mb-2 text-blue-900 dark:text-blue-100">With an account you get:</h3>
+        <div id="benefitsList" class="space-y-1 text-sm text-blue-800 dark:text-blue-200">
+          <!-- Benefits will be populated based on user path -->
+        </div>
+      </div>
+
+      <!-- Account Setup Content -->
+      <div id="accountContent">
+        
+        <!-- Social Login Options -->
+        <div class="space-y-3 mb-6">
+          <button id="googleSignup" class="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 dark:border-zinc-600 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+            <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+          </button>
+          
+          <button id="appleSignup" class="w-full flex items-center justify-center px-4 py-3 border border-zinc-300 dark:border-zinc-600 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            </svg>
+            Continue with Apple
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="relative mb-6">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-zinc-200 dark:border-zinc-700"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white dark:bg-zinc-900 text-zinc-500">or</span>
+          </div>
+        </div>
+
+        <!-- Email/Password Form -->
+        <form id="emailSignupForm" class="space-y-4 mb-6">
+          <div>
+            <input 
+              type="email" 
+              id="signupEmail" 
+              placeholder="Enter your email" 
+              required
+              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <div id="emailError" class="text-red-500 text-xs mt-1 hidden"></div>
+          </div>
+          
+          <div>
+            <input 
+              type="password" 
+              id="signupPassword" 
+              placeholder="Create password (min 8 characters)" 
+              required
+              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <div id="passwordStrength" class="mt-2 hidden">
+              <div class="flex space-x-1">
+                <div class="h-2 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700">
+                  <div id="strengthBar1" class="h-full rounded transition-colors duration-300"></div>
+                </div>
+                <div class="h-2 w-1/3 rounded bg-zinc-200 dark:bg-zinc-700">
+                  <div id="strengthBar2" class="h-full rounded transition-colors duration-300"></div>
+                </div>
+                <div class="h-2 w-1/3 rounded bg-zinc-200 dark:border-zinc-700">
+                  <div id="strengthBar3" class="h-full rounded transition-colors duration-300"></div>
+                </div>
+              </div>
+              <div id="strengthText" class="text-xs mt-1 text-zinc-500"></div>
+            </div>
+          </div>
+          
+          <div>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              placeholder="Confirm your password" 
+              required
+              class="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <div id="confirmError" class="text-red-500 text-xs mt-1 hidden"></div>
+          </div>
+          
+          <label class="flex items-start space-x-3 cursor-pointer">
+            <input type="checkbox" id="agreeTerms" required class="mt-1">
+            <span class="text-sm text-zinc-600 dark:text-zinc-300">
+              I agree to the <a href="#" class="text-blue-600 hover:underline">Terms of Service</a> and <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a>
+            </span>
+          </label>
+          
+          <button 
+            type="submit" 
+            id="createAccountBtn"
+            class="w-full px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled
+          >
+            Create My Account
+          </button>
+        </form>
+
+        <!-- Guest Mode Option -->
+        <div class="text-center">
+          <button id="guestMode" class="text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 text-sm underline">
+            Continue as Guest
+          </button>
+          <p class="text-xs text-zinc-500 mt-1">Limited features, no data sync</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Debug flag
+    const DEBUG = true;
