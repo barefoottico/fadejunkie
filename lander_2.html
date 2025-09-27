@@ -1077,80 +1077,294 @@ const PathSelection = {
 document.addEventListener('DOMContentLoaded', function() {
   debugLog('DOM loaded, initializing systems');
   
-  // Theme toggle
-  const themeToggle = document.getElementById('themeToggle');
-  if (themeToggle) {
-    themeToggle.addEventListener('click', () => {
-      document.documentElement.classList.toggle('dark');
-      debugLog('Theme toggled');
-    });
+  // Theme toggle functionality
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const themeIcon = document.getElementById('theme-icon');
+    
+    if (isDark) {
+      document.documentElement.classList.remove('dark');
+      if (themeIcon) {
+        themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>';
+      }
+    } else {
+      document.documentElement.classList.add('dark');
+      if (themeIcon) {
+        themeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>';
+      }
+    }
+    debugLog('Theme toggled to:', isDark ? 'light' : 'dark');
   }
   
-  // Mobile menu
+  // Attach theme toggle
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', toggleTheme);
+    debugLog('Theme toggle attached');
+  } else {
+    debugLog('ERROR: Theme toggle button not found');
+  }
+  
+  // Mobile menu functionality
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
+  
   if (mobileMenuBtn && mobileMenu) {
-    mobileMenuBtn.addEventListener('click', () => {
+    mobileMenuBtn.addEventListener('click', (e) => {
+      e.preventDefault();
       mobileMenu.classList.toggle('hidden');
       debugLog('Mobile menu toggled');
     });
+    
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+        mobileMenu.classList.add('hidden');
+      }
+    });
+    
+    debugLog('Mobile menu attached');
+  } else {
+    debugLog('ERROR: Mobile menu elements not found');
   }
   
-  // Path cards
-  document.getElementById('student-card')?.addEventListener('click', () => {
-    debugLog('Student card clicked');
-    PathSelection.openModal('student');
-  });
+  // Path card functionality
+  const studentCard = document.getElementById('student-card');
+  const barberCard = document.getElementById('barber-card');
+  const clientCard = document.getElementById('client-card');
   
-  document.getElementById('barber-card')?.addEventListener('click', () => {
-    debugLog('Barber card clicked');
-    PathSelection.openModal('barber');
-  });
+  if (studentCard) {
+    studentCard.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Student card clicked');
+      PathSelection.openModal('student');
+    });
+    debugLog('Student card attached');
+  } else {
+    debugLog('ERROR: Student card not found');
+  }
   
-  document.getElementById('client-card')?.addEventListener('click', () => {
-    debugLog('Client card clicked');
-    PathSelection.openModal('client');
-  });
+  if (barberCard) {
+    barberCard.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Barber card clicked');
+      PathSelection.openModal('barber');
+    });
+    debugLog('Barber card attached');
+  } else {
+    debugLog('ERROR: Barber card not found');
+  }
   
-  // Modal navigation
-  document.getElementById('nextBtn')?.addEventListener('click', () => PathSelection.nextStep());
-  document.getElementById('backBtn')?.addEventListener('click', () => PathSelection.prevStep());
-  document.getElementById('closeModal')?.addEventListener('click', () => PathSelection.closeModal());
+  if (clientCard) {
+    clientCard.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Client card clicked');
+      PathSelection.openModal('client');
+    });
+    debugLog('Client card attached');
+  } else {
+    debugLog('ERROR: Client card not found');
+  }
   
-  // Tutorial navigation
-  document.getElementById('tutorialNext')?.addEventListener('click', () => TutorialSystem.nextStep());
-  document.getElementById('tutorialPrev')?.addEventListener('click', () => TutorialSystem.prevStep());
-  document.getElementById('tutorialSkip')?.addEventListener('click', () => TutorialSystem.skip());
-  document.getElementById('restartTutorial')?.addEventListener('click', () => TutorialSystem.start('welcome'));
+  // Modal navigation buttons
+  const nextBtn = document.getElementById('nextBtn');
+  const backBtn = document.getElementById('backBtn');
+  const closeModal = document.getElementById('closeModal');
+  
+  if (nextBtn) {
+    nextBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Next button clicked');
+      PathSelection.nextStep();
+    });
+    debugLog('Next button attached');
+  } else {
+    debugLog('ERROR: Next button not found');
+  }
+  
+  if (backBtn) {
+    backBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Back button clicked');
+      PathSelection.prevStep();
+    });
+    debugLog('Back button attached');
+  } else {
+    debugLog('ERROR: Back button not found');
+  }
+  
+  if (closeModal) {
+    closeModal.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Close modal clicked');
+      PathSelection.closeModal();
+    });
+    debugLog('Close modal attached');
+  } else {
+    debugLog('ERROR: Close modal button not found');
+  }
+  
+  // Tutorial navigation buttons
+  const tutorialNext = document.getElementById('tutorialNext');
+  const tutorialPrev = document.getElementById('tutorialPrev');
+  const tutorialSkip = document.getElementById('tutorialSkip');
+  const restartTutorial = document.getElementById('restartTutorial');
+  
+  if (tutorialNext) {
+    tutorialNext.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Tutorial next clicked');
+      TutorialSystem.nextStep();
+    });
+    debugLog('Tutorial next attached');
+  }
+  
+  if (tutorialPrev) {
+    tutorialPrev.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Tutorial prev clicked');
+      TutorialSystem.prevStep();
+    });
+    debugLog('Tutorial prev attached');
+  }
+  
+  if (tutorialSkip) {
+    tutorialSkip.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Tutorial skip clicked');
+      TutorialSystem.skip();
+    });
+    debugLog('Tutorial skip attached');
+  }
+  
+  if (restartTutorial) {
+    restartTutorial.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Restart tutorial clicked');
+      TutorialSystem.start('welcome');
+    });
+    debugLog('Restart tutorial attached');
+  }
   
   // Checklist toggle
-  document.getElementById('checklistToggle')?.addEventListener('click', () => ChecklistSystem.toggleWidget());
+  const checklistToggle = document.getElementById('checklistToggle');
+  if (checklistToggle) {
+    checklistToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      debugLog('Checklist toggle clicked');
+      ChecklistSystem.toggleWidget();
+    });
+    debugLog('Checklist toggle attached');
+  }
   
-  // Auto-start welcome tutorial
+  // Close modals on backdrop click
+  const pathModal = document.getElementById('pathModal');
+  if (pathModal) {
+    pathModal.addEventListener('click', (e) => {
+      if (e.target === pathModal) {
+        debugLog('Backdrop clicked - closing modal');
+        PathSelection.closeModal();
+      }
+    });
+  }
+  
+  const tutorialOverlay = document.getElementById('tutorialOverlay');
+  if (tutorialOverlay) {
+    tutorialOverlay.addEventListener('click', (e) => {
+      if (e.target === tutorialOverlay) {
+        debugLog('Tutorial backdrop clicked - skipping');
+        TutorialSystem.skip();
+      }
+    });
+  }
+  
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    // Escape key closes modals
+    if (e.key === 'Escape') {
+      if (pathModal && !pathModal.classList.contains('hidden')) {
+        PathSelection.closeModal();
+      }
+      if (tutorialOverlay && !tutorialOverlay.classList.contains('hidden')) {
+        TutorialSystem.skip();
+      }
+    }
+    
+    // Arrow keys for tutorial navigation
+    if (TutorialSystem.isActive) {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        TutorialSystem.nextStep();
+      }
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        TutorialSystem.prevStep();
+      }
+    }
+  });
+  
+  // Auto-start welcome tutorial after a delay
   setTimeout(() => {
+    debugLog('Auto-starting welcome tutorial');
     TutorialSystem.start('welcome');
-  }, 1000);
+  }, 2000);
   
-  // Demo functions
+  // Demo functions for testing
   window.simulateProgress = function(userType, itemId) {
+    debugLog('Simulating progress:', userType, itemId);
     if (ChecklistSystem.currentUserType === userType) {
       const config = ChecklistSystem.checklists[userType];
       const item = config.items.find(i => i.id === itemId);
       if (item) {
         ChecklistSystem.completeItem(item.id, item.points);
+      } else {
+        console.log('Item not found:', itemId);
       }
+    } else {
+      console.log('Starting checklist for:', userType);
+      ChecklistSystem.initializeForUser(userType);
+      setTimeout(() => {
+        const config = ChecklistSystem.checklists[userType];
+        const item = config.items.find(i => i.id === itemId);
+        if (item) {
+          ChecklistSystem.completeItem(item.id, item.points);
+        }
+      }, 500);
     }
   };
   
   window.startChecklist = function(userType) {
+    debugLog('Starting checklist for:', userType);
     ChecklistSystem.initializeForUser(userType);
+  };
+  
+  window.testAllButtons = function() {
+    console.log('🧪 Testing all buttons...');
+    console.log('Theme toggle:', !!document.getElementById('themeToggle'));
+    console.log('Mobile menu:', !!document.getElementById('mobile-menu-btn'));
+    console.log('Student card:', !!document.getElementById('student-card'));
+    console.log('Barber card:', !!document.getElementById('barber-card'));
+    console.log('Client card:', !!document.getElementById('client-card'));
+    console.log('Modal buttons:', {
+      next: !!document.getElementById('nextBtn'),
+      back: !!document.getElementById('backBtn'),
+      close: !!document.getElementById('closeModal')
+    });
+    console.log('Tutorial buttons:', {
+      next: !!document.getElementById('tutorialNext'),
+      prev: !!document.getElementById('tutorialPrev'),
+      skip: !!document.getElementById('tutorialSkip'),
+      restart: !!document.getElementById('restartTutorial')
+    });
   };
   
   debugLog('All systems initialized successfully');
   console.log('🚀 FadeJunkie Work Scheme 2 loaded!');
-  console.log('Demo functions:');
-  console.log('- simulateProgress("student", "profile") - Complete checklist items');
-  console.log('- startChecklist("barber") - Start checklist for user type');
+  console.log('📋 Available demo functions:');
+  console.log('  • simulateProgress("student", "profile") - Complete checklist items');
+  console.log('  • startChecklist("barber") - Start checklist for user type');
+  console.log('  • testAllButtons() - Check if all buttons are properly attached');
+  console.log('⚡ All buttons should now be functional!');
 });
 </script>
 </body>
