@@ -140,6 +140,15 @@
       animation: bounceIn 0.5s ease-out;
     }
 
+    /* Tutorial highlight effect */
+    .tutorial-highlight {
+      position: relative;
+      z-index: 100;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
     /* Points animation */
     .points-earned {
       animation: pointsEarn 1s ease-out;
@@ -590,7 +599,7 @@ function debugLog(message, data = null) {
   }
 }
 
-// Simple Tutorial System - Streamlined for Working Buttons
+// Simple Tutorial System - Enhanced for Dashboard Flow
 const TutorialSystem = {
   isActive: false,
   currentStep: 0,
@@ -618,13 +627,78 @@ const TutorialSystem = {
         }
       ]
     },
-    student: {
-      title: 'Student Guide',
+    dashboard_student: {
+      title: 'Student Dashboard Tour',
       steps: [
         {
+          target: '#main-navigation',
+          title: 'Your Study Hub',
+          description: 'Access study materials, practice tests, and progress tracking from here.'
+        },
+        {
           target: '#progressChecklist',
-          title: 'Your Progress Tracker',
-          description: 'Complete tasks to earn points and unlock features.'
+          title: 'Progress Checklist',
+          description: 'Complete these tasks to master your barbering studies. Each completed task earns you points and unlocks new features!'
+        },
+        {
+          target: '#checklistItems',
+          title: 'Interactive Tasks',
+          description: 'Click on any task to complete it. You\'ll earn points and track your progress toward becoming a licensed barber.'
+        },
+        {
+          target: '#pointsDisplay',
+          title: 'Points & Rewards',
+          description: 'Earn points for every completed task. Accumulate points to unlock study materials, practice exams, and connect with local schools.'
+        }
+      ]
+    },
+    dashboard_barber: {
+      title: 'Barber Dashboard Tour', 
+      steps: [
+        {
+          target: '#main-navigation',
+          title: 'Business Command Center',
+          description: 'Manage your profile, view analytics, and access client management tools.'
+        },
+        {
+          target: '#progressChecklist',
+          title: 'Business Setup Checklist',
+          description: 'Complete these essential tasks to establish your professional presence and start attracting clients.'
+        },
+        {
+          target: '#checklistItems', 
+          title: 'Growth Milestones',
+          description: 'Each task helps build your business. Complete them to earn points and unlock advanced marketing tools.'
+        },
+        {
+          target: '#pointsDisplay',
+          title: 'Business Points',
+          description: 'Earn points for business achievements. Higher points unlock premium features like advanced analytics and priority client matching.'
+        }
+      ]
+    },
+    dashboard_client: {
+      title: 'Client Dashboard Tour',
+      steps: [
+        {
+          target: '#main-navigation', 
+          title: 'Discovery Hub',
+          description: 'Search for barbers, manage appointments, and track your style journey.'
+        },
+        {
+          target: '#progressChecklist',
+          title: 'Setup Checklist',
+          description: 'Complete these steps to find the perfect barber and get the best cuts in your area.'
+        },
+        {
+          target: '#checklistItems',
+          title: 'Discovery Tasks', 
+          description: 'Each completed task improves your recommendations and helps you find barbers that match your style preferences.'
+        },
+        {
+          target: '#pointsDisplay',
+          title: 'Loyalty Points',
+          description: 'Earn points for bookings, reviews, and referrals. Redeem points for discounts and exclusive access to top barbers.'
         }
       ]
     }
@@ -639,6 +713,18 @@ const TutorialSystem = {
     
     this.showOverlay();
     this.renderStep();
+  },
+
+  startDashboardTutorial(userPath) {
+    debugLog('Starting dashboard tutorial for:', userPath);
+    
+    // First show the checklist
+    ChecklistSystem.initializeForUser(userPath);
+    
+    // Wait for checklist to appear, then start tutorial
+    setTimeout(() => {
+      this.start(`dashboard_${userPath}`);
+    }, 800);
   },
 
   showOverlay() {
@@ -672,13 +758,53 @@ const TutorialSystem = {
     if (description) description.textContent = step.description;
     if (progress) progress.textContent = `Step ${this.currentStep + 1} of ${this.totalSteps}`;
 
-    // Show tooltip
+    // Position tooltip near target element
+    this.positionTooltip(step.target);
+    
+    // Highlight target element if it exists
+    this.highlightTarget(step.target);
+  },
+
+  positionTooltip(targetSelector) {
     const tooltip = document.getElementById('tutorialTooltip');
+    const target = document.querySelector(targetSelector);
+    
     if (tooltip) {
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        
+        // Position tooltip to the right of target if space allows, otherwise center
+        if (rect.right + tooltipRect.width + 20 < window.innerWidth) {
+          tooltip.style.left = `${rect.right + 20}px`;
+          tooltip.style.top = `${rect.top + (rect.height / 2) - (tooltipRect.height / 2)}px`;
+        } else {
+          tooltip.style.left = '50%';
+          tooltip.style.top = '50%';
+          tooltip.style.transform = 'translate(-50%, -50%)';
+        }
+      } else {
+        // Center tooltip if target not found
+        tooltip.style.left = '50%';
+        tooltip.style.top = '50%';
+        tooltip.style.transform = 'translate(-50%, -50%)';
+      }
+      
       tooltip.style.opacity = '1';
-      tooltip.style.left = '50%';
-      tooltip.style.top = '50%';
-      tooltip.style.transform = 'translate(-50%, -50%)';
+    }
+  },
+
+  highlightTarget(targetSelector) {
+    // Remove existing highlights
+    document.querySelectorAll('.tutorial-highlight').forEach(el => {
+      el.classList.remove('tutorial-highlight');
+    });
+    
+    // Add highlight to target
+    const target = document.querySelector(targetSelector);
+    if (target) {
+      target.classList.add('tutorial-highlight');
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   },
 
@@ -702,12 +828,43 @@ const TutorialSystem = {
     this.isActive = false;
     this.hideOverlay();
     
-    // Show checklist if user completed path selection
-    if (this.userType !== 'welcome') {
+    // Remove highlights
+    document.querySelectorAll('.tutorial-highlight').forEach(el => {
+      el.classList.remove('tutorial-highlight');
+    });
+    
+    // Show completion message
+    this.showCompletionMessage();
+  },
+
+  showCompletionMessage() {
+    const message = document.createElement('div');
+    message.className = 'fixed top-20 right-4 z-[10000] bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300';
+    message.innerHTML = `
+      <div class="flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+        </svg>
+        Dashboard tour complete! Start earning points!
+      </div>
+    `;
+    
+    document.body.appendChild(message);
+    
+    // Animate in
+    setTimeout(() => {
+      message.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after delay
+    setTimeout(() => {
+      message.style.transform = 'translateX(100%)';
       setTimeout(() => {
-        ChecklistSystem.initializeForUser(this.userType);
-      }, 1000);
-    }
+        if (message.parentNode) {
+          message.parentNode.removeChild(message);
+        }
+      }, 300);
+    }, 4000);
   },
 
   skip() {
@@ -1058,10 +1215,238 @@ const PathSelection = {
     debugLog('Setup completed for:', this.currentPath);
     this.closeModal();
     
-    // Start user tutorial and checklist
+    // Show account setup instead of going directly to tutorial
+    this.showAccountSetup();
+  },
+
+  showAccountSetup() {
+    debugLog('Showing account setup modal');
+    
+    const accountModal = document.getElementById('accountModal');
+    const accountModalIcon = document.getElementById('accountModalIcon');
+    const accountModalSubtitle = document.getElementById('accountModalSubtitle');
+    const benefitsList = document.getElementById('benefitsList');
+    
+    if (!accountModal) {
+      debugLog('ERROR: Account modal not found');
+      return;
+    }
+    
+    const config = this.pathConfigs[this.currentPath];
+    
+    // Account benefits based on path
+    const benefits = {
+      student: [
+        'Save your study progress across devices',
+        'Get personalized exam reminders', 
+        'Access exclusive study materials',
+        'Track your learning milestones with points'
+      ],
+      barber: [
+        'Build your professional profile',
+        'Receive client booking requests',
+        'Access business analytics dashboard', 
+        'Earn achievements for business growth'
+      ],
+      client: [
+        'Save your favorite barbers',
+        'Get personalized recommendations',
+        'Quick rebooking with appointment history',
+        'Earn rewards for loyalty and reviews'
+      ]
+    };
+    
+    // Update modal content
+    accountModalIcon.textContent = config.icon;
+    accountModalSubtitle.textContent = `Get the most out of your ${this.currentPath} experience`;
+    
+    // Populate benefits
+    if (benefitsList) {
+      benefitsList.innerHTML = benefits[this.currentPath].map(benefit => `
+        <div class="flex items-center">
+          <svg class="w-4 h-4 mr-2 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+          </svg>
+          ${benefit}
+        </div>
+      `).join('');
+    }
+    
+    // Show account modal
+    accountModal.classList.remove('hidden');
+    accountModal.classList.add('flex');
+    
+    // Attach account setup event listeners
+    this.setupAccountHandlers();
+  },
+
+  setupAccountHandlers() {
+    // Create account button
+    const emailSignupForm = document.getElementById('emailSignupForm');
+    if (emailSignupForm) {
+      emailSignupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.createAccount('registered');
+      });
+    }
+
+    // Social signup buttons
+    const googleSignup = document.getElementById('googleSignup');
+    if (googleSignup) {
+      googleSignup.addEventListener('click', () => this.createAccount('google'));
+    }
+
+    const appleSignup = document.getElementById('appleSignup');
+    if (appleSignup) {
+      appleSignup.addEventListener('click', () => this.createAccount('apple'));
+    }
+
+    // Guest mode
+    const guestMode = document.getElementById('guestMode');
+    if (guestMode) {
+      guestMode.addEventListener('click', () => this.createAccount('guest'));
+    }
+
+    // Close button
+    const closeAccountModal = document.getElementById('closeAccountModal');
+    if (closeAccountModal) {
+      closeAccountModal.addEventListener('click', () => this.closeAccountModal());
+    }
+  },
+
+  createAccount(type) {
+    debugLog('Creating account type:', type);
+    
+    // Simulate account creation
+    const userData = {
+      id: 'user_' + Date.now(),
+      accountType: type,
+      path: this.currentPath,
+      responses: this.responses,
+      createdAt: new Date().toISOString()
+    };
+    
+    // Store user data
+    window.userData = userData;
+    
+    if (type === 'registered') {
+      this.showAccountSuccess();
+    } else {
+      this.closeAccountModal();
+      this.enterDashboard();
+    }
+  },
+
+  showAccountSuccess() {
+    const accountContent = document.getElementById('accountContent');
+    if (accountContent) {
+      accountContent.innerHTML = `
+        <div class="text-center">
+          <div class="text-4xl mb-4">🎉</div>
+          <h3 class="text-xl font-bold mb-4">Account Created!</h3>
+          <p class="text-zinc-600 dark:text-zinc-300 mb-6">
+            Welcome to FadeJunkie! Your account has been created successfully.
+          </p>
+          <button id="enterDashboardBtn" class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all">
+            Enter Dashboard
+          </button>
+        </div>
+      `;
+      
+      // Add click handler for dashboard button
+      document.getElementById('enterDashboardBtn').addEventListener('click', () => {
+        this.closeAccountModal();
+        this.enterDashboard();
+      });
+    }
+  },
+
+  enterDashboard() {
+    debugLog('Entering dashboard for:', this.currentPath);
+    
+    // Show dashboard simulation
+    this.showDashboard();
+    
+    // Start dashboard tutorial after short delay
     setTimeout(() => {
-      TutorialSystem.start(this.currentPath);
-    }, 500);
+      this.startDashboardTutorial();
+    }, 1500);
+  },
+
+  showDashboard() {
+    // Create dashboard overlay
+    const dashboardOverlay = document.createElement('div');
+    dashboardOverlay.id = 'dashboardOverlay';
+    dashboardOverlay.className = 'fixed inset-0 z-50 bg-white dark:bg-zinc-900 flex items-center justify-center';
+    
+    const pathNames = {
+      student: 'Student Dashboard',
+      barber: 'Barber Dashboard', 
+      client: 'Client Dashboard'
+    };
+    
+    const pathIcons = {
+      student: '📚',
+      barber: '💈',
+      client: '🧑‍🦱'
+    };
+    
+    dashboardOverlay.innerHTML = `
+      <div class="text-center">
+        <div class="text-6xl mb-6">${pathIcons[this.currentPath]}</div>
+        <h1 class="text-3xl font-bold mb-4">${pathNames[this.currentPath]}</h1>
+        <p class="text-zinc-600 dark:text-zinc-300 mb-8">
+          Welcome to your personalized ${this.currentPath} workspace!
+        </p>
+        <div class="space-y-4 text-left max-w-md">
+          <div class="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+            <div class="text-sm text-zinc-500">Quick Start Guide</div>
+            <div class="font-semibold">Complete your setup checklist to get started</div>
+          </div>
+          <div class="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+            <div class="text-sm text-zinc-500">Progress Tracking</div>
+            <div class="font-semibold">Earn points and unlock features</div>
+          </div>
+          <div class="p-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg">
+            <div class="text-sm text-zinc-500">Community</div>
+            <div class="font-semibold">Connect with others in your area</div>
+          </div>
+        </div>
+        <button id="startDashboardTour" class="mt-8 px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+          Start Dashboard Tour
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(dashboardOverlay);
+    
+    // Add click handler for tour button
+    document.getElementById('startDashboardTour').addEventListener('click', () => {
+      this.removeDashboard();
+      this.startDashboardTutorial();
+    });
+  },
+
+  removeDashboard() {
+    const dashboardOverlay = document.getElementById('dashboardOverlay');
+    if (dashboardOverlay) {
+      dashboardOverlay.remove();
+    }
+  },
+
+  startDashboardTutorial() {
+    debugLog('Starting dashboard tutorial for:', this.currentPath);
+    
+    // Update tutorial system for dashboard-specific tutorial
+    TutorialSystem.startDashboardTutorial(this.currentPath);
+  },
+
+  closeAccountModal() {
+    const accountModal = document.getElementById('accountModal');
+    if (accountModal) {
+      accountModal.classList.add('hidden');
+      accountModal.classList.remove('flex');
+    }
   },
 
   closeModal() {
@@ -1338,33 +1723,55 @@ document.addEventListener('DOMContentLoaded', function() {
     ChecklistSystem.initializeForUser(userType);
   };
   
-  window.testAllButtons = function() {
-    console.log('🧪 Testing all buttons...');
-    console.log('Theme toggle:', !!document.getElementById('themeToggle'));
-    console.log('Mobile menu:', !!document.getElementById('mobile-menu-btn'));
-    console.log('Student card:', !!document.getElementById('student-card'));
-    console.log('Barber card:', !!document.getElementById('barber-card'));
-    console.log('Client card:', !!document.getElementById('client-card'));
-    console.log('Modal buttons:', {
-      next: !!document.getElementById('nextBtn'),
-      back: !!document.getElementById('backBtn'),
-      close: !!document.getElementById('closeModal')
-    });
-    console.log('Tutorial buttons:', {
-      next: !!document.getElementById('tutorialNext'),
-      prev: !!document.getElementById('tutorialPrev'),
-      skip: !!document.getElementById('tutorialSkip'),
-      restart: !!document.getElementById('restartTutorial')
-    });
+  window.testDashboardFlow = function(userType = 'student') {
+    console.log(`🧪 Testing dashboard flow for: ${userType}`);
+    PathSelection.openModal(userType);
+    
+    // Auto-fill first question after 1 second
+    setTimeout(() => {
+      const config = PathSelection.pathConfigs[userType];
+      PathSelection.responses[0] = config.questions[0].options[0];
+      console.log('✅ Auto-filled first question');
+      
+      if (config.questions.length > 1) {
+        PathSelection.nextStep();
+        // Auto-fill second question
+        setTimeout(() => {
+          PathSelection.responses[1] = config.questions[1].options[0]; 
+          console.log('✅ Auto-filled second question');
+          
+          // Complete setup
+          setTimeout(() => {
+            PathSelection.completeSetup();
+            console.log('🎯 Setup completed - account modal should appear');
+          }, 500);
+        }, 500);
+      } else {
+        setTimeout(() => {
+          PathSelection.completeSetup();
+        }, 500);
+      }
+    }, 1000);
+  };
+
+  window.simulateDashboardEntry = function(accountType = 'guest') {
+    console.log(`🚪 Simulating dashboard entry as: ${accountType}`);
+    if (PathSelection.currentPath) {
+      PathSelection.createAccount(accountType);
+    } else {
+      console.log('❌ No path selected. Run testDashboardFlow() first.');
+    }
   };
   
   debugLog('All systems initialized successfully');
   console.log('🚀 FadeJunkie Work Scheme 2 loaded!');
   console.log('📋 Available demo functions:');
+  console.log('  • testDashboardFlow("student") - Complete full dashboard onboarding');
+  console.log('  • simulateDashboardEntry("guest") - Enter dashboard as guest/registered');
   console.log('  • simulateProgress("student", "profile") - Complete checklist items');
   console.log('  • startChecklist("barber") - Start checklist for user type');
-  console.log('  • testAllButtons() - Check if all buttons are properly attached');
-  console.log('⚡ All buttons should now be functional!');
+  console.log('⚡ New Flow: Path → Account → Dashboard → Tutorial → Checklist');
+  console.log('✨ Checklist now appears as part of dashboard tutorial!');
 });
 </script>
 </body>
