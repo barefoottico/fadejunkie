@@ -43,7 +43,7 @@
           </div>
           <div class="sm:ml-auto flex items-center gap-2">
             <a href="#book" class="rounded-lg px-4 py-2 text-sm bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90">Book now</a>
-            <a id="directionsBtn" target="_blank" class="rounded-lg px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">Directions</a>
+            <a id="directionsBtn" target="_blank" rel="noopener" class="rounded-lg px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">Directions</a>
           </div>
         </div>
 
@@ -52,10 +52,18 @@
             <div class="font-medium">Address</div>
             <p id="shopAddress" class="text-zinc-600 dark:text-zinc-400 mt-1"></p>
           </div>
+
+          <!-- HOURS with Open/Closed badge -->
           <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
-            <div class="font-medium">Hours</div>
+            <div class="flex items-center gap-2">
+              <div class="font-medium">Hours</div>
+              <span id="openBadge"
+                class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium select-none
+                       bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">—</span>
+            </div>
             <p id="shopHours" class="text-zinc-600 dark:text-zinc-400 mt-1"></p>
           </div>
+
           <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
             <div class="font-medium">Contact</div>
             <a id="telLink" class="block mt-1 hover:underline"></a>
@@ -98,10 +106,10 @@
     <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Choose your barber or book the next available slot.</p>
     <div class="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
       <a id="bookShopBtn" href="#" class="rounded-lg px-5 py-2 text-sm bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90">Book shop</a>
-<button id="chooseBarberBtn" type="button"
-  class="rounded-lg px-5 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">
-  Choose a barber
-</button>
+      <button id="chooseBarberBtn" type="button"
+        class="rounded-lg px-5 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">
+        Choose a barber
+      </button>
     </div>
   </div>
 </section>
@@ -146,7 +154,7 @@
       <h4 class="font-medium text-sm mb-2">Quick links</h4>
       <div class="grid grid-cols-2 gap-2">
         <a href="#book" class="rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-sm text-center hover:bg-zinc-50 dark:hover:bg-zinc-800">Book</a>
-        <a id="quickDirections" target="_blank" class="rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-sm text-center hover:bg-zinc-50 dark:hover:bg-zinc-800">Directions</a>
+        <a id="quickDirections" target="_blank" rel="noopener" class="rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-sm text-center hover:bg-zinc-50 dark:hover:bg-zinc-800">Directions</a>
       </div>
     </div>
   </aside>
@@ -171,21 +179,17 @@
     <div class="grid grid-cols-3 divide-x divide-zinc-200 dark:divide-zinc-800">
       <a href="#book" class="py-3 text-center text-sm font-medium">Book</a>
       <a id="mobileCall" class="py-3 text-center text-sm font-medium">Call</a>
-      <a id="mobileDirections" target="_blank" class="py-3 text-center text-sm font-medium">Directions</a>
+      <a id="mobileDirections" target="_blank" rel="noopener" class="py-3 text-center text-sm font-medium">Directions</a>
     </div>
   </div>
 </div>
 
 <!-- Choose Barber Modal -->
 <div id="barberModal" class="fixed inset-0 z-[1000] hidden" aria-hidden="true">
-  <!-- Backdrop -->
   <div id="barberModalBackdrop" class="absolute inset-0 bg-black/50"></div>
-
-  <!-- Dialog -->
   <div class="relative z-10 flex items-end sm:items-center justify-center min-h-full p-4">
     <div role="dialog" aria-modal="true" aria-labelledby="barberModalTitle" tabindex="-1"
          class="w-full max-w-2xl rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl outline-none">
-      <!-- Header -->
       <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-200 dark:border-zinc-800">
         <div>
           <h3 id="barberModalTitle" class="text-base font-semibold">Choose your barber</h3>
@@ -197,14 +201,12 @@
         </button>
       </div>
 
-      <!-- Search -->
       <div class="px-5 pt-4">
         <label for="barberSearch" class="sr-only">Search barbers</label>
         <input id="barberSearch" placeholder="Search barbers…"
                class="w-full mb-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"/>
       </div>
 
-      <!-- List -->
       <div class="px-5 pb-5">
         <div id="barberModalList" class="grid sm:grid-cols-2 gap-3"></div>
         <div id="barberModalEmpty" class="hidden py-8 text-center text-sm text-zinc-500">No barbers match your search.</div>
@@ -228,6 +230,19 @@ window.addEventListener('DOMContentLoaded', () => {
     address: "13529 Nacogdoches Rd, San Antonio, TX 78217",
     mapsQuery: "13529 Nacogdoches Rd, San Antonio, TX 78217",
     hours: "Mon–Fri 9–7 • Sat 9–6 • Sun 11–5",
+
+    // NEW: precise availability + timezone for Open/Closed badge
+    timezone: "America/Chicago",
+    hoursDetailed: {
+      mon: { open: "09:00", close: "19:00" },
+      tue: { open: "09:00", close: "19:00" },
+      wed: { open: "09:00", close: "19:00" },
+      thu: { open: "09:00", close: "19:00" },
+      fri: { open: "09:00", close: "19:30" },
+      sat: { open: "09:00", close: "18:00" },
+      sun: { open: "11:00", close: "17:00" }
+    },
+
     socials: {
       instagram: "https://instagram.com/originalgentlemensparlor",
       tiktok: "https://tiktok.com/@ogp",
@@ -263,6 +278,44 @@ window.addEventListener('DOMContentLoaded', () => {
   function saveReviews(list){ localStorage.setItem(keyForShop(), JSON.stringify(list)); }
   function average(list){ if(!list.length) return 0; return Math.round((list.reduce((a,r)=>a+ +r.rating,0)/list.length)*10)/10; }
 
+  // ---------- Open/Closed badge logic ----------
+  function parseHHMM(s){ const [h,m]=s.split(":").map(Number); return h*60+(m||0); }
+  function getDayKey(d){ return ["sun","mon","tue","wed","thu","fri","sat"][d.getDay()]; }
+  function minutesInTZ(date, tz){
+    const fmt = new Intl.DateTimeFormat("en-US",{hour12:false,timeZone:tz,hour:"2-digit",minute:"2-digit"});
+    const parts = fmt.formatToParts(date);
+    const hh = Number(parts.find(p=>p.type==="hour").value);
+    const mm = Number(parts.find(p=>p.type==="minute").value);
+    return hh*60+mm;
+  }
+  function isOpenNow(shop, date=new Date()){
+    const tz = shop.timezone || "America/Chicago";
+    const localNow = new Date(date.toLocaleString("en-US",{timeZone:tz}));
+    const dayKey = getDayKey(localNow);
+    const rule = shop.hoursDetailed?.[dayKey];
+    if (!rule) return false;
+    const nowMin = minutesInTZ(date, tz);
+    const openMin = parseHHMM(rule.open);
+    const closeMin = parseHHMM(rule.close);
+    return nowMin >= openMin && nowMin < closeMin;
+  }
+  function setOpenBadge(shop){
+    const badge = $("openBadge");
+    if (!badge) return;
+    const open = isOpenNow(shop);
+    // reset baseline classes
+    badge.className = "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium select-none";
+    if (open){
+      badge.classList.add("bg-green-500","text-white");
+      badge.textContent = "Open";
+      badge.title = `Currently open`;
+    } else {
+      badge.classList.add("bg-red-500","text-white");
+      badge.textContent = "Closed";
+      badge.title = `Currently closed`;
+    }
+  }
+
   // ---------- Renderers ----------
   function initShop(){
     $("shopLogo").src = SHOP.logo;
@@ -285,7 +338,7 @@ window.addEventListener('DOMContentLoaded', () => {
     $("mobileCall")?.setAttribute("href", SHOP.phoneHref);
 
     const embedQ = encodeURIComponent(SHOP.mapsQuery || SHOP.address);
-    // TODO: replace key below with your real Google Maps Embed API key
+    // TODO: replace the key below with your real Google Maps Embed API key
     $("mapFrame").src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyDUMMY-PLACE-YOUR-EMBED-API-KEY&q=${embedQ}`;
 
     $("headerBook").href = BOOKING_URL;
@@ -295,6 +348,10 @@ window.addEventListener('DOMContentLoaded', () => {
     renderBarbers();
     initReviews();
     injectJsonLd();
+
+    // Init badge + auto-refresh every minute
+    setOpenBadge(SHOP);
+    setInterval(() => setOpenBadge(SHOP), 60_000);
   }
 
   function renderSocials(){
