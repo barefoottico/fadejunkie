@@ -1,165 +1,139 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FadeJunkie — Shop Onboarding</title>
+<title>FadeJunkie — Onboarding Wizard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
 
-<section class="max-w-4xl mx-auto p-6 sm:p-10">
-  <h1 class="text-2xl font-semibold">Barbershop Onboarding</h1>
-  <p class="text-sm text-zinc-500 mt-1">Create your shop profile — it only takes a few minutes.</p>
+<section class="max-w-xl mx-auto p-6 sm:p-10">
 
-  <form id="shopForm" class="space-y-10 mt-8">
+  <!-- Progress Bar -->
+  <div class="w-full h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full">
+    <div id="progressBar" class="h-full bg-zinc-900 dark:bg-white rounded-full transition-all duration-300" style="width: 11%;"></div>
+  </div>
 
-    <!-- Shop Info -->
-    <div class="space-y-5">
-      <h2 class="text-lg font-medium">🏪 Shop Info</h2>
+  <form id="wizardForm" class="mt-10">
 
-      <div>
-        <label class="block text-sm mb-1">Shop Name *</label>
-        <input name="name" required class="input"/>
+    <!-- Slide container -->
+    <div id="slides" class="relative min-h-[380px] overflow-hidden">
+      
+      <!-- Slide 0: Welcome -->
+      <div class="slide">
+        <h1 class="text-xl font-semibold">Let’s build your profile</h1>
+        <p class="text-sm text-zinc-500 mt-2">We’ll ask quick questions. You’ll get a killer page.</p>
+        <button type="button" onclick="nextSlide()" class="mt-12 w-full py-3 rounded-lg bg-zinc-900 text-white hover:opacity-90">
+          Start →
+        </button>
       </div>
 
-      <div>
-        <label class="block text-sm mb-1">Phone *</label>
-        <input name="phone" required class="input"/>
+      <!-- Slide 1: Shop Name -->
+      <div class="slide hidden">
+        <h2 class="text-lg font-medium">What’s your shop called?</h2>
+        <input name="name" required class="input mt-4">
       </div>
 
-      <div>
-        <label class="block text-sm mb-1">Booking Link *</label>
-        <input name="booking_url_shop" required class="input"/>
-      </div>
-
-      <div>
-        <label class="block text-sm mb-1">Email *</label>
-        <input name="email" type="email" required class="input"/>
-      </div>
-
-      <div>
-        <label class="block text-sm mb-1">Address *</label>
-        <input name="address" required class="input"/>
-      </div>
-
-      <div>
-        <label class="block text-sm mb-1">City *</label>
-        <input name="city" required class="input"/>
-      </div>
-
-      <div class="grid grid-cols-3 gap-3">
-        <div>
-          <label class="block text-sm mb-1">State *</label>
-          <input name="state" required class="input"/>
-        </div>
-        <div>
-          <label class="block text-sm mb-1">ZIP *</label>
-          <input name="zip" required class="input"/>
-        </div>
-        <div>
-          <label class="block text-sm mb-1">Timezone *</label>
+      <!-- Slide 2: Address -->
+      <div class="slide hidden">
+        <h2 class="text-lg font-medium">Where is it located?</h2>
+        <input name="address" placeholder="Street Address" required class="input mt-4">
+        <input name="city" placeholder="City" required class="input mt-3">
+        <div class="grid grid-cols-3 gap-3 mt-3">
+          <input name="state" placeholder="ST" required class="input text-center">
+          <input name="zip" placeholder="ZIP" required class="input text-center">
           <select name="timezone" class="input" required>
-            <option value="America/Chicago" selected>America/Chicago (CST/CDT)</option>
+            <option value="America/Chicago" selected>CST/CDT</option>
           </select>
         </div>
       </div>
 
-      <div>
-        <label class="block text-sm mb-1">About the shop *</label>
-        <textarea name="about" rows="3" required class="input"></textarea>
+      <!-- Slide 3: Contact -->
+      <div class="slide hidden">
+        <h2 class="text-lg font-medium">Phone & booking</h2>
+        <input name="phone" placeholder="(210) 555-1234" required class="input mt-4">
+        <input name="booking_url_shop" placeholder="Booking link" required class="input mt-3">
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm mb-1">Logo Upload *</label>
-          <input type="file" name="logo" accept="image/*" required class="input-file">
+      <!-- Slide 4: About -->
+      <div class="slide hidden">
+        <h2 class="text-lg font-medium">Tell customers what makes you great</h2>
+        <textarea name="about" rows="4" required class="input mt-4" placeholder="Short, dope description"></textarea>
+      </div>
+
+      <!-- Slide 5: Hours -->
+      <div class="slide hidden">
+        <h2 class="text-lg font-medium">Business hours</h2>
+        <p class="text-xs text-zinc-500 mt-1">We’ll sync this with your Open/Closed badge</p>
+        <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+          <label class="font-medium">Mon</label>
+          <input type="time" name="open_mon" class="input" required>
+          <input type="time" name="close_mon" class="input" required>
         </div>
-        <div>
-          <label class="block text-sm mb-1">Shop Banner *</label>
-          <input type="file" name="hero" accept="image/*" required class="input-file">
-        </div>
-      </div>
-    </div>
-
-    <!-- Hours -->
-    <div>
-      <h2 class="text-lg font-medium">⏰ Hours of Operation *</h2>
-      <div class="mt-3 space-y-3" id="hoursGrid">
-        <!-- Rows auto-generated -->
-      </div>
-    </div>
-
-    <!-- Barbers -->
-    <div>
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-medium">💈 Barbers</h2>
-        <button type="button" id="addBarberBtn"
-          class="px-3 py-1.5 text-sm bg-zinc-900 text-white rounded-lg">+ Add Barber</button>
+        <!-- Could toggle next days step-by-step or show all here (design choice) -->
       </div>
 
-      <div id="barbersContainer" class="mt-4 space-y-6"></div>
+      <!-- Slide 6: Logo -->
+      <div class="slide hidden">
+        <h2 class="text-lg font-medium">Logo upload</h2>
+        <input type="file" name="logo" accept="image/*" required class="input-file mt-4">
+      </div>
+
+      <!-- Slide 7: Banner -->
+      <div class="slide hidden">
+        <h2 class="text-lg font-medium">Shop Banner</h2>
+        <input type="file" name="hero" accept="image/*" required class="input-file mt-4">
+      </div>
+
+      <!-- Slide 8: Submit -->
+      <div class="slide hidden text-center">
+        <h2 class="text-lg font-medium">Done!</h2>
+        <p class="text-sm text-zinc-400 mt-2">Submit and we’ll handle the rest.</p>
+        <button type="submit" class="mt-10 w-full py-3 rounded-lg bg-zinc-900 text-white hover:opacity-90">
+          Submit for review ✅
+        </button>
+      </div>
+
     </div>
 
-    <!-- Submit -->
-    <button class="w-full py-3 rounded-lg bg-zinc-900 text-white text-sm hover:opacity-90">
-      Submit for Approval
-    </button>
-
-    <p id="formStatus" class="hidden text-green-500 text-sm mt-2">✅ Submitted successfully!</p>
+    <!-- Navigation Controls -->
+    <div class="flex justify-between items-center mt-6">
+      <button type="button" id="backBtn" class="text-sm text-zinc-500" onclick="prevSlide()">← Back</button>
+      <button type="button" id="nextBtn" class="text-sm bg-zinc-900 text-white px-4 py-2 rounded-lg hover:opacity-90" onclick="nextSlide()">Next →</button>
+    </div>
 
   </form>
 </section>
 
 <style>
-.input {
-  @apply w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm;
-}
-.input-file {
-  @apply block w-full text-xs rounded-lg cursor-pointer border border-zinc-300 dark:border-zinc-700 file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-zinc-900 file:text-white hover:file:bg-zinc-800;
-}
+.input { @apply w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm; }
+.input-file { @apply block text-xs rounded-lg cursor-pointer border border-zinc-300 dark:border-zinc-700 file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-zinc-900 file:text-white hover:file:bg-zinc-800; }
+.slide { @apply absolute inset-0 transition-opacity duration-300; }
 </style>
 
 <script>
-const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const hoursGrid = document.getElementById("hoursGrid");
-days.forEach(day => {
-  hoursGrid.innerHTML += `
-    <div class="grid grid-cols-3 gap-3 items-center">
-      <label class="text-sm font-medium w-16">${day}</label>
-      <input name="open_${day.toLowerCase()}" type="time" class="input" required>
-      <input name="close_${day.toLowerCase()}" type="time" class="input" required>
-    </div>`;
-});
+let current = 0;
+const slides = document.querySelectorAll(".slide");
 
-// Add Barber logic
-let barberCount = 0;
-document.getElementById("addBarberBtn").onclick = () => {
-  const id = barberCount++;
-  const wrapper = document.createElement("div");
-  wrapper.className = "border border-zinc-300 dark:border-zinc-700 p-4 rounded-xl bg-white dark:bg-zinc-900";
-  wrapper.innerHTML = `
-    <div class="flex justify-between items-center mb-3">
-      <h3 class="text-sm font-medium">Barber #${id+1}</h3>
-      <button type="button" class="text-xs text-red-500" onclick="this.parentElement.parentElement.remove()">Remove</button>
-    </div>
-    <input name="barber_name_${id}" placeholder="Full Name" class="input mb-2" required>
-    <input name="barber_specialty_${id}" placeholder="Specialty" class="input mb-2" required>
-    <input name="barber_booking_${id}" placeholder="Booking Link" class="input mb-2" required>
-    <input name="barber_instagram_${id}" placeholder="Instagram (optional)" class="input mb-2">
-    <label class="block text-sm mb-1">Headshot *</label>
-    <input type="file" name="barber_headshot_${id}" accept="image/*" class="input-file mb-2" required>
-    <input type="hidden" name="barber_onboarded_${id}" value="true">
-  `;
-  document.getElementById("barbersContainer").appendChild(wrapper);
-};
+function showSlide(i){
+  slides[current].classList.add("hidden");
+  slides[i].classList.remove("hidden");
+  current = i;
+  document.getElementById("progressBar").style.width = ((i+1)/slides.length*100)+"%";
+  document.getElementById("backBtn").style.visibility = i===0?"hidden":"visible";
+  document.getElementById("nextBtn").style.visibility = i===slides.length-1?"hidden":"visible";
+}
 
-// Submit Handler
-document.getElementById("shopForm").onsubmit = (e)=>{
+function nextSlide(){ if(current < slides.length-1) showSlide(current + 1); }
+function prevSlide(){ if(current > 0) showSlide(current - 1); }
+
+showSlide(0);
+
+document.getElementById("wizardForm").onsubmit = (e)=>{
   e.preventDefault();
-  document.getElementById("formStatus").classList.remove("hidden");
-  setTimeout(()=> alert("✅ Data captured! Next: Save to CSV & deploy shop page."), 500);
+  alert("✅ Submitted — Phase 2 will auto-create shop page.");
 };
 </script>
 
