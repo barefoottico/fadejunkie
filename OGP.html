@@ -1,356 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>The Original Gentlemen’s Parlor | Shop Profile & Reviews</title>
-  <meta name="description" content="Shop profile, roster, and community reviews for The Original Gentlemen’s Parlor in San Antonio, TX." />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="color-scheme" content="light dark">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Original Gentlemen’s Parlor — Book Now</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-zinc-100 text-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
-  <!-- Header / Shop Identity -->
-  <header class="border-b border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex items-center gap-4">
-      <img id="shopLogo" alt="Shop logo" class="w-14 h-14 rounded-xl object-cover ring-1 ring-zinc-200 dark:ring-zinc-800"/>
-      <div class="flex-1">
-        <h1 id="shopName" class="text-2xl sm:text-3xl font-bold"></h1>
-        <p id="shopTagline" class="text-sm text-zinc-600 dark:text-zinc-400"></p>
-      </div>
-      <div class="hidden sm:flex gap-2">
-        <a id="callBtn" class="px-3 py-2 text-sm rounded-lg bg-black text-white hover:opacity-90">Call</a>
-        <a id="directionsBtn" target="_blank" class="px-3 py-2 text-sm rounded-lg bg-zinc-200 dark:bg-zinc-800 hover:opacity-90">Directions</a>
-      </div>
+<body class="bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+
+<!-- Sticky Booking Footer (Mobile) -->
+<div class="fixed bottom-0 left-0 right-0 bg-black text-white flex sm:hidden z-[999]">
+  <a href="#book-now" class="flex-1 py-4 text-center font-semibold bg-amber-500">Book Now ✂️</a>
+  <a href="tel:12102338645" class="flex-1 py-4 text-center border-l border-white/20">Call</a>
+  <a href="https://maps.google.com/?q=13529%20Nacogdoches%20Rd" target="_blank" class="flex-1 py-4 text-center border-l border-white/20">Directions</a>
+</div>
+
+<!-- Hero -->
+<section class="relative h-[55vh] flex items-end justify-start bg-black">
+  <img src="images/hero-banner.jpg" class="absolute inset-0 w-full h-full object-cover opacity-70">
+  <div class="relative z-10 p-8 max-w-2xl">
+    <h1 class="text-4xl font-bold text-white">The Original Gentlemen’s Parlor</h1>
+    <p class="text-white/90 mt-2">San Antonio’s sharpest fades & beards</p>
+
+    <!-- Star Rating moved up top -->
+    <div class="flex items-center gap-2 mt-3 text-amber-400 text-lg" id="rating-stars">★★★★★</div>
+    <p id="rating-summary" class="text-sm text-white/80">4.8 • 140 reviews</p>
+
+    <a href="#book-now" class="mt-6 inline-block px-6 py-3 bg-amber-500 rounded-xl font-semibold hover:bg-amber-400">
+      Book Now
+    </a>
+  </div>
+</section>
+
+<!-- Quick Actions -->
+<section class="max-w-5xl mx-auto px-6 py-10 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+  <a href="#barbers" class="py-3 rounded-lg bg-white dark:bg-zinc-800 shadow font-medium">Barbers</a>
+  <a href="#reviews" class="py-3 rounded-lg bg-white dark:bg-zinc-800 shadow font-medium">Reviews</a>
+  <a href="#book-now" class="py-3 rounded-lg bg-amber-500 text-black font-semibold">Book Now</a>
+  <a href="tel:12102338645" class="py-3 rounded-lg bg-white dark:bg-zinc-800 shadow font-medium">Call</a>
+</section>
+
+<!-- Map moved up -->
+<section class="max-w-5xl mx-auto px-6 pb-10">
+  <iframe class="w-full h-[260px] rounded-xl shadow"
+    src="https://www.google.com/maps/embed/v1/place?key=AIzaSyDUMMY-PLACE-YOUR-KEY&q=13529+Nacogdoches+Rd+San+Antonio">
+  </iframe>
+</section>
+
+<!-- Barbers -->
+<section id="barbers" class="max-w-5xl mx-auto px-6 py-10">
+  <h2 class="text-2xl font-bold mb-6">Barbers</h2>
+  <div id="barber-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</section>
+
+<!-- Booking Section -->
+<section id="book-now" class="bg-amber-500 py-12">
+  <div class="max-w-5xl mx-auto px-6 text-center">
+    <h2 class="text-3xl font-bold">Book a Cut</h2>
+    <p class="text-zinc-800 mt-2">Walk out clean today.</p>
+    <a href="#REQUEST_BOOKING_LINK" class="inline-block mt-6 px-8 py-4 bg-black text-white rounded-xl font-semibold hover:opacity-90">
+      Book Now ✂️
+    </a>
+  </div>
+</section>
+
+<!-- Reviews -->
+<section id="reviews" class="max-w-5xl mx-auto px-6 py-12">
+  <h2 class="text-2xl font-bold mb-4">Reviews</h2>
+
+  <!-- Highlight Reviews -->
+  <div id="top-reviews" class="space-y-4 mb-8"></div>
+
+  <button onclick="scrollToReviewForm()"
+    class="px-5 py-2 bg-zinc-800 text-white rounded-lg text-sm hover:bg-zinc-700">
+    Write a Review
+  </button>
+</section>
+
+<!-- Review Form -->
+<section id="review-form" class="max-w-5xl mx-auto px-6 py-10">
+  <h3 class="font-semibold text-lg mb-3">Add Your Review</h3>
+  <form id="form" class="space-y-3">
+    <input id="rev-name" type="text" placeholder="Name"
+      class="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700">
+    <select id="rev-rating" class="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700">
+      <option value="5">5 – Excellent</option>
+      <option value="4">4 – Great</option>
+      <option value="3">3 – Okay</option>
+      <option value="2">2 – Meh</option>
+      <option value="1">1 – Bad</option>
+    </select>
+    <textarea id="rev-comment" rows="3" placeholder="How was your cut?"
+      class="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700"></textarea>
+    <button class="w-full py-3 bg-amber-500 text-black font-semibold rounded-lg">Submit</button>
+  </form>
+</section>
+
+<script>
+// Booking, Barber Data + Improved UI Behaviors
+
+const BOOKING_URL = "#REQUEST_BOOKING_LINK";
+
+const barbers = [
+  {name:"Alex Cruz", img:"images/barbers/alex.jpg", bio:"Fades & beards", booking:BOOKING_URL},
+  {name:"Jay Morales", img:"images/barbers/jay.jpg", bio:"Classic cuts", booking:BOOKING_URL},
+  {name:"Rico Vega", img:"images/barbers/rico.jpg", bio:"Razor specialist", booking:BOOKING_URL},
+];
+
+function loadBarbers() {
+  const grid = document.getElementById("barber-grid");
+  grid.innerHTML = barbers.map(b=>`
+    <div class="bg-white dark:bg-zinc-800 rounded-xl shadow p-5 text-center flex flex-col">
+      <img src="${b.img}" class="w-28 h-28 mx-auto rounded-full object-cover">
+      <h3 class="font-semibold mt-4">${b.name}</h3>
+      <p class="text-sm text-zinc-500">${b.bio}</p>
+      <a href="${b.booking}" class="mt-auto block px-4 py-2 bg-amber-500 text-black rounded-lg font-semibold hover:bg-amber-400">Book</a>
     </div>
-  </header>
+  `).join("");
+}
+loadBarbers();
 
-  <!-- Hero -->
-  <section class="relative h-[40vh] w-full">
-    <img id="heroImage" alt="Shop banner" class="absolute inset-0 w-full h-full object-cover opacity-80">
-    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-  </section>
+// Basic review stars and preview highlight
+const sampleReviews = [
+  {name:"Marcus", rating:5, text:"Clean fade 🔥 best in the city", date:"2025-02-05"},
+  {name:"Zoe", rating:4, text:"Great vibe + lineup", date:"2025-02-10"}
+];
+document.getElementById("top-reviews").innerHTML = sampleReviews.map(r=>`
+  <div class="rounded-xl bg-white dark:bg-zinc-800 p-5 shadow">
+    <div class="text-amber-400 text-lg">${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)}</div>
+    <p class="font-medium mt-1">${r.name}</p>
+    <p class="text-sm text-zinc-600 dark:text-zinc-300 mt-1">${r.text}</p>
+  </div>
+`).join("");
 
-  <main class="max-w-6xl mx-auto px-6">
-    <!-- Top Meta: rating / address / actions -->
-    <section class="grid md:grid-cols-3 gap-6 -mt-10 relative z-10">
-      <div class="md:col-span-2 rounded-2xl p-5 bg-white dark:bg-zinc-800 shadow">
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="flex items-center gap-1 text-amber-500" id="starRow" aria-label="Average rating"></div>
-          <div class="text-sm text-zinc-600 dark:text-zinc-400">
-            <span id="avgRating">0.0</span> · <span id="reviewCount">0</span> reviews
-          </div>
-          <div class="ml-auto flex gap-2">
-            <a id="bookBtn" href="#reviews" class="px-3 py-2 text-sm rounded-lg bg-black text-white hover:opacity-90">Read Reviews</a>
-            <a href="#write-review" class="px-3 py-2 text-sm rounded-lg bg-zinc-200 dark:bg-zinc-700 hover:opacity-90">Write a Review</a>
-          </div>
-        </div>
-        <div class="mt-4 text-sm text-zinc-700 dark:text-zinc-300">
-          <p id="shopAddress"></p>
-          <p id="shopHours" class="mt-1"></p>
-        </div>
-      </div>
-      <aside class="rounded-2xl p-5 bg-white dark:bg-zinc-800 shadow">
-        <h3 class="font-semibold mb-3">Contact & Social</h3>
-        <div class="space-y-2 text-sm">
-          <a id="telLink" class="block hover:underline"></a>
-          <a id="emailLink" class="block hover:underline"></a>
-          <div id="socials" class="flex flex-wrap gap-2 pt-2"></div>
-        </div>
-      </aside>
-    </section>
+function scrollToReviewForm(){ document.getElementById("review-form").scrollIntoView({behavior:"smooth"}); }
+</script>
 
-    <!-- About -->
-    <section class="mt-10 grid md:grid-cols-3 gap-6">
-      <div class="md:col-span-2 rounded-2xl p-6 bg-white dark:bg-zinc-800 shadow">
-        <h2 class="text-xl font-semibold mb-3">About Us</h2>
-        <p id="aboutText" class="text-sm leading-6 text-zinc-700 dark:text-zinc-300"></p>
-      </div>
-      <div class="rounded-2xl p-6 bg-white dark:bg-zinc-800 shadow">
-        <h2 class="text-xl font-semibold mb-3">Quick Actions</h2>
-        <div class="grid grid-cols-2 gap-3">
-          <a id="quickCall" class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-3 text-center text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700">Call</a>
-          <a id="quickDirections" target="_blank" class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-3 text-center text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700">Directions</a>
-          <a id="instagramLink" target="_blank" class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-3 text-center text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700">Instagram</a>
-          <a id="tiktokLink" target="_blank" class="rounded-xl border border-zinc-200 dark:border-zinc-700 p-3 text-center text-sm hover:bg-zinc-50 dark:hover:bg-zinc-700">TikTok</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Onboarded Barbers (headshots) -->
-    <section class="mt-12">
-      <div class="flex items-end justify-between mb-4">
-        <h2 class="text-xl font-semibold">Barbers at this Shop</h2>
-        <span class="text-xs text-zinc-500">Only barbers who’ve onboarded appear here</span>
-      </div>
-      <div id="barberGrid" class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
-    </section>
-
-    <!-- Community Reviews -->
-    <section id="reviews" class="mt-12 grid md:grid-cols-3 gap-6">
-      <!-- List -->
-      <div class="md:col-span-2 rounded-2xl p-6 bg-white dark:bg-zinc-800 shadow">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-semibold">Community Reviews</h2>
-          <button onclick="document.getElementById('name').focus()" class="text-sm px-3 py-2 rounded-lg bg-zinc-200 dark:bg-zinc-700 hover:opacity-90">Write a Review</button>
-        </div>
-        <div id="reviewList" class="divide-y divide-zinc-200 dark:divide-zinc-700"></div>
-        <div id="noReviews" class="text-sm text-zinc-500 hidden">No reviews yet. Be the first.</div>
-      </div>
-      <!-- Form -->
-      <div id="write-review" class="rounded-2xl p-6 bg-white dark:bg-zinc-800 shadow">
-        <h3 class="font-semibold mb-3">Add Your Review</h3>
-        <form id="reviewForm" class="space-y-3">
-          <div>
-            <label class="block text-sm mb-1" for="name">Name</label>
-            <input id="name" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" placeholder="Your name"/>
-          </div>
-          <div>
-            <label class="block text-sm mb-1" for="rating">Rating</label>
-            <select id="rating" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2">
-              <option value="5">5 – Excellent</option>
-              <option value="4">4 – Great</option>
-              <option value="3">3 – Okay</option>
-              <option value="2">2 – Meh</option>
-              <option value="1">1 – Bad</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm mb-1" for="comment">Comment</label>
-            <textarea id="comment" rows="4" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" placeholder="How was your cut?"></textarea>
-          </div>
-          <button class="w-full rounded-lg bg-black text-white py-2 hover:opacity-90">Submit Review</button>
-          <p id="formMsg" class="text-xs text-green-600 hidden">Thanks—your review was added.</p>
-        </form>
-      </div>
-    </section>
-
-    <!-- Map Embed (optional) -->
-    <section class="mt-12 rounded-2xl overflow-hidden shadow">
-      <iframe id="mapFrame" class="w-full h-[350px] border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-    </section>
-
-    <!-- Footer -->
-    <footer class="mt-12 py-10 text-center text-xs text-zinc-500">
-      © <span id="year"></span> <span id="footerShopName"></span>. All rights reserved.
-    </footer>
-  </main>
-
-  <!-- Data + Logic -->
-  <script>
-    // ====== CONFIGURABLE SHOP DATA ======
-    const SHOP = {
-      id: "ogp-san-antonio",
-      name: "The Original Gentlemen’s Parlor",
-      tagline: "Modern fades, beards, and classic cuts in San Antonio, TX.",
-      logo: "images/ogp-logo.png",
-      hero: "images/hero-banner.jpg",
-      phone: "(210) 233-8645",
-      phoneHref: "tel:12102338645",
-      email: "info@ogp.com",
-      address: "13529 Nacogdoches Rd, San Antonio, TX 78217",
-      mapsQuery: "13529 Nacogdoches Rd, San Antonio, TX 78217",
-      hours: "Mon–Fri 9–7 • Sat 9–6 • Sun 11–5",
-      socials: {
-        instagram: "https://instagram.com/originalgentlemensparlor",
-        tiktok: "https://tiktok.com/@ogp",
-        facebook: "https://facebook.com/originalgentlemensparlor"
-      },
-      about: "We blend classic barber culture with modern technique. Precision fades, beard sculpting, and a laid-back vibe. Book, pull up, and leave sharp."
-    };
-
-    // ====== BARBERS (only onboarded + matching shop id are shown) ======
-    const BARBERS = [
-      { id: "b1", name: "Alex Cruz",  headshot: "images/barbers/alex.jpg",  shopId: "ogp-san-antonio", onboarded: true },
-      { id: "b2", name: "Jay Morales", headshot: "images/barbers/jay.jpg",   shopId: "ogp-san-antonio", onboarded: true },
-      { id: "b3", name: "Tasha Lee",   headshot: "images/barbers/tasha.jpg", shopId: "ogp-san-antonio", onboarded: false }, // won't show
-      { id: "b4", name: "Rico Vega",   headshot: "images/barbers/rico.jpg",  shopId: "ogp-san-antonio", onboarded: true }
-    ];
-
-    // ====== STARTER REVIEWS (can be empty; new ones save to localStorage by SHOP.id) ======
-    const STARTER_REVIEWS = [
-      { name: "Marcus", rating: 5, comment: "Clean fade, chill convo. Booking again.", date: "2025-08-11" },
-      { name: "Zoe",    rating: 4, comment: "Great beard lineup. Quick and professional.", date: "2025-09-02" }
-    ];
-
-    // ====== DOM HOOKS ======
-    const $ = (id) => document.getElementById(id);
-
-    // ====== INIT SHOP UI ======
-    function initShop() {
-      $("shopLogo").src = SHOP.logo;
-      $("heroImage").src = SHOP.hero;
-      $("shopName").textContent = SHOP.name;
-      $("footerShopName").textContent = SHOP.name;
-      $("year").textContent = new Date().getFullYear();
-      $("shopTagline").textContent = SHOP.tagline;
-      $("shopAddress").textContent = SHOP.address;
-      $("shopHours").textContent = SHOP.hours;
-      $("aboutText").textContent = SHOP.about;
-
-      $("callBtn").href = SHOP.phoneHref;
-      $("quickCall").href = SHOP.phoneHref;
-      $("telLink").href = SHOP.phoneHref;
-      $("telLink").textContent = SHOP.phone;
-
-      $("emailLink").href = `mailto:${SHOP.email}`;
-      $("emailLink").textContent = SHOP.email;
-
-      const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(SHOP.mapsQuery)}`;
-      $("directionsBtn").href = mapsUrl;
-      $("quickDirections").href = mapsUrl;
-
-      $("instagramLink").href = SHOP.socials.instagram;
-      $("tiktokLink").href = SHOP.socials.tiktok;
-
-      renderSocialChips();
-      renderBarbers();
-      initReviews();
-      setMap();
-      injectJsonLd(); // SEO rich results
-    }
-
-    function renderSocialChips() {
-      const s = SHOP.socials;
-      const el = $("socials");
-      el.innerHTML = "";
-      const chips = Object.entries(s)
-        .filter(([_, url]) => !!url)
-        .map(([key, url]) =>
-          `<a target="_blank" href="${url}" class="px-2 py-1 rounded-lg text-xs border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700">${key}</a>`
-        ).join("");
-      el.innerHTML = chips || `<span class="text-xs text-zinc-500">No socials listed.</span>`;
-    }
-
-    function renderBarbers() {
-      const grid = $("barberGrid");
-      const list = BARBERS.filter(b => b.shopId === SHOP.id && b.onboarded);
-      grid.innerHTML = list.map(b => `
-        <div class="group bg-white dark:bg-zinc-800 rounded-2xl shadow hover:shadow-lg p-4 flex items-center gap-3">
-          <img src="${b.headshot}" alt="${b.name}" class="w-14 h-14 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-700">
-          <div>
-            <div class="font-medium">${b.name}</div>
-            <div class="text-xs text-zinc-500">Onboarded</div>
-          </div>
-        </div>
-      `).join("") || `<div class="text-sm text-zinc-500">No onboarded barbers yet.</div>`;
-    }
-
-    // ====== REVIEWS ======
-    function keyForShop() { return `reviews:${SHOP.id}`; }
-
-    function getReviews() {
-      const fromLS = localStorage.getItem(keyForShop());
-      if (fromLS) return JSON.parse(fromLS);
-      localStorage.setItem(keyForShop(), JSON.stringify(STARTER_REVIEWS));
-      return [...STARTER_REVIEWS];
-    }
-
-    function saveReviews(list) {
-      localStorage.setItem(keyForShop(), JSON.stringify(list));
-    }
-
-    function avg(list) {
-      if (!list.length) return 0;
-      return Math.round((list.reduce((a, r) => a + Number(r.rating), 0) / list.length) * 10) / 10;
-    }
-
-    function renderStars(container, value, max = 5) {
-      container.innerHTML = "";
-      for (let i = 1; i <= max; i++) {
-        const filled = i <= Math.round(value);
-        const span = document.createElement("span");
-        span.textContent = filled ? "★" : "☆";
-        span.className = "text-lg";
-        container.appendChild(span);
-      }
-    }
-
-    function renderReviewList() {
-      const reviews = getReviews().sort((a,b) => new Date(b.date) - new Date(a.date));
-      const listEl = $("reviewList");
-      listEl.innerHTML = reviews.map(r => `
-        <div class="py-4 flex gap-3">
-          <div class="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-sm">${(r.name||"U").charAt(0).toUpperCase()}</div>
-          <div class="flex-1">
-            <div class="flex items-center gap-2">
-              <div class="text-amber-500" aria-label="Rating">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
-              <div class="text-xs text-zinc-500">${new Date(r.date).toLocaleDateString()}</div>
-            </div>
-            <div class="text-sm font-medium">${r.name || "Anonymous"}</div>
-            <p class="text-sm text-zinc-700 dark:text-zinc-300 mt-1">${r.comment?.trim() || ""}</p>
-          </div>
-        </div>
-      `).join("");
-
-      $("noReviews").classList.toggle("hidden", reviews.length > 0);
-      const average = avg(reviews);
-      $("avgRating").textContent = average.toFixed(1);
-      $("reviewCount").textContent = reviews.length;
-      renderStars($("starRow"), average);
-    }
-
-    function initReviews() {
-      renderReviewList();
-      $("reviewForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const name = $("name").value.trim() || "Anonymous";
-        const rating = Number($("rating").value || 5);
-        const comment = $("comment").value.trim();
-        if (!comment) { alert("Say something about your experience."); return; }
-        const list = getReviews();
-        list.push({ name, rating, comment, date: new Date().toISOString().slice(0,10) });
-        saveReviews(list);
-        $("formMsg").classList.remove("hidden");
-        $("reviewForm").reset();
-        renderReviewList();
-        setTimeout(() => $("formMsg").classList.add("hidden"), 2000);
-      });
-    }
-
-    // ====== MAP ======
-    function setMap() {
-      const q = encodeURIComponent(SHopAddressForMap());
-      $("mapFrame").src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyDUMMY-PLACE-YOUR-EMBED-API-KEY&q=${q}`;
-    }
-    function SHopAddressForMap(){ return SHOP.mapsQuery || SHOP.address; }
-
-    // ====== JSON-LD (LocalBusiness + AggregateRating) ======
-    function injectJsonLd() {
-      const reviews = getReviews();
-      const aggregateRating = {
-        "@type": "AggregateRating",
-        "ratingValue": avg(reviews) || 0,
-        "reviewCount": reviews.length
-      };
-      const ld = {
-        "@context": "https://schema.org",
-        "@type": "Barbershop",
-        "name": SHOP.name,
-        "image": SHOP.logo,
-        "telephone": SHOP.phone,
-        "email": SHOP.email,
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": SHOP.address.split(",")[0],
-          "addressLocality": "San Antonio",
-          "addressRegion": "TX",
-          "postalCode": "78217",
-          "addressCountry": "US"
-        },
-        "sameAs": Object.values(SHOP.socials).filter(Boolean),
-        "aggregateRating": aggregateRating
-      };
-      const s = document.createElement("script");
-      s.type = "application/ld+json";
-      s.textContent = JSON.stringify(ld);
-      document.head.appendChild(s);
-    }
-
-    // Wire action buttons to the same links
-    ["callBtn","quickCall"].forEach(id=>$(id).setAttribute?.("href", SHOP?.phoneHref || "#"));
-
-    // Boot
-    initShop();
-  </script>
 </body>
 </html>
