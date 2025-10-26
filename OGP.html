@@ -98,7 +98,10 @@
     <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Choose your barber or book the next available slot.</p>
     <div class="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
       <a id="bookShopBtn" href="#" class="rounded-lg px-5 py-2 text-sm bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90">Book shop</a>
-      <a href="#barbers" class="rounded-lg px-5 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">Choose a barber</a>
+<button id="chooseBarberBtn" type="button"
+  class="rounded-lg px-5 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">
+  Choose a barber
+</button>
     </div>
   </div>
 </section>
@@ -173,193 +176,307 @@
   </div>
 </div>
 
-<script>
-// ---------- Config ----------
-const SHOP = {
-  id: "ogp-san-antonio",
-  name: "The Original Gentlemen’s Parlor",
-  tagline: "Modern fades & beards in San Antonio",
-  logo: "images/ogp-logo.png",
-  hero: "images/hero-banner.jpg",
-  phone: "(210) 233-8645",
-  phoneHref: "tel:12102338645",
-  email: "info@ogp.com",
-  address: "13529 Nacogdoches Rd, San Antonio, TX 78217",
-  mapsQuery: "13529 Nacogdoches Rd, San Antonio, TX 78217",
-  hours: "Mon–Fri 9–7 • Sat 9–6 • Sun 11–5",
-  socials: {
-    instagram: "https://instagram.com/originalgentlemensparlor",
-    tiktok: "https://tiktok.com/@ogp",
-    facebook: "https://facebook.com/originalgentlemensparlor"
-  },
-  about: "We blend classic barber culture with modern technique — precision fades, beard sculpting, and a laid-back vibe."
-};
+<!-- Choose Barber Modal -->
+<div id="barberModal" class="fixed inset-0 z-[1000] hidden" aria-hidden="true">
+  <!-- Backdrop -->
+  <div id="barberModalBackdrop" class="absolute inset-0 bg-black/50"></div>
 
-const BOOKING_URL = "#REQUEST_BOOKING_LINK"; // replace across all CTAs
-
-const BARBERS = [
-  { id:"b1", name:"Alex Cruz",  headshot:"images/barbers/alex.jpg",  specialty:"Fades & beards",   booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:true },
-  { id:"b2", name:"Jay Morales", headshot:"images/barbers/jay.jpg",   specialty:"Classic cuts",    booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:true },
-  { id:"b3", name:"Tasha Lee",   headshot:"images/barbers/tasha.jpg", specialty:"Razor work",      booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:false }, // hidden
-  { id:"b4", name:"Rico Vega",   headshot:"images/barbers/rico.jpg",  specialty:"Detail lines",    booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:true }
-];
-
-const STARTER_REVIEWS = [
-  { name:"Marcus", rating:5, comment:"Clean fade. Professional and quick.", date:"2025-08-11" },
-  { name:"Zoe",    rating:4, comment:"Great beard lineup and chill vibe.",  date:"2025-09-02" }
-];
-
-// ---------- Helpers ----------
-const $ = (id) => document.getElementById(id);
-const keyForShop = () => `reviews:${SHOP.id}`;
-
-function getReviews(){
-  const raw = localStorage.getItem(keyForShop());
-  if (raw) return JSON.parse(raw);
-  localStorage.setItem(keyForShop(), JSON.stringify(STARTER_REVIEWS));
-  return [...STARTER_REVIEWS];
-}
-function saveReviews(list){ localStorage.setItem(keyForShop(), JSON.stringify(list)); }
-function average(list){ if(!list.length) return 0; return Math.round((list.reduce((a,r)=>a+ +r.rating,0)/list.length)*10)/10; }
-
-// ---------- Renderers ----------
-function initShop(){
-  $("shopLogo").src = SHOP.logo;
-  $("heroImage").src = SHOP.hero;
-  $("shopName").textContent = SHOP.name;
-  $("shopTagline").textContent = SHOP.tagline;
-  $("footerShopName").textContent = SHOP.name;
-  $("year").textContent = new Date().getFullYear();
-  $("shopAddress").textContent = SHOP.address;
-  $("shopHours").textContent = SHOP.hours;
-  $("aboutText").textContent = SHOP.about;
-
-  $("telLink").href = SHOP.phoneHref; $("telLink").textContent = SHOP.phone;
-  $("emailLink").href = `mailto:${SHOP.email}`; $("emailLink").textContent = SHOP.email;
-
-  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(SHOP.mapsQuery)}`;
-  $("directionsBtn").href = mapsUrl;
-  $("quickDirections").href = mapsUrl;
-  const embedQ = encodeURIComponent(SHOP.mapsQuery || SHOP.address);
-  $("mapFrame").src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyDUMMY-PLACE-YOUR-EMBED-API-KEY&q=${embedQ}`;
-
-  $("mobileCall").href = SHOP.phoneHref;
-  $("mobileDirections").href = mapsUrl;
-  $("headerBook").href = BOOKING_URL;
-  $("bookShopBtn").href = BOOKING_URL;
-
-  renderSocials();
-  renderBarbers();
-  initReviews();
-  injectJsonLd();
-}
-
-function renderSocials(){
-  const s = SHOP.socials;
-  const el = $("socials");
-  el.innerHTML = Object.entries(s)
-    .filter(([_,url]) => !!url)
-    .map(([k,url]) => `<a target="_blank" href="${url}" class="px-2.5 py-1.5 rounded-lg border text-xs border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">${k}</a>`)
-    .join("") || `<span class="text-xs text-zinc-500">No socials listed.</span>`;
-}
-
-function renderBarbers(){
-  const list = BARBERS.filter(b => b.shopId===SHOP.id && b.onboarded);
-  $("barberGrid").innerHTML = list.map(b => `
-    <article class="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm">
-      <div class="flex items-center gap-3">
-        <img src="${b.headshot}" alt="${b.name}" class="w-14 h-14 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-800">
-        <div class="min-w-0">
-          <h3 class="font-medium truncate">${b.name}</h3>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">${b.specialty}</p>
+  <!-- Dialog -->
+  <div class="relative z-10 flex items-end sm:items-center justify-center min-h-full p-4">
+    <div role="dialog" aria-modal="true" aria-labelledby="barberModalTitle" tabindex="-1"
+         class="w-full max-w-2xl rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl outline-none">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-5 py-4 border-b border-zinc-200 dark:border-zinc-800">
+        <div>
+          <h3 id="barberModalTitle" class="text-base font-semibold">Choose your barber</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400">Only onboarded barbers for this shop are shown</p>
         </div>
+        <button id="barberModalClose" type="button"
+                class="rounded-lg px-2 py-1 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">
+          Esc
+        </button>
       </div>
-      <div class="mt-3">
-        <a href="${b.booking}" class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">Book</a>
+
+      <!-- Search -->
+      <div class="px-5 pt-4">
+        <label for="barberSearch" class="sr-only">Search barbers</label>
+        <input id="barberSearch" placeholder="Search barbers…"
+               class="w-full mb-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm"/>
       </div>
-    </article>
-  `).join("") || `<div class="text-sm text-zinc-500">No onboarded barbers yet.</div>`;
-}
 
-function renderStars(el, value){
-  el.textContent = "";
-  const rounded = Math.round(value);
-  el.textContent = "★".repeat(rounded) + "☆".repeat(5-rounded);
-}
-
-function renderReviewList(){
-  const reviews = getReviews().sort((a,b)=> new Date(b.date)-new Date(a.date));
-  const list = $("reviewList");
-  list.innerHTML = reviews.map(r => `
-    <div class="py-4 flex gap-3">
-      <div class="w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-xs">${(r.name||"U").charAt(0).toUpperCase()}</div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2 text-amber-500 text-sm">${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)}</div>
-        <div class="text-xs text-zinc-500">${new Date(r.date).toLocaleDateString()}</div>
-        <div class="text-sm font-medium truncate">${r.name || "Anonymous"}</div>
-        <p class="text-sm text-zinc-700 dark:text-zinc-300 mt-1 whitespace-pre-wrap">${r.comment?.trim() || ""}</p>
+      <!-- List -->
+      <div class="px-5 pb-5">
+        <div id="barberModalList" class="grid sm:grid-cols-2 gap-3"></div>
+        <div id="barberModalEmpty" class="hidden py-8 text-center text-sm text-zinc-500">No barbers match your search.</div>
       </div>
     </div>
-  `).join("");
+  </div>
+</div>
 
-  $("noReviews").classList.toggle("hidden", reviews.length>0);
-  const avg = average(reviews);
-  $("avgRating").textContent = avg.toFixed(1);
-  $("reviewCount").textContent = reviews.length;
-  renderStars($("starRow"), avg);
-}
-
-function initReviews(){
-  renderReviewList();
-  $("reviewForm").addEventListener("submit",(e)=>{
-    e.preventDefault();
-    const name = $("name").value.trim() || "Anonymous";
-    const rating = Number($("rating").value || 5);
-    const comment = $("comment").value.trim();
-    if(!comment){ alert("Please share a quick comment."); return; }
-    const list = getReviews();
-    list.push({ name, rating, comment, date: new Date().toISOString().slice(0,10) });
-    saveReviews(list);
-    $("reviewForm").reset();
-    $("formMsg").classList.remove("hidden");
-    renderReviewList();
-    setTimeout(()=>$("formMsg").classList.add("hidden"), 1700);
-  });
-}
-
-// SEO JSON-LD
-function injectJsonLd(){
-  const reviews = getReviews();
-  const ld = {
-    "@context": "https://schema.org",
-    "@type": "Barbershop",
-    "name": SHOP.name,
-    "image": SHOP.logo,
-    "telephone": SHOP.phone,
-    "email": SHOP.email,
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": SHOP.address.split(",")[0],
-      "addressLocality": "San Antonio",
-      "addressRegion": "TX",
-      "postalCode": "78217",
-      "addressCountry": "US"
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  // ---------- Config ----------
+  const SHOP = {
+    id: "ogp-san-antonio",
+    name: "The Original Gentlemen’s Parlor",
+    tagline: "Modern fades & beards in San Antonio",
+    logo: "images/ogp-logo.png",
+    hero: "images/hero-banner.jpg",
+    phone: "(210) 233-8645",
+    phoneHref: "tel:12102338645",
+    email: "info@ogp.com",
+    address: "13529 Nacogdoches Rd, San Antonio, TX 78217",
+    mapsQuery: "13529 Nacogdoches Rd, San Antonio, TX 78217",
+    hours: "Mon–Fri 9–7 • Sat 9–6 • Sun 11–5",
+    socials: {
+      instagram: "https://instagram.com/originalgentlemensparlor",
+      tiktok: "https://tiktok.com/@ogp",
+      facebook: "https://facebook.com/originalgentlemensparlor"
     },
-    "sameAs": Object.values(SHOP.socials).filter(Boolean),
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": average(reviews) || 0,
-      "reviewCount": reviews.length
-    }
+    about: "We blend classic barber culture with modern technique — precision fades, beard sculpting, and a laid-back vibe."
   };
-  const s = document.createElement("script");
-  s.type = "application/ld+json";
-  s.textContent = JSON.stringify(ld);
-  document.head.appendChild(s);
-}
 
-// boot
-initShop();
+  const BOOKING_URL = "#REQUEST_BOOKING_LINK"; // replace across all CTAs
+
+  const BARBERS = [
+    { id:"b1", name:"Alex Cruz",  headshot:"images/barbers/alex.jpg",  specialty:"Fades & beards",   booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:true },
+    { id:"b2", name:"Jay Morales", headshot:"images/barbers/jay.jpg",   specialty:"Classic cuts",    booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:true },
+    { id:"b3", name:"Tasha Lee",   headshot:"images/barbers/tasha.jpg", specialty:"Razor work",      booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:false }, // hidden
+    { id:"b4", name:"Rico Vega",   headshot:"images/barbers/rico.jpg",  specialty:"Detail lines",    booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:true }
+  ];
+
+  const STARTER_REVIEWS = [
+    { name:"Marcus", rating:5, comment:"Clean fade. Professional and quick.", date:"2025-08-11" },
+    { name:"Zoe",    rating:4, comment:"Great beard lineup and chill vibe.",  date:"2025-09-02" }
+  ];
+
+  // ---------- Helpers ----------
+  const $ = (id) => document.getElementById(id);
+  const keyForShop = () => `reviews:${SHOP.id}`;
+
+  function getReviews(){
+    const raw = localStorage.getItem(keyForShop());
+    if (raw) return JSON.parse(raw);
+    localStorage.setItem(keyForShop(), JSON.stringify(STARTER_REVIEWS));
+    return [...STARTER_REVIEWS];
+  }
+  function saveReviews(list){ localStorage.setItem(keyForShop(), JSON.stringify(list)); }
+  function average(list){ if(!list.length) return 0; return Math.round((list.reduce((a,r)=>a+ +r.rating,0)/list.length)*10)/10; }
+
+  // ---------- Renderers ----------
+  function initShop(){
+    $("shopLogo").src = SHOP.logo;
+    $("heroImage").src = SHOP.hero;
+    $("shopName").textContent = SHOP.name;
+    $("shopTagline").textContent = SHOP.tagline;
+    $("footerShopName").textContent = SHOP.name;
+    $("year").textContent = new Date().getFullYear();
+    $("shopAddress").textContent = SHOP.address;
+    $("shopHours").textContent = SHOP.hours;
+    $("aboutText").textContent = SHOP.about;
+
+    $("telLink").href = SHOP.phoneHref; $("telLink").textContent = SHOP.phone;
+    $("emailLink").href = `mailto:${SHOP.email}`; $("emailLink").textContent = SHOP.email;
+
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(SHOP.mapsQuery)}`;
+    $("directionsBtn").href = mapsUrl;
+    $("quickDirections")?.setAttribute("href", mapsUrl);
+    $("mobileDirections")?.setAttribute("href", mapsUrl);
+    $("mobileCall")?.setAttribute("href", SHOP.phoneHref);
+
+    const embedQ = encodeURIComponent(SHOP.mapsQuery || SHOP.address);
+    // TODO: replace key below with your real Google Maps Embed API key
+    $("mapFrame").src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyDUMMY-PLACE-YOUR-EMBED-API-KEY&q=${embedQ}`;
+
+    $("headerBook").href = BOOKING_URL;
+    $("bookShopBtn").href = BOOKING_URL;
+
+    renderSocials();
+    renderBarbers();
+    initReviews();
+    injectJsonLd();
+  }
+
+  function renderSocials(){
+    const s = SHOP.socials;
+    const el = $("socials");
+    if (!el) return;
+    el.innerHTML = Object.entries(s)
+      .filter(([_,url]) => !!url)
+      .map(([k,url]) => `<a target="_blank" rel="noopener" href="${url}" class="px-2.5 py-1.5 rounded-lg border text-xs border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">${k}</a>`)
+      .join("") || `<span class="text-xs text-zinc-500">No socials listed.</span>`;
+  }
+
+  function renderBarbers(){
+    const grid = $("barberGrid");
+    if (!grid) return;
+    const list = BARBERS.filter(b => b.shopId===SHOP.id && b.onboarded);
+    grid.innerHTML = list.map(b => `
+      <article class="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm">
+        <div class="flex items-center gap-3">
+          <img src="${b.headshot}" alt="${b.name}" class="w-14 h-14 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-800">
+          <div class="min-w-0">
+            <h3 class="font-medium truncate">${b.name}</h3>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">${b.specialty}</p>
+          </div>
+        </div>
+        <div class="mt-3">
+          <a href="${b.booking}" class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">Book</a>
+        </div>
+      </article>
+    `).join("") || `<div class="text-sm text-zinc-500">No onboarded barbers yet.</div>`;
+  }
+
+  function renderStars(el, value){
+    if (!el) return;
+    el.textContent = "";
+    const rounded = Math.round(value);
+    el.textContent = "★".repeat(rounded) + "☆".repeat(5-rounded);
+  }
+
+  function renderReviewList(){
+    const reviews = getReviews().sort((a,b)=> new Date(b.date)-new Date(a.date));
+    const list = $("reviewList");
+    if (!list) return;
+    list.innerHTML = reviews.map(r => `
+      <div class="py-4 flex gap-3">
+        <div class="w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-xs">${(r.name||"U").charAt(0).toUpperCase()}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 text-amber-500 text-sm">${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)}</div>
+          <div class="text-xs text-zinc-500">${new Date(r.date).toLocaleDateString()}</div>
+          <div class="text-sm font-medium truncate">${r.name || "Anonymous"}</div>
+          <p class="text-sm text-zinc-700 dark:text-zinc-300 mt-1 whitespace-pre-wrap">${r.comment?.trim() || ""}</p>
+        </div>
+      </div>
+    `).join("");
+
+    $("noReviews")?.classList.toggle("hidden", reviews.length>0);
+    const avg = average(reviews);
+    $("avgRating").textContent = avg.toFixed(1);
+    $("reviewCount").textContent = reviews.length;
+    renderStars($("starRow"), avg);
+  }
+
+  function initReviews(){
+    renderReviewList();
+    $("reviewForm")?.addEventListener("submit",(e)=>{
+      e.preventDefault();
+      const name = $("name").value.trim() || "Anonymous";
+      const rating = Number($("rating").value || 5);
+      const comment = $("comment").value.trim();
+      if(!comment){ alert("Please share a quick comment."); return; }
+      const list = getReviews();
+      list.push({ name, rating, comment, date: new Date().toISOString().slice(0,10) });
+      saveReviews(list);
+      $("reviewForm").reset();
+      $("formMsg")?.classList.remove("hidden");
+      renderReviewList();
+      setTimeout(()=> $("formMsg")?.classList.add("hidden"), 1700);
+    });
+  }
+
+  // SEO JSON-LD
+  function injectJsonLd(){
+    const reviews = getReviews();
+    const ld = {
+      "@context": "https://schema.org",
+      "@type": "Barbershop",
+      "name": SHOP.name,
+      "image": SHOP.logo,
+      "telephone": SHOP.phone,
+      "email": SHOP.email,
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": SHOP.address.split(",")[0],
+        "addressLocality": "San Antonio",
+        "addressRegion": "TX",
+        "postalCode": "78217",
+        "addressCountry": "US"
+      },
+      "sameAs": Object.values(SHOP.socials).filter(Boolean),
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": average(reviews) || 0,
+        "reviewCount": reviews.length
+      }
+    };
+    const s = document.createElement("script");
+    s.type = "application/ld+json";
+    s.textContent = JSON.stringify(ld);
+    document.head.appendChild(s);
+  }
+
+  // ----- Choose Barber Modal Logic (after DOM is ready) -----
+  const modal = document.getElementById('barberModal');
+  const modalBackdrop = document.getElementById('barberModalBackdrop');
+  const modalClose = document.getElementById('barberModalClose');
+  const modalList = document.getElementById('barberModalList');
+  const modalEmpty = document.getElementById('barberModalEmpty');
+  const modalSearch = document.getElementById('barberSearch');
+  const chooseBtn = document.getElementById('chooseBarberBtn');
+
+  let lastFocusedEl = null;
+
+  function eligibleBarbers() {
+    return (BARBERS || []).filter(b => b.shopId === SHOP.id && b.onboarded);
+  }
+
+  function renderBarberModalList(filter = "") {
+    const q = filter.trim().toLowerCase();
+    const list = eligibleBarbers().filter(b =>
+      !q || b.name.toLowerCase().includes(q) || (b.specialty||"").toLowerCase().includes(q)
+    );
+
+    modalList.innerHTML = list.map(b => `
+      <article class="group rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 flex items-center gap-3">
+        <img src="${b.headshot}" alt="${b.name}" class="w-12 h-12 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-800">
+        <div class="min-w-0 flex-1">
+          <div class="text-sm font-medium truncate">${b.name}</div>
+          <div class="text-xs text-zinc-500 dark:text-zinc-400 truncate">${b.specialty || ""}</div>
+        </div>
+        <a href="${b.booking}" class="shrink-0 rounded-lg px-3 py-1.5 text-xs border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">Book</a>
+      </article>
+    `).join("");
+
+    modalEmpty.classList.toggle('hidden', list.length > 0);
+  }
+
+  function openBarberModal() {
+    lastFocusedEl = document.activeElement;
+    renderBarberModalList();
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => modalSearch.focus(), 0);
+    document.addEventListener('focus', trapFocus, true);
+    document.addEventListener('keydown', modalKeyHandler);
+  }
+
+  function closeBarberModal() {
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+    document.removeEventListener('focus', trapFocus, true);
+    document.removeEventListener('keydown', modalKeyHandler);
+    if (lastFocusedEl && lastFocusedEl.focus) lastFocusedEl.focus();
+  }
+
+  function trapFocus(e) {
+    if (!modal.contains(e.target)) {
+      e.stopPropagation();
+      modal.querySelector('[role="dialog"]').focus();
+    }
+  }
+  function modalKeyHandler(e) { if (e.key === 'Escape') closeBarberModal(); }
+
+  chooseBtn?.addEventListener('click', openBarberModal);
+  modalBackdrop?.addEventListener('click', closeBarberModal);
+  modalClose?.addEventListener('click', closeBarberModal);
+  modalSearch?.addEventListener('input', (e) => renderBarberModalList(e.target.value));
+  if (location.hash === '#choose-barber') openBarberModal();
+
+  // Boot
+  initShop();
+});
 </script>
+
 </body>
 </html>
