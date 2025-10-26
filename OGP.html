@@ -2,139 +2,364 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Original Gentlemen’s Parlor — Book Now</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Original Gentlemen’s Parlor — Profile & Reviews</title>
+<meta name="color-scheme" content="light dark">
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
 
-<!-- Sticky Booking Footer (Mobile) -->
-<div class="fixed bottom-0 left-0 right-0 bg-black text-white flex sm:hidden z-[999]">
-  <a href="#book-now" class="flex-1 py-4 text-center font-semibold bg-amber-500">Book Now ✂️</a>
-  <a href="tel:12102338645" class="flex-1 py-4 text-center border-l border-white/20">Call</a>
-  <a href="https://maps.google.com/?q=13529%20Nacogdoches%20Rd" target="_blank" class="flex-1 py-4 text-center border-l border-white/20">Directions</a>
-</div>
+<!-- Top Bar -->
+<header class="sticky top-0 z-40 bg-white/80 dark:bg-zinc-900/80 backdrop-blur border-b border-zinc-200/70 dark:border-zinc-800">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
+    <img id="shopLogo" alt="Shop logo" class="w-9 h-9 rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-800">
+    <div class="min-w-0">
+      <h1 id="shopName" class="text-base font-semibold truncate">The Original Gentlemen’s Parlor</h1>
+      <p id="shopTagline" class="text-xs text-zinc-500 dark:text-zinc-400 truncate">Modern fades & beards in San Antonio</p>
+    </div>
+    <nav class="ml-auto hidden sm:flex items-center gap-2">
+      <a href="#overview" class="text-sm px-3 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800">Overview</a>
+      <a href="#barbers" class="text-sm px-3 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800">Barbers</a>
+      <a href="#reviews" class="text-sm px-3 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800">Reviews</a>
+      <a href="#contact" class="text-sm px-3 py-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800">Contact</a>
+    </nav>
+    <a id="headerBook" href="#book" class="ml-2 shrink-0 rounded-lg px-3 py-2 text-sm bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90">Book</a>
+  </div>
+</header>
 
-<!-- Hero -->
-<section class="relative h-[55vh] flex items-end justify-start bg-black">
-  <img src="images/hero-banner.jpg" class="absolute inset-0 w-full h-full object-cover opacity-70">
-  <div class="relative z-10 p-8 max-w-2xl">
-    <h1 class="text-4xl font-bold text-white">The Original Gentlemen’s Parlor</h1>
-    <p class="text-white/90 mt-2">San Antonio’s sharpest fades & beards</p>
+<!-- Hero (muted) -->
+<section id="overview" class="relative">
+  <div class="relative h-[38vh] sm:h-[44vh] overflow-hidden">
+    <img id="heroImage" alt="Shop banner" class="absolute inset-0 w-full h-full object-cover opacity-70">
+    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+  </div>
+  <div class="-mt-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="rounded-2xl bg-white/90 dark:bg-zinc-900/90 backdrop-blur border border-zinc-200 dark:border-zinc-800 p-5 sm:p-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div class="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
+            <div id="starRow" class="text-lg leading-none text-amber-500">★★★★★</div>
+            <span class="text-sm"><span id="avgRating">4.8</span> • <span id="reviewCount">140</span> reviews</span>
+          </div>
+          <div class="sm:ml-auto flex items-center gap-2">
+            <a href="#book" class="rounded-lg px-4 py-2 text-sm bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90">Book now</a>
+            <a id="directionsBtn" target="_blank" class="rounded-lg px-4 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">Directions</a>
+          </div>
+        </div>
 
-    <!-- Star Rating moved up top -->
-    <div class="flex items-center gap-2 mt-3 text-amber-400 text-lg" id="rating-stars">★★★★★</div>
-    <p id="rating-summary" class="text-sm text-white/80">4.8 • 140 reviews</p>
-
-    <a href="#book-now" class="mt-6 inline-block px-6 py-3 bg-amber-500 rounded-xl font-semibold hover:bg-amber-400">
-      Book Now
-    </a>
+        <div class="mt-4 grid sm:grid-cols-3 gap-4 text-sm">
+          <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+            <div class="font-medium">Address</div>
+            <p id="shopAddress" class="text-zinc-600 dark:text-zinc-400 mt-1"></p>
+          </div>
+          <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+            <div class="font-medium">Hours</div>
+            <p id="shopHours" class="text-zinc-600 dark:text-zinc-400 mt-1"></p>
+          </div>
+          <div class="rounded-xl border border-zinc-200 dark:border-zinc-800 p-4">
+            <div class="font-medium">Contact</div>
+            <a id="telLink" class="block mt-1 hover:underline"></a>
+            <a id="emailLink" class="block text-zinc-600 dark:text-zinc-400 hover:underline"></a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- Quick Actions -->
-<section class="max-w-5xl mx-auto px-6 py-10 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-  <a href="#barbers" class="py-3 rounded-lg bg-white dark:bg-zinc-800 shadow font-medium">Barbers</a>
-  <a href="#reviews" class="py-3 rounded-lg bg-white dark:bg-zinc-800 shadow font-medium">Reviews</a>
-  <a href="#book-now" class="py-3 rounded-lg bg-amber-500 text-black font-semibold">Book Now</a>
-  <a href="tel:12102338645" class="py-3 rounded-lg bg-white dark:bg-zinc-800 shadow font-medium">Call</a>
+<!-- Map (higher on page, subdued) -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 mt-8">
+  <div class="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-sm">
+    <iframe id="mapFrame" class="w-full h-[260px] border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  </div>
 </section>
 
-<!-- Map moved up -->
-<section class="max-w-5xl mx-auto px-6 pb-10">
-  <iframe class="w-full h-[260px] rounded-xl shadow"
-    src="https://www.google.com/maps/embed/v1/place?key=AIzaSyDUMMY-PLACE-YOUR-KEY&q=13529+Nacogdoches+Rd+San+Antonio">
-  </iframe>
+<!-- About -->
+<section class="max-w-6xl mx-auto px-4 sm:px-6 mt-8">
+  <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
+    <h2 class="text-lg font-semibold">About us</h2>
+    <p id="aboutText" class="text-sm text-zinc-600 dark:text-zinc-400 mt-2 leading-6"></p>
+  </div>
 </section>
 
-<!-- Barbers -->
-<section id="barbers" class="max-w-5xl mx-auto px-6 py-10">
-  <h2 class="text-2xl font-bold mb-6">Barbers</h2>
-  <div id="barber-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+<!-- Barbers (clean cards, direct booking) -->
+<section id="barbers" class="max-w-6xl mx-auto px-4 sm:px-6 mt-10">
+  <div class="flex items-end justify-between mb-4">
+    <h2 class="text-lg font-semibold">Barbers at this shop</h2>
+    <span class="text-xs text-zinc-500">Only onboarded barbers are listed</span>
+  </div>
+  <div id="barberGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 </section>
 
-<!-- Booking Section -->
-<section id="book-now" class="bg-amber-500 py-12">
-  <div class="max-w-5xl mx-auto px-6 text-center">
-    <h2 class="text-3xl font-bold">Book a Cut</h2>
-    <p class="text-zinc-800 mt-2">Walk out clean today.</p>
-    <a href="#REQUEST_BOOKING_LINK" class="inline-block mt-6 px-8 py-4 bg-black text-white rounded-xl font-semibold hover:opacity-90">
-      Book Now ✂️
-    </a>
+<!-- Booking Block (neutral emphasis) -->
+<section id="book" class="max-w-6xl mx-auto px-4 sm:px-6 mt-10">
+  <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm text-center">
+    <h2 class="text-xl font-semibold">Ready to book?</h2>
+    <p class="text-sm text-zinc-600 dark:text-zinc-400 mt-1">Choose your barber or book the next available slot.</p>
+    <div class="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
+      <a id="bookShopBtn" href="#" class="rounded-lg px-5 py-2 text-sm bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 hover:opacity-90">Book shop</a>
+      <a href="#barbers" class="rounded-lg px-5 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">Choose a barber</a>
+    </div>
   </div>
 </section>
 
 <!-- Reviews -->
-<section id="reviews" class="max-w-5xl mx-auto px-6 py-12">
-  <h2 class="text-2xl font-bold mb-4">Reviews</h2>
+<section id="reviews" class="max-w-6xl mx-auto px-4 sm:px-6 mt-10 grid md:grid-cols-3 gap-6">
+  <div class="md:col-span-2 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-lg font-semibold">Community reviews</h2>
+      <button onclick="document.getElementById('name').focus()" class="text-sm rounded-lg px-3 py-2 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">Write a review</button>
+    </div>
+    <div id="reviewList" class="divide-y divide-zinc-200 dark:divide-zinc-800"></div>
+    <div id="noReviews" class="hidden text-sm text-zinc-500">No reviews yet.</div>
+  </div>
 
-  <!-- Highlight Reviews -->
-  <div id="top-reviews" class="space-y-4 mb-8"></div>
+  <aside class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
+    <h3 class="font-semibold mb-3">Add your review</h3>
+    <form id="reviewForm" class="space-y-3">
+      <div>
+        <label for="name" class="block text-sm mb-1">Name</label>
+        <input id="name" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" placeholder="Your name">
+      </div>
+      <div>
+        <label for="rating" class="block text-sm mb-1">Rating</label>
+        <select id="rating" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2">
+          <option value="5">5 – Excellent</option>
+          <option value="4">4 – Great</option>
+          <option value="3">3 – Okay</option>
+          <option value="2">2 – Meh</option>
+          <option value="1">1 – Bad</option>
+        </select>
+      </div>
+      <div>
+        <label for="comment" class="block text-sm mb-1">Comment</label>
+        <textarea id="comment" rows="4" class="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2" placeholder="How was your cut?"></textarea>
+      </div>
+      <button class="w-full rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 py-2 hover:opacity-90">Submit</button>
+      <p id="formMsg" class="hidden text-xs text-green-600 mt-1">Thanks — your review was added.</p>
+    </form>
 
-  <button onclick="scrollToReviewForm()"
-    class="px-5 py-2 bg-zinc-800 text-white rounded-lg text-sm hover:bg-zinc-700">
-    Write a Review
-  </button>
+    <div class="mt-6">
+      <h4 class="font-medium text-sm mb-2">Quick links</h4>
+      <div class="grid grid-cols-2 gap-2">
+        <a href="#book" class="rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-sm text-center hover:bg-zinc-50 dark:hover:bg-zinc-800">Book</a>
+        <a id="quickDirections" target="_blank" class="rounded-lg border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-sm text-center hover:bg-zinc-50 dark:hover:bg-zinc-800">Directions</a>
+      </div>
+    </div>
+  </aside>
 </section>
 
-<!-- Review Form -->
-<section id="review-form" class="max-w-5xl mx-auto px-6 py-10">
-  <h3 class="font-semibold text-lg mb-3">Add Your Review</h3>
-  <form id="form" class="space-y-3">
-    <input id="rev-name" type="text" placeholder="Name"
-      class="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700">
-    <select id="rev-rating" class="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700">
-      <option value="5">5 – Excellent</option>
-      <option value="4">4 – Great</option>
-      <option value="3">3 – Okay</option>
-      <option value="2">2 – Meh</option>
-      <option value="1">1 – Bad</option>
-    </select>
-    <textarea id="rev-comment" rows="3" placeholder="How was your cut?"
-      class="w-full px-3 py-2 rounded-lg border border-zinc-300 dark:border-zinc-700"></textarea>
-    <button class="w-full py-3 bg-amber-500 text-black font-semibold rounded-lg">Submit</button>
-  </form>
+<!-- Contact / Social -->
+<section id="contact" class="max-w-6xl mx-auto px-4 sm:px-6 mt-10">
+  <div class="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm">
+    <h2 class="text-lg font-semibold">Contact & social</h2>
+    <div id="socials" class="mt-3 flex flex-wrap gap-2"></div>
+  </div>
 </section>
+
+<!-- Footer -->
+<footer class="max-w-6xl mx-auto px-4 sm:px-6 mt-10 mb-24 sm:mb-10 text-center text-xs text-zinc-500">
+  © <span id="year"></span> <span id="footerShopName"></span>. All rights reserved.
+</footer>
+
+<!-- Sticky Mobile Bar (muted) -->
+<div class="fixed bottom-0 left-0 right-0 z-50 sm:hidden">
+  <div class="mx-3 mb-3 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+    <div class="grid grid-cols-3 divide-x divide-zinc-200 dark:divide-zinc-800">
+      <a href="#book" class="py-3 text-center text-sm font-medium">Book</a>
+      <a id="mobileCall" class="py-3 text-center text-sm font-medium">Call</a>
+      <a id="mobileDirections" target="_blank" class="py-3 text-center text-sm font-medium">Directions</a>
+    </div>
+  </div>
+</div>
 
 <script>
-// Booking, Barber Data + Improved UI Behaviors
+// ---------- Config ----------
+const SHOP = {
+  id: "ogp-san-antonio",
+  name: "The Original Gentlemen’s Parlor",
+  tagline: "Modern fades & beards in San Antonio",
+  logo: "images/ogp-logo.png",
+  hero: "images/hero-banner.jpg",
+  phone: "(210) 233-8645",
+  phoneHref: "tel:12102338645",
+  email: "info@ogp.com",
+  address: "13529 Nacogdoches Rd, San Antonio, TX 78217",
+  mapsQuery: "13529 Nacogdoches Rd, San Antonio, TX 78217",
+  hours: "Mon–Fri 9–7 • Sat 9–6 • Sun 11–5",
+  socials: {
+    instagram: "https://instagram.com/originalgentlemensparlor",
+    tiktok: "https://tiktok.com/@ogp",
+    facebook: "https://facebook.com/originalgentlemensparlor"
+  },
+  about: "We blend classic barber culture with modern technique — precision fades, beard sculpting, and a laid-back vibe."
+};
 
-const BOOKING_URL = "#REQUEST_BOOKING_LINK";
+const BOOKING_URL = "#REQUEST_BOOKING_LINK"; // replace across all CTAs
 
-const barbers = [
-  {name:"Alex Cruz", img:"images/barbers/alex.jpg", bio:"Fades & beards", booking:BOOKING_URL},
-  {name:"Jay Morales", img:"images/barbers/jay.jpg", bio:"Classic cuts", booking:BOOKING_URL},
-  {name:"Rico Vega", img:"images/barbers/rico.jpg", bio:"Razor specialist", booking:BOOKING_URL},
+const BARBERS = [
+  { id:"b1", name:"Alex Cruz",  headshot:"images/barbers/alex.jpg",  specialty:"Fades & beards",   booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:true },
+  { id:"b2", name:"Jay Morales", headshot:"images/barbers/jay.jpg",   specialty:"Classic cuts",    booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:true },
+  { id:"b3", name:"Tasha Lee",   headshot:"images/barbers/tasha.jpg", specialty:"Razor work",      booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:false }, // hidden
+  { id:"b4", name:"Rico Vega",   headshot:"images/barbers/rico.jpg",  specialty:"Detail lines",    booking: BOOKING_URL, shopId:"ogp-san-antonio", onboarded:true }
 ];
 
-function loadBarbers() {
-  const grid = document.getElementById("barber-grid");
-  grid.innerHTML = barbers.map(b=>`
-    <div class="bg-white dark:bg-zinc-800 rounded-xl shadow p-5 text-center flex flex-col">
-      <img src="${b.img}" class="w-28 h-28 mx-auto rounded-full object-cover">
-      <h3 class="font-semibold mt-4">${b.name}</h3>
-      <p class="text-sm text-zinc-500">${b.bio}</p>
-      <a href="${b.booking}" class="mt-auto block px-4 py-2 bg-amber-500 text-black rounded-lg font-semibold hover:bg-amber-400">Book</a>
+const STARTER_REVIEWS = [
+  { name:"Marcus", rating:5, comment:"Clean fade. Professional and quick.", date:"2025-08-11" },
+  { name:"Zoe",    rating:4, comment:"Great beard lineup and chill vibe.",  date:"2025-09-02" }
+];
+
+// ---------- Helpers ----------
+const $ = (id) => document.getElementById(id);
+const keyForShop = () => `reviews:${SHOP.id}`;
+
+function getReviews(){
+  const raw = localStorage.getItem(keyForShop());
+  if (raw) return JSON.parse(raw);
+  localStorage.setItem(keyForShop(), JSON.stringify(STARTER_REVIEWS));
+  return [...STARTER_REVIEWS];
+}
+function saveReviews(list){ localStorage.setItem(keyForShop(), JSON.stringify(list)); }
+function average(list){ if(!list.length) return 0; return Math.round((list.reduce((a,r)=>a+ +r.rating,0)/list.length)*10)/10; }
+
+// ---------- Renderers ----------
+function initShop(){
+  $("shopLogo").src = SHOP.logo;
+  $("heroImage").src = SHOP.hero;
+  $("shopName").textContent = SHOP.name;
+  $("shopTagline").textContent = SHOP.tagline;
+  $("footerShopName").textContent = SHOP.name;
+  $("year").textContent = new Date().getFullYear();
+  $("shopAddress").textContent = SHOP.address;
+  $("shopHours").textContent = SHOP.hours;
+  $("aboutText").textContent = SHOP.about;
+
+  $("telLink").href = SHOP.phoneHref; $("telLink").textContent = SHOP.phone;
+  $("emailLink").href = `mailto:${SHOP.email}`; $("emailLink").textContent = SHOP.email;
+
+  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(SHOP.mapsQuery)}`;
+  $("directionsBtn").href = mapsUrl;
+  $("quickDirections").href = mapsUrl;
+  const embedQ = encodeURIComponent(SHOP.mapsQuery || SHOP.address);
+  $("mapFrame").src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyDUMMY-PLACE-YOUR-EMBED-API-KEY&q=${embedQ}`;
+
+  $("mobileCall").href = SHOP.phoneHref;
+  $("mobileDirections").href = mapsUrl;
+  $("headerBook").href = BOOKING_URL;
+  $("bookShopBtn").href = BOOKING_URL;
+
+  renderSocials();
+  renderBarbers();
+  initReviews();
+  injectJsonLd();
+}
+
+function renderSocials(){
+  const s = SHOP.socials;
+  const el = $("socials");
+  el.innerHTML = Object.entries(s)
+    .filter(([_,url]) => !!url)
+    .map(([k,url]) => `<a target="_blank" href="${url}" class="px-2.5 py-1.5 rounded-lg border text-xs border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">${k}</a>`)
+    .join("") || `<span class="text-xs text-zinc-500">No socials listed.</span>`;
+}
+
+function renderBarbers(){
+  const list = BARBERS.filter(b => b.shopId===SHOP.id && b.onboarded);
+  $("barberGrid").innerHTML = list.map(b => `
+    <article class="group rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm">
+      <div class="flex items-center gap-3">
+        <img src="${b.headshot}" alt="${b.name}" class="w-14 h-14 rounded-full object-cover ring-1 ring-zinc-200 dark:ring-zinc-800">
+        <div class="min-w-0">
+          <h3 class="font-medium truncate">${b.name}</h3>
+          <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">${b.specialty}</p>
+        </div>
+      </div>
+      <div class="mt-3">
+        <a href="${b.booking}" class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800">Book</a>
+      </div>
+    </article>
+  `).join("") || `<div class="text-sm text-zinc-500">No onboarded barbers yet.</div>`;
+}
+
+function renderStars(el, value){
+  el.textContent = "";
+  const rounded = Math.round(value);
+  el.textContent = "★".repeat(rounded) + "☆".repeat(5-rounded);
+}
+
+function renderReviewList(){
+  const reviews = getReviews().sort((a,b)=> new Date(b.date)-new Date(a.date));
+  const list = $("reviewList");
+  list.innerHTML = reviews.map(r => `
+    <div class="py-4 flex gap-3">
+      <div class="w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-xs">${(r.name||"U").charAt(0).toUpperCase()}</div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 text-amber-500 text-sm">${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)}</div>
+        <div class="text-xs text-zinc-500">${new Date(r.date).toLocaleDateString()}</div>
+        <div class="text-sm font-medium truncate">${r.name || "Anonymous"}</div>
+        <p class="text-sm text-zinc-700 dark:text-zinc-300 mt-1 whitespace-pre-wrap">${r.comment?.trim() || ""}</p>
+      </div>
     </div>
   `).join("");
+
+  $("noReviews").classList.toggle("hidden", reviews.length>0);
+  const avg = average(reviews);
+  $("avgRating").textContent = avg.toFixed(1);
+  $("reviewCount").textContent = reviews.length;
+  renderStars($("starRow"), avg);
 }
-loadBarbers();
 
-// Basic review stars and preview highlight
-const sampleReviews = [
-  {name:"Marcus", rating:5, text:"Clean fade 🔥 best in the city", date:"2025-02-05"},
-  {name:"Zoe", rating:4, text:"Great vibe + lineup", date:"2025-02-10"}
-];
-document.getElementById("top-reviews").innerHTML = sampleReviews.map(r=>`
-  <div class="rounded-xl bg-white dark:bg-zinc-800 p-5 shadow">
-    <div class="text-amber-400 text-lg">${"★".repeat(r.rating)}${"☆".repeat(5-r.rating)}</div>
-    <p class="font-medium mt-1">${r.name}</p>
-    <p class="text-sm text-zinc-600 dark:text-zinc-300 mt-1">${r.text}</p>
-  </div>
-`).join("");
+function initReviews(){
+  renderReviewList();
+  $("reviewForm").addEventListener("submit",(e)=>{
+    e.preventDefault();
+    const name = $("name").value.trim() || "Anonymous";
+    const rating = Number($("rating").value || 5);
+    const comment = $("comment").value.trim();
+    if(!comment){ alert("Please share a quick comment."); return; }
+    const list = getReviews();
+    list.push({ name, rating, comment, date: new Date().toISOString().slice(0,10) });
+    saveReviews(list);
+    $("reviewForm").reset();
+    $("formMsg").classList.remove("hidden");
+    renderReviewList();
+    setTimeout(()=>$("formMsg").classList.add("hidden"), 1700);
+  });
+}
 
-function scrollToReviewForm(){ document.getElementById("review-form").scrollIntoView({behavior:"smooth"}); }
+// SEO JSON-LD
+function injectJsonLd(){
+  const reviews = getReviews();
+  const ld = {
+    "@context": "https://schema.org",
+    "@type": "Barbershop",
+    "name": SHOP.name,
+    "image": SHOP.logo,
+    "telephone": SHOP.phone,
+    "email": SHOP.email,
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": SHOP.address.split(",")[0],
+      "addressLocality": "San Antonio",
+      "addressRegion": "TX",
+      "postalCode": "78217",
+      "addressCountry": "US"
+    },
+    "sameAs": Object.values(SHOP.socials).filter(Boolean),
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": average(reviews) || 0,
+      "reviewCount": reviews.length
+    }
+  };
+  const s = document.createElement("script");
+  s.type = "application/ld+json";
+  s.textContent = JSON.stringify(ld);
+  document.head.appendChild(s);
+}
+
+// boot
+initShop();
 </script>
-
 </body>
 </html>
