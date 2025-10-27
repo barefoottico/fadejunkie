@@ -117,76 +117,53 @@
 
 <!-- ONE SCRIPT: Firebase + wizard + submit -->
 <script type="module">
-  // Firebase SDKs
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
   import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js";
   import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-  // --- Firebase config (bucket fixed to your real one) ---
+  // ---- API endpoint (fix routing here) ----
+  // If your function is deployed on Vercel/Netlify, put the full URL:
+  const PUBLISH_API = "/api/publish-shop"; // or "https://your-vercel-app.vercel.app/api/publish-shop"
+
+  // ---- Firebase config (project you pasted earlier) ----
   const firebaseConfig = {
     apiKey: "AIzaSyDriFned4ysHHBNJlNUWm9D4yA1N8HH-IM",
     authDomain: "fadejunkie-barbershop-onboard.firebaseapp.com",
     projectId: "fadejunkie-barbershop-onboard",
-    storageBucket: "fadejunkie-media.appspot.com",
+    // A) Use the project’s default bucket shown in Firebase:
+    storageBucket: "fadejunkie-barbershop-onboard.appspot.com",
+    // B) OR force your manual bucket instead (uncomment next line & comment the one above):
+    // storageBucket: "fadejunkie-media.appspot.com",
     messagingSenderId: "483229378363",
     appId: "1:483229378363:web:ff30f0c32bb923b73ff91e",
     measurementId: "G-NGYEJK6VL0"
   };
+
   const app = initializeApp(firebaseConfig);
+
+  // If you picked A, default is fine:
   const storage = getStorage(app);
+
+  // If you picked B and want to force the manual bucket, use this instead:
+  // const storage = getStorage(app, "gs://fadejunkie-media");
+
   const db = getFirestore(app);
 
-  // --- Wizard basics ---
+  // ------------ Wizard helpers ------------
   const $form = document.getElementById("wizardForm");
-  const slides = Array.from(document.querySelectorAll(".slide"));
-  const backBtn = document.getElementById("backBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const startBtn = document.getElementById("startBtn");
-  const progressBar = document.getElementById("progressBar");
-  let current = 0;
-
-  function showSlide(i){
-    slides[current].classList.add("hidden");
-    slides[i].classList.remove("hidden");
-    current = i;
-    progressBar.style.width = ((i+1)/slides.length*100)+"%";
-    backBtn.style.visibility = i===0 ? "hidden" : "visible";
-    nextBtn.style.visibility = i===slides.length-1 ? "hidden" : "visible";
-  }
-  function nextSlide(){ if (current < slides.length-1) showSlide(current + 1); }
-  function prevSlide(){ if (current > 0) showSlide(current - 1); }
-  backBtn.onclick = prevSlide;
-  nextBtn.onclick = nextSlide;
-  startBtn.onclick = nextSlide;
-  showSlide(0);
-
-  // Build Hours UI for all days
-  const hoursGrid = document.getElementById("hoursGrid");
-  const days = [
-    ["mon","Mon"],["tue","Tue"],["wed","Wed"],["thu","Thu"],
-    ["fri","Fri"],["sat","Sat"],["sun","Sun"]
-  ];
-  hoursGrid.innerHTML = days.map(([key,label]) => `
-    <div class="grid grid-cols-3 gap-3 items-center">
-      <label class="font-medium">${label}</label>
-      <input type="time" name="open_${key}" class="input" placeholder="Open">
-      <input type="time" name="close_${key}" class="input" placeholder="Close">
-    </div>
-  `).join("");
-
-  // Helpers
   const get = (n) => $form.elements[n]?.value?.trim() || "";
-  function toId(name, city="") {
-    return (name + "-" + city).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-  }
-  async function uploadFile(path, file) {
-    if (!file) return "";
+  const days = [["mon","Mon"],["tue","Tue"],["wed","Wed"],["thu","Thu"],["fri","Fri"],["sat","Sat"],["sun","Sun"]];
+
+  function toId(name, city=""){ return (name+"-"+city).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
+
+  async function uploadFile(path, file){
+    if(!file) return "";
     const r = ref(storage, path);
     await uploadBytes(r, file, { contentType: file.type });
     return await getDownloadURL(r);
   }
 
-  async function collectPayload() {
+  async function collectPayload(){
     const name = get("name");
     const tagline = get("tagline");
     const address = get("address");
@@ -198,7 +175,6 @@
     const email = get("email");
     const booking = get("booking_url_shop");
     const about = get("about");
-
     const shopId = toId(name, city || "shop");
 
     const logoFile = $form.elements["logo"]?.files?.[0];
@@ -209,79 +185,67 @@
     const logoUrl = await uploadFile(`shops/${shopId}/logo.${logoExt}`, logoFile);
     const heroUrl = await uploadFile(`shops/${shopId}/hero.${heroExt}`, heroFile);
 
-    const hoursDetailed = Object.fromEntries(days.map(([k]) => ([
-      k, { open: get(`open_${k}`) || "", close: get(`close_${k}`) || "" }
-    ])));
-
-    const socials = {
-      instagram: get("instagram"),
-      tiktok: get("tiktok"),
-      facebook: get("facebook")
-    };
-
-    // (Barbers slides not in this file; we can add later. Empty array is fine.)
-    const barbers = [];
+    const hoursDetailed = Object.fromEntries(days.map(([k]) => [k, { open: get(`open_${k}`)||"", close: get(`close_${k}`)||"" }]));
 
     const shop = {
       id: shopId,
-      name,
-      tagline,
-      phone,
-      phoneHref: `tel:${phone.replace(/\D+/g,"")}`,
+      name, tagline,
+      phone, phoneHref: `tel:${phone.replace(/\D+/g,"")}`,
       email,
       address: `${address}${city?`, ${city}`:""}${state?`, ${state}`:""}${zip?` ${zip}`:""}`,
       mapsQuery: `${address} ${city} ${state} ${zip}`.trim(),
       timezone,
-      hoursString: "", // optional pretty string later
+      hoursString: "",
       hoursDetailed,
-      socials,
+      socials: { instagram:get("instagram"), tiktok:get("tiktok"), facebook:get("facebook") },
       about,
       logo: logoUrl,
       hero: heroUrl,
       booking_url_shop: booking
     };
 
-    return { shop, barbers };
+    return { shop, barbers: [] }; // add barbers later as needed
   }
 
-  // Submit → Firestore + call serverless to open PR
+  // ------------ Submit handler (with loud errors) ------------
   $form.onsubmit = async (e)=>{
     e.preventDefault();
-    const submitBtn = e.submitter || $form.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    const original = submitBtn.textContent;
-    submitBtn.textContent = "Submitting…";
+    const btn = e.submitter || $form.querySelector('button[type="submit"]');
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = "Submitting…";
 
     try {
+      // quick sanity log
+      console.log("Using bucket:", (await import("https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js")).getStorage ? storage : "not set");
+
       const payload = await collectPayload();
 
-      // Save a record for admin/review
-      await setDoc(doc(db, "submissions", payload.shop.id), {
-        createdAt: serverTimestamp(),
-        ...payload
-      });
+      // Save a Firestore copy (optional but helpful)
+      await setDoc(doc(db, "submissions", payload.shop.id), { createdAt: serverTimestamp(), ...payload });
 
-      // Call your API route that creates the GitHub PR
-      const res = await fetch("/api/publish-shop", {
+      // Post to your API (fix routing by using the constant above)
+      const res = await fetch(PUBLISH_API, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type":"application/json" },
         body: JSON.stringify(payload)
       });
+
       if (!res.ok) {
-        const t = await res.text();
-        throw new Error(t || "Publish failed");
+        const text = await res.text();
+        throw new Error(`Publish API error (${res.status}): ${text}`);
       }
+
       const out = await res.json();
       alert(`Submitted! PR: ${out.prUrl || "check your repo PRs"}`);
     } catch (err) {
       console.error(err);
-      alert("Error: " + err.message);
+      alert("Failed: " + err.message);
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = original;
+      btn.disabled = false; btn.textContent = original;
     }
   };
 </script>
+
 
 </body>
 </html>
