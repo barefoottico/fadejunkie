@@ -19,13 +19,13 @@
   <form id="wizardForm" class="mt-10">
 
     <!-- Slide container -->
-    <div id="slides" class="relative min-h-[380px] overflow-hidden">
+    <div id="slides" class="relative min-h-[420px] overflow-hidden">
       
       <!-- Slide 0: Welcome -->
       <div class="slide">
         <h1 class="text-xl font-semibold">Let’s build your profile</h1>
         <p class="text-sm text-zinc-500 mt-2">We’ll ask quick questions. You’ll get a killer page.</p>
-        <button type="button" onclick="nextSlide()" class="mt-12 w-full py-3 rounded-lg bg-zinc-900 text-white hover:opacity-90">
+        <button type="button" id="startBtn" class="mt-12 w-full py-3 rounded-lg bg-zinc-900 text-white hover:opacity-90">
           Start →
         </button>
       </div>
@@ -33,7 +33,8 @@
       <!-- Slide 1: Shop Name -->
       <div class="slide hidden">
         <h2 class="text-lg font-medium">What’s your shop called?</h2>
-        <input name="name" required class="input mt-4">
+        <input name="name" required class="input mt-4" placeholder="Shop name">
+        <input name="tagline" class="input mt-3" placeholder="Short tagline (optional)">
       </div>
 
       <!-- Slide 2: Address -->
@@ -46,15 +47,19 @@
           <input name="zip" placeholder="ZIP" required class="input text-center">
           <select name="timezone" class="input" required>
             <option value="America/Chicago" selected>CST/CDT</option>
+            <option value="America/Denver">MST/MDT</option>
+            <option value="America/Los_Angeles">PST/PDT</option>
+            <option value="America/New_York">EST/EDT</option>
           </select>
         </div>
       </div>
 
       <!-- Slide 3: Contact -->
       <div class="slide hidden">
-        <h2 class="text-lg font-medium">Phone & booking</h2>
+        <h2 class="text-lg font-medium">Phone, booking & email</h2>
         <input name="phone" placeholder="(210) 555-1234" required class="input mt-4">
-        <input name="booking_url_shop" placeholder="Booking link" required class="input mt-3">
+        <input name="booking_url_shop" placeholder="Booking link (Booksy/Squire/etc.)" required class="input mt-3">
+        <input name="email" type="email" placeholder="Public email (optional)" class="input mt-3">
       </div>
 
       <!-- Slide 4: About -->
@@ -66,13 +71,9 @@
       <!-- Slide 5: Hours -->
       <div class="slide hidden">
         <h2 class="text-lg font-medium">Business hours</h2>
-        <p class="text-xs text-zinc-500 mt-1">We’ll sync this with your Open/Closed badge</p>
-        <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
-          <label class="font-medium">Mon</label>
-          <input type="time" name="open_mon" class="input" required>
-          <input type="time" name="close_mon" class="input" required>
-        </div>
-        <!-- Could toggle next days step-by-step or show all here (design choice) -->
+        <p class="text-xs text-zinc-500 mt-1">We’ll sync this with your Open/Closed badge.</p>
+        <div id="hoursGrid" class="mt-4 space-y-2 text-sm"></div>
+        <p class="text-[11px] text-zinc-500 mt-2">Leave a day blank to mark closed.</p>
       </div>
 
       <!-- Slide 6: Logo -->
@@ -94,14 +95,15 @@
         <button type="submit" class="mt-10 w-full py-3 rounded-lg bg-zinc-900 text-white hover:opacity-90">
           Submit for review ✅
         </button>
+        <p id="submitHint" class="text-xs text-zinc-500 mt-3">Uploads go to Firebase. Then we open a PR in GitHub for approval.</p>
       </div>
 
     </div>
 
     <!-- Navigation Controls -->
     <div class="flex justify-between items-center mt-6">
-      <button type="button" id="backBtn" class="text-sm text-zinc-500" onclick="prevSlide()">← Back</button>
-      <button type="button" id="nextBtn" class="text-sm bg-zinc-900 text-white px-4 py-2 rounded-lg hover:opacity-90" onclick="nextSlide()">Next →</button>
+      <button type="button" id="backBtn" class="text-sm text-zinc-500">← Back</button>
+      <button type="button" id="nextBtn" class="text-sm bg-zinc-900 text-white px-4 py-2 rounded-lg hover:opacity-90">Next →</button>
     </div>
 
   </form>
@@ -113,28 +115,172 @@
 .slide { @apply absolute inset-0 transition-opacity duration-300; }
 </style>
 
-<script>
-let current = 0;
-const slides = document.querySelectorAll(".slide");
+<!-- ONE SCRIPT: Firebase + wizard + submit -->
+<script type="module">
+  // Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js";
+  import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-function showSlide(i){
-  slides[current].classList.add("hidden");
-  slides[i].classList.remove("hidden");
-  current = i;
-  document.getElementById("progressBar").style.width = ((i+1)/slides.length*100)+"%";
-  document.getElementById("backBtn").style.visibility = i===0?"hidden":"visible";
-  document.getElementById("nextBtn").style.visibility = i===slides.length-1?"hidden":"visible";
-}
+  // --- Firebase config (bucket fixed to your real one) ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyDriFned4ysHHBNJlNUWm9D4yA1N8HH-IM",
+    authDomain: "fadejunkie-barbershop-onboard.firebaseapp.com",
+    projectId: "fadejunkie-barbershop-onboard",
+    storageBucket: "fadejunkie-media.appspot.com",
+    messagingSenderId: "483229378363",
+    appId: "1:483229378363:web:ff30f0c32bb923b73ff91e",
+    measurementId: "G-NGYEJK6VL0"
+  };
+  const app = initializeApp(firebaseConfig);
+  const storage = getStorage(app);
+  const db = getFirestore(app);
 
-function nextSlide(){ if(current < slides.length-1) showSlide(current + 1); }
-function prevSlide(){ if(current > 0) showSlide(current - 1); }
+  // --- Wizard basics ---
+  const $form = document.getElementById("wizardForm");
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  const backBtn = document.getElementById("backBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const startBtn = document.getElementById("startBtn");
+  const progressBar = document.getElementById("progressBar");
+  let current = 0;
 
-showSlide(0);
+  function showSlide(i){
+    slides[current].classList.add("hidden");
+    slides[i].classList.remove("hidden");
+    current = i;
+    progressBar.style.width = ((i+1)/slides.length*100)+"%";
+    backBtn.style.visibility = i===0 ? "hidden" : "visible";
+    nextBtn.style.visibility = i===slides.length-1 ? "hidden" : "visible";
+  }
+  function nextSlide(){ if (current < slides.length-1) showSlide(current + 1); }
+  function prevSlide(){ if (current > 0) showSlide(current - 1); }
+  backBtn.onclick = prevSlide;
+  nextBtn.onclick = nextSlide;
+  startBtn.onclick = nextSlide;
+  showSlide(0);
 
-document.getElementById("wizardForm").onsubmit = (e)=>{
-  e.preventDefault();
-  alert("✅ Submitted — Phase 2 will auto-create shop page.");
-};
+  // Build Hours UI for all days
+  const hoursGrid = document.getElementById("hoursGrid");
+  const days = [
+    ["mon","Mon"],["tue","Tue"],["wed","Wed"],["thu","Thu"],
+    ["fri","Fri"],["sat","Sat"],["sun","Sun"]
+  ];
+  hoursGrid.innerHTML = days.map(([key,label]) => `
+    <div class="grid grid-cols-3 gap-3 items-center">
+      <label class="font-medium">${label}</label>
+      <input type="time" name="open_${key}" class="input" placeholder="Open">
+      <input type="time" name="close_${key}" class="input" placeholder="Close">
+    </div>
+  `).join("");
+
+  // Helpers
+  const get = (n) => $form.elements[n]?.value?.trim() || "";
+  function toId(name, city="") {
+    return (name + "-" + city).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+  }
+  async function uploadFile(path, file) {
+    if (!file) return "";
+    const r = ref(storage, path);
+    await uploadBytes(r, file, { contentType: file.type });
+    return await getDownloadURL(r);
+  }
+
+  async function collectPayload() {
+    const name = get("name");
+    const tagline = get("tagline");
+    const address = get("address");
+    const city = get("city");
+    const state = get("state");
+    const zip = get("zip");
+    const timezone = get("timezone") || "America/Chicago";
+    const phone = get("phone");
+    const email = get("email");
+    const booking = get("booking_url_shop");
+    const about = get("about");
+
+    const shopId = toId(name, city || "shop");
+
+    const logoFile = $form.elements["logo"]?.files?.[0];
+    const heroFile = $form.elements["hero"]?.files?.[0];
+    const logoExt = logoFile?.name?.split(".").pop() || "jpg";
+    const heroExt = heroFile?.name?.split(".").pop() || "jpg";
+
+    const logoUrl = await uploadFile(`shops/${shopId}/logo.${logoExt}`, logoFile);
+    const heroUrl = await uploadFile(`shops/${shopId}/hero.${heroExt}`, heroFile);
+
+    const hoursDetailed = Object.fromEntries(days.map(([k]) => ([
+      k, { open: get(`open_${k}`) || "", close: get(`close_${k}`) || "" }
+    ])));
+
+    const socials = {
+      instagram: get("instagram"),
+      tiktok: get("tiktok"),
+      facebook: get("facebook")
+    };
+
+    // (Barbers slides not in this file; we can add later. Empty array is fine.)
+    const barbers = [];
+
+    const shop = {
+      id: shopId,
+      name,
+      tagline,
+      phone,
+      phoneHref: `tel:${phone.replace(/\D+/g,"")}`,
+      email,
+      address: `${address}${city?`, ${city}`:""}${state?`, ${state}`:""}${zip?` ${zip}`:""}`,
+      mapsQuery: `${address} ${city} ${state} ${zip}`.trim(),
+      timezone,
+      hoursString: "", // optional pretty string later
+      hoursDetailed,
+      socials,
+      about,
+      logo: logoUrl,
+      hero: heroUrl,
+      booking_url_shop: booking
+    };
+
+    return { shop, barbers };
+  }
+
+  // Submit → Firestore + call serverless to open PR
+  $form.onsubmit = async (e)=>{
+    e.preventDefault();
+    const submitBtn = e.submitter || $form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    const original = submitBtn.textContent;
+    submitBtn.textContent = "Submitting…";
+
+    try {
+      const payload = await collectPayload();
+
+      // Save a record for admin/review
+      await setDoc(doc(db, "submissions", payload.shop.id), {
+        createdAt: serverTimestamp(),
+        ...payload
+      });
+
+      // Call your API route that creates the GitHub PR
+      const res = await fetch("/api/publish-shop", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(t || "Publish failed");
+      }
+      const out = await res.json();
+      alert(`Submitted! PR: ${out.prUrl || "check your repo PRs"}`);
+    } catch (err) {
+      console.error(err);
+      alert("Error: " + err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = original;
+    }
+  };
 </script>
 
 </body>
