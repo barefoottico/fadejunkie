@@ -110,10 +110,42 @@
 </section>
 
 <style>
-.input { @apply w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent px-3 py-2 text-sm; }
-.input-file { @apply block text-xs rounded-lg cursor-pointer border border-zinc-300 dark:border-zinc-700 file:mr-3 file:px-3 file:py-1.5 file:rounded-md file:border-0 file:bg-zinc-900 file:text-white hover:file:bg-zinc-800; }
-.slide { @apply absolute inset-0 transition-opacity duration-300; }
+  .input{
+    width:100%;
+    border-radius:0.5rem;
+    border:1px solid rgba(113,113,122,.35); /* zinc-500-ish */
+    background:transparent;
+    padding:.5rem .75rem;
+    font-size:.875rem;
+    color:inherit;
+  }
+  .input:focus{
+    outline:none;
+    box-shadow:0 0 0 2px rgba(0,0,0,.1);
+    border-color:rgba(0,0,0,.45);
+  }
+  @media (prefers-color-scheme: dark){
+    .input{ border-color: rgba(82,82,91,.7); }
+    .input:focus{ box-shadow:0 0 0 2px rgba(255,255,255,.15); border-color:rgba(255,255,255,.5); }
+  }
+
+  .input-file{
+    display:block; font-size:.875rem; border-radius:.5rem; cursor:pointer;
+    border:1px solid rgba(113,113,122,.35); background:transparent; padding:.5rem .75rem; color:inherit;
+  }
+  .input-file::file-selector-button{
+    margin-right:.75rem; padding:.375rem .75rem; border-radius:.375rem; border:0;
+    background:#18181b; color:#fff; cursor:pointer;
+  }
+  @media (prefers-color-scheme: dark){
+    .input-file{ border-color: rgba(82,82,91,.7); }
+    .input-file::file-selector-button{ background:#fff; color:#0a0a0a; }
+  }
+
+  .slide{ position:absolute; inset:0; transition:opacity .3s ease; }
+  .slide.hidden{ opacity:0; pointer-events:none; }
 </style>
+
 
 <!-- Point the wizard to your live Vercel route -->
 <script>
