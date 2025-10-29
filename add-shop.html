@@ -158,17 +158,15 @@
   import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js";
   import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-  // ---- Robust API routing (uses your window.FJ_API_URL) ----
+  // ---- API endpoint (use live Vercel route) ----
   const PUBLISH_API = window.FJ_API_URL || "/api/publish-shop";
 
-  // ---- Firebase config (default bucket for your project) ----
+  // ---- Firebase config ----
   const firebaseConfig = {
     apiKey: "AIzaSyDriFned4ysHHBNJlNUWm9D4yA1N8HH-IM",
     authDomain: "fadejunkie-barbershop-onboard.firebaseapp.com",
     projectId: "fadejunkie-barbershop-onboard",
     storageBucket: "fadejunkie-barbershop-onboard.appspot.com",
-    // If you want to force your manual bucket instead, swap the line above for:
-    // storageBucket: "fadejunkie-media.appspot.com",
     messagingSenderId: "483229378363",
     appId: "1:483229378363:web:ff30f0c32bb923b73ff91e",
     measurementId: "G-NGYEJK6VL0"
@@ -178,7 +176,7 @@
   const storage = getStorage(app);
   const db = getFirestore(app);
 
-  // ------------ Wizard UI logic ------------
+  // ------------ Wizard Logic ------------
   const $form = document.getElementById("wizardForm");
   const slides = Array.from(document.querySelectorAll(".slide"));
   const backBtn = document.getElementById("backBtn");
@@ -189,30 +187,48 @@
 
   const days = [["mon","Mon"],["tue","Tue"],["wed","Wed"],["thu","Thu"],["fri","Fri"],["sat","Sat"],["sun","Sun"]];
 
-  // Build Hours inputs
-  hoursGrid.innerHTML = days.map(([key,label]) => `
-    <div class="grid grid-cols-3 gap-3 items-center">
-      <label class="font-medium">${label}</label>
-      <input type="time" name="open_${key}" class="input" placeholder="Open">
-      <input type="time" name="close_${key}" class="input" placeholder="Close">
-    </div>
-  `).join("");
+  // Build Hours Inputs
+  if (hoursGrid) {
+    hoursGrid.innerHTML = days.map(([key,label]) => `
+      <div class="grid grid-cols-3 gap-3 items-center">
+        <label class="font-medium">${label}</label>
+        <input type="time" name="open_${key}" class="input" placeholder="Open">
+        <input type="time" name="close_${key}" class="input" placeholder="Close">
+      </div>
+    `).join("");
+  }
+
+  // Enable/disable inputs per slide
+  function setSlideEnabled(slide, enabled) {
+    slide.querySelectorAll("input, select, textarea").forEach(el => {
+      if (enabled) el.removeAttribute("disabled");
+      else el.setAttribute("disabled", "true");
+    });
+  }
 
   let current = 0;
   function showSlide(i){
     slides[current].classList.add("hidden");
+    setSlideEnabled(slides[current], false);
+
     slides[i].classList.remove("hidden");
+    setSlideEnabled(slides[i], true);
+
     current = i;
     progressBar.style.width = ((i+1)/slides.length*100)+"%";
     backBtn.style.visibility = i===0 ? "hidden" : "visible";
     nextBtn.style.visibility = i===slides.length-1 ? "hidden" : "visible";
   }
+
   function nextSlide(){ if (current < slides.length-1) showSlide(current + 1); }
   function prevSlide(){ if (current > 0) showSlide(current - 1); }
 
   backBtn.onclick = prevSlide;
   nextBtn.onclick = nextSlide;
   startBtn.onclick = nextSlide;
+
+  // Init
+  slides.forEach((s, idx) => setSlideEnabled(s, idx === 0));
   showSlide(0);
 
   // ------------ Helpers ------------
@@ -228,6 +244,7 @@
     return await getDownloadURL(r);
   }
 
+  // ------------ Collect Payload ------------
   async function collectPayload(){
     const name = get("name");
     const tagline = get("tagline");
@@ -244,8 +261,19 @@
 
     const logoFile = $form.elements["logo"]?.files?.[0];
     const heroFile = $form.elements["hero"]?.files?.[0];
-    const logoExt = logoFile?.name?.split(".").pop() || "jpg";
-    const heroExt = heroFile?.name?.split(".").pop() || "jpg";
+
+    // Guards
+    const MAX = 10 * 1024 * 1024;
+    function isImage(file){ return !!file && /^image\//.test(file.type); }
+
+    if (!isImage(logoFile) || !isImage(heroFile))
+      throw new Error("Logo and Hero must be image files.");
+
+    if ((logoFile?.size||0) > MAX || (heroFile?.size||0) > MAX)
+      throw new Error("Images must be ≤ 10MB.");
+
+    const logoExt = logoFile.name.split(".").pop();
+    const heroExt = heroFile.name.split(".").pop();
 
     const logoUrl = await uploadFile(`shops/${shopId}/logo.${logoExt}`, logoFile);
     const heroUrl = await uploadFile(`shops/${shopId}/hero.${heroExt}`, heroFile);
@@ -262,7 +290,6 @@
       address: `${address}${city?`, ${city}`:""}${state?`, ${state}`:""}${zip?` ${zip}`:""}`,
       mapsQuery: `${address} ${city} ${state} ${zip}`.trim(),
       timezone,
-      hoursString: "",
       hoursDetailed,
       socials: { instagram:get("instagram"), tiktok:get("tiktok"), facebook:get("facebook") },
       about,
@@ -274,23 +301,29 @@
     return { shop, barbers: [] };
   }
 
-  // ------------ Submit handler ------------
-  $form.onsubmit = async (e)=>{
+  // ------------ Submit Handler ------------
+  $form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const btn = e.submitter || $form.querySelector('button[type="submit"]');
-    const original = btn.textContent;
-    btn.disabled = true; btn.textContent = "Submitting…";
+    const original = btn?.textContent || "Submit";
+    if (btn) { btn.disabled = true; btn.textContent = "Submitting…"; }
 
     try {
+      slides.forEach(s => setSlideEnabled(s, true)); // unlock all for read
       const payload = await collectPayload();
 
-      // Save a Firestore copy (optional but useful)
-      await setDoc(doc(db, "submissions", payload.shop.id), { createdAt: serverTimestamp(), ...payload });
+      // Optional Firestore write (requires DEV rules)
+      try {
+        await setDoc(doc(db, "submissions", payload.shop.id), { createdAt: serverTimestamp(), ...payload });
+      } catch (fireErr) {
+        console.warn("Firestore write skipped/failed:", fireErr.message);
+      }
 
-      // Post to your live API
+      // Call API
       const res = await fetch(PUBLISH_API, {
         method: "POST",
-        headers: { "Content-Type":"application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
 
@@ -299,16 +332,18 @@
         throw new Error(`Publish API error (${res.status}): ${text}`);
       }
 
-      const out = await res.json();
-      alert(`Submitted! PR: ${out.prUrl || "check your repo PRs"}`);
+      const out = await res.json().catch(()=>({}));
+      alert(`✅ Submitted! ${out.prUrl ? `PR: ${out.prUrl}` : "Check your repo PRs."}`);
     } catch (err) {
       console.error(err);
-      alert("Failed: " + err.message);
+      alert("❌ Failed: " + (err?.message || err));
     } finally {
-      btn.disabled = false; btn.textContent = original;
+      slides.forEach((s, idx) => setSlideEnabled(s, idx === current));
+      if (btn) { btn.disabled = false; btn.textContent = original; }
     }
-  };
+  });
 </script>
+
 
 </body>
 </html>
