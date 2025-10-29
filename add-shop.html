@@ -262,15 +262,31 @@
     const logoFile = $form.elements["logo"]?.files?.[0];
     const heroFile = $form.elements["hero"]?.files?.[0];
 
-    // Guards
-    const MAX = 10 * 1024 * 1024;
-    function isImage(file){ return !!file && /^image\//.test(file.type); }
+// ---- Robust file guards (handles Safari/Windows empty MIME types) ----
+const MAX = 10 * 1024 * 1024; // 10MB
 
-    if (!isImage(logoFile) || !isImage(heroFile))
-      throw new Error("Logo and Hero must be image files.");
+function isProbablyImage(file) {
+  if (!file) return false;
+  if (file.type && file.type.startsWith("image/")) return true; // normal case
+  const name = (file.name || "").toLowerCase();
+  // Fallback by extension (covers iOS/Windows cases that upload with empty type)
+  return /\.(png|jpe?g|webp|gif|bmp|svg|heic|heif|tif?f)$/.test(name);
+}
 
-    if ((logoFile?.size||0) > MAX || (heroFile?.size||0) > MAX)
-      throw new Error("Images must be ≤ 10MB.");
+const problems = [];
+
+if (!logoFile) problems.push("Logo file not selected");
+else if (!isProbablyImage(logoFile)) problems.push(`Logo is not an image (${logoFile.type || logoFile.name || "unknown"})`);
+else if (logoFile.size > MAX) problems.push("Logo image must be ≤ 10MB");
+
+if (!heroFile) problems.push("Hero/Banner file not selected");
+else if (!isProbablyImage(heroFile)) problems.push(`Hero is not an image (${heroFile.type || heroFile.name || "unknown"})`);
+else if (heroFile.size > MAX) problems.push("Hero image must be ≤ 10MB");
+
+if (problems.length) {
+  throw new Error(problems.join(" • "));
+}
+
 
     const logoExt = logoFile.name.split(".").pop();
     const heroExt = heroFile.name.split(".").pop();
