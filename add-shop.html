@@ -156,7 +156,10 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
   import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-storage.js";
-  import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+  import {
+    initializeFirestore, // <— force DB binding & options
+    doc, setDoc, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
   // ---- API endpoint (use live Vercel route) ----
   const PUBLISH_API = window.FJ_API_URL || "/api/publish-shop";
@@ -174,7 +177,12 @@
 
   const app = initializeApp(firebaseConfig);
   const storage = getStorage(app);
-  const db = getFirestore(app);
+
+  // ✅ Force Firestore to the default database with safe options
+  const db = initializeFirestore(app, {
+    ignoreUndefinedProperties: true,
+    // you can also add: localCache: persistentLocalCache() (needs extra import) if you want offline
+  });
 
   // ------------ Wizard Logic ------------
   const $form = document.getElementById("wizardForm");
@@ -187,7 +195,6 @@
 
   const days = [["mon","Mon"],["tue","Tue"],["wed","Wed"],["thu","Thu"],["fri","Fri"],["sat","Sat"],["sun","Sun"]];
 
-  // Build Hours Inputs
   if (hoursGrid) {
     hoursGrid.innerHTML = days.map(([key,label]) => `
       <div class="grid grid-cols-3 gap-3 items-center">
@@ -198,7 +205,6 @@
     `).join("");
   }
 
-  // Enable/disable inputs per slide
   function setSlideEnabled(slide, enabled) {
     slide.querySelectorAll("input, select, textarea").forEach(el => {
       if (enabled) el.removeAttribute("disabled");
@@ -210,24 +216,18 @@
   function showSlide(i){
     slides[current].classList.add("hidden");
     setSlideEnabled(slides[current], false);
-
     slides[i].classList.remove("hidden");
     setSlideEnabled(slides[i], true);
-
     current = i;
     progressBar.style.width = ((i+1)/slides.length*100)+"%";
     backBtn.style.visibility = i===0 ? "hidden" : "visible";
     nextBtn.style.visibility = i===slides.length-1 ? "hidden" : "visible";
   }
-
   function nextSlide(){ if (current < slides.length-1) showSlide(current + 1); }
   function prevSlide(){ if (current > 0) showSlide(current - 1); }
-
   backBtn.onclick = prevSlide;
   nextBtn.onclick = nextSlide;
   startBtn.onclick = nextSlide;
-
-  // Init
   slides.forEach((s, idx) => setSlideEnabled(s, idx === 0));
   showSlide(0);
 
@@ -236,15 +236,13 @@
   function toId(name, city=""){
     return (name+"-"+city).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
   }
-
   async function uploadFile(path, file){
     if(!file) return "";
     const r = ref(storage, path);
-    await uploadBytes(r, file, { contentType: file.type });
+    await uploadBytes(r, file, { contentType: file.type || undefined });
     return await getDownloadURL(r);
   }
 
-  // ------------ Collect Payload ------------
   async function collectPayload(){
     const name = get("name");
     const tagline = get("tagline");
@@ -262,31 +260,22 @@
     const logoFile = $form.elements["logo"]?.files?.[0];
     const heroFile = $form.elements["hero"]?.files?.[0];
 
-// ---- Robust file guards (handles Safari/Windows empty MIME types) ----
-const MAX = 10 * 1024 * 1024; // 10MB
-
-function isProbablyImage(file) {
-  if (!file) return false;
-  if (file.type && file.type.startsWith("image/")) return true; // normal case
-  const name = (file.name || "").toLowerCase();
-  // Fallback by extension (covers iOS/Windows cases that upload with empty type)
-  return /\.(png|jpe?g|webp|gif|bmp|svg|heic|heif|tif?f)$/.test(name);
-}
-
-const problems = [];
-
-if (!logoFile) problems.push("Logo file not selected");
-else if (!isProbablyImage(logoFile)) problems.push(`Logo is not an image (${logoFile.type || logoFile.name || "unknown"})`);
-else if (logoFile.size > MAX) problems.push("Logo image must be ≤ 10MB");
-
-if (!heroFile) problems.push("Hero/Banner file not selected");
-else if (!isProbablyImage(heroFile)) problems.push(`Hero is not an image (${heroFile.type || heroFile.name || "unknown"})`);
-else if (heroFile.size > MAX) problems.push("Hero image must be ≤ 10MB");
-
-if (problems.length) {
-  throw new Error(problems.join(" • "));
-}
-
+    // Robust guards
+    const MAX = 10 * 1024 * 1024;
+    function isProbablyImage(file) {
+      if (!file) return false;
+      if (file.type && file.type.startsWith("image/")) return true;
+      const n = (file.name||"").toLowerCase();
+      return /\.(png|jpe?g|webp|gif|bmp|svg|heic|heif|tif?f)$/.test(n);
+    }
+    const problems = [];
+    if (!logoFile) problems.push("Logo not selected");
+    else if (!isProbablyImage(logoFile)) problems.push("Logo is not an image");
+    else if (logoFile.size > MAX) problems.push("Logo > 10MB");
+    if (!heroFile) problems.push("Hero not selected");
+    else if (!isProbablyImage(heroFile)) problems.push("Hero is not an image");
+    else if (heroFile.size > MAX) problems.push("Hero > 10MB");
+    if (problems.length) throw new Error(problems.join(" • "));
 
     const logoExt = logoFile.name.split(".").pop();
     const heroExt = heroFile.name.split(".").pop();
@@ -317,6 +306,35 @@ if (problems.length) {
     return { shop, barbers: [] };
   }
 
+  // ---- Firestore write with explicit logging + retry ----
+  async function writeSubmission(payload) {
+    const path = `submissions/${payload.shop.id}`;
+    console.log("[Firestore] writing:", path, payload);
+    try {
+      await setDoc(doc(db, "submissions", payload.shop.id), {
+        createdAt: serverTimestamp(),
+        ...payload
+      });
+      console.log("[Firestore] OK:", path);
+      return true;
+    } catch (e) {
+      console.warn("[Firestore] first attempt failed:", e?.code, e?.message);
+      // quick retry once (network hiccup/adblock race)
+      await new Promise(r => setTimeout(r, 400));
+      try {
+        await setDoc(doc(db, "submissions", payload.shop.id), {
+          createdAt: serverTimestamp(),
+          ...payload
+        });
+        console.log("[Firestore] OK after retry:", path);
+        return true;
+      } catch (e2) {
+        console.error("[Firestore] failed after retry:", e2?.code, e2?.message);
+        throw e2;
+      }
+    }
+  }
+
   // ------------ Submit Handler ------------
   $form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -327,13 +345,14 @@ if (problems.length) {
 
     try {
       slides.forEach(s => setSlideEnabled(s, true)); // unlock all for read
+
       const payload = await collectPayload();
 
-      // Optional Firestore write (requires DEV rules)
+      // Firestore write (DEV rules must allow)
       try {
-        await setDoc(doc(db, "submissions", payload.shop.id), { createdAt: serverTimestamp(), ...payload });
+        await writeSubmission(payload);
       } catch (fireErr) {
-        console.warn("Firestore write skipped/failed:", fireErr.message);
+        alert("Firestore write failed: " + (fireErr?.message || fireErr));
       }
 
       // Call API
@@ -359,6 +378,7 @@ if (problems.length) {
     }
   });
 </script>
+
 
 
 </body>
