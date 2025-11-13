@@ -164,18 +164,16 @@
   // ---- API endpoint (use live Vercel route) ----
   const PUBLISH_API = window.FJ_API_URL || "/api/publish-shop";
 
-  // ---- Firebase config ----
-  const firebaseConfig = {
-    apiKey: "AIzaSyDriFned4ysHHBNJlNUWm9D4yA1N8HH-IM",
-    authDomain: "fadejunkie-barbershop-onboard.firebaseapp.com",
-    projectId: "fadejunkie-barbershop-onboard",
-    
-    storageBucket: "fadejunkie-barbershop-onboard.firebasestorage.app",
+ const firebaseConfig = {
+  apiKey: "AIzaSyCVWdsnzefZCBCjwGRMPMhqRgBYxY_pyM",
+  authDomain: "fadejunkie-add-shop.firebaseapp.com",
+  projectId: "fadejunkie-add-shop",
+  storageBucket: "fadejunkie-add-shop.firebasestorage.app",
+  messagingSenderId: "640069936700",
+  appId: "1:640069936700:web:29d023ee04472afd4f8539",
+  measurementId: "G-YMVGNFV8W6"
+};
 
-    messagingSenderId: "483229378363",
-    appId: "1:483229378363:web:ff30f0c32bb923b73ff91e",
-    measurementId: "G-NGYEJK6VL0"
-  };
 
   const app = initializeApp(firebaseConfig);
   const storage = getStorage(app);
