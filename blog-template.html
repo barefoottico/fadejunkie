@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- BLOG TITLE (injected dynamically) -->
+  <title>{{title}}</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: { fj: { 50:'#f8fafc', 900:'#0b0b0c' } },
+          typography: (theme) => ({
+            DEFAULT: {
+              css: {
+                h2: {
+                  fontSize: theme('fontSize.2xl'),
+                  fontWeight: '800',
+                  color: theme('colors.zinc.900'),
+                  borderLeft: `4px solid ${theme('colors.fj.900')}`,
+                  paddingLeft: theme('spacing.3'),
+                  marginTop: theme('spacing.12'),
+                  marginBottom: theme('spacing.4'),
+                },
+                ul: { marginBottom: theme('spacing.6') },
+                'ul > li::marker': { color: theme('colors.zinc.400') },
+                p: {
+                  marginBottom: theme('spacing.6'),
+                  lineHeight: theme('lineHeight.relaxed'),
+                }
+              }
+            }
+          })
+        }
+      }
+    };
+  </script>
+
+  <!-- Theme on load -->
+  <script>
+    (function(){
+      const KEY='fj_theme';
+      const saved=localStorage.getItem(KEY);
+      const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme=saved || (prefersDark?'dark':'light');
+      if(theme==='dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+
+  <meta name="description" content="{{summary}}">
+</head>
+
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+
+  <!-- HEADER -->
+  <header class="border-b border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-700 shadow-sm">
+    <div class="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="index.html#about" class="flex items-center gap-3">
+        <img src="./fadejunkie_logo.png" alt="FadeJunkie" class="h-8 w-auto" />
+        <span class="text-sm font-semibold tracking-tight">FadeJunkie / Blog</span>
+      </a>
+      <button id="themeToggle" class="p-0 border-none bg-transparent hover:opacity-80 transition">
+        <img id="themeIcon" src="./dark.icon.png" class="h-6 w-6" />
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-3xl mx-auto px-6 py-16">
+
+    <!-- Breadcrumb -->
+    <nav class="mb-6 text-xs text-zinc-500 dark:text-zinc-400">
+      <a href="index.html#about" class="underline">← Back to Home</a>
+    </nav>
+
+    <!-- TITLE -->
+    <header class="mb-12">
+      <p class="text-xs font-medium uppercase tracking-wide text-fj-900">{{category}}</p>
+      <h1 class="mt-2 text-4xl sm:text-5xl font-extrabold tracking-tight">{{title}}</h1>
+      <p class="mt-4 text-lg text-zinc-700 dark:text-zinc-300 max-w-2xl">{{summary}}</p>
+      <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+        {{date}} • {{readingTime}}
+      </p>
+    </header>
+
+    <!-- ARTICLE CONTENT (rendered Markdown) -->
+    <article class="prose prose-zinc dark:prose-invert prose-sm sm:prose-base max-w-none">
+      {{content}}
+    </article>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-20 border-t border-zinc-200 dark:border-zinc-800">
+    <div class="max-w-3xl mx-auto px-6 py-6 text-xs flex items-center justify-between text-zinc-500 dark:text-zinc-400">
+      <span>© <span id="year"></span> FadeJunkie</span>
+      <a href="index.html#about" class="underline hover:opacity-80">Back to FadeJunkie</a>
+    </div>
+  </footer>
+
+  <!-- Theme Logic -->
+  <script>
+    (function(){
+      const KEY='fj_theme';
+      const btn=document.getElementById('themeToggle');
+      const icon=document.getElementById('themeIcon');
+      if(!btn) return;
+
+      function current(){ return document.documentElement.classList.contains('dark')?'dark':'light'; }
+      function render(){ icon.src = current()==='dark' ? './light.icon.png' : './dark.icon.png'; }
+      function setTheme(t){
+        if(t==='dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+        localStorage.setItem(KEY,t);
+        render();
+      }
+
+      render();
+      btn.addEventListener('click',()=> setTheme(current()==='dark'?'light':'dark'));
+    })();
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+
+</body>
+</html>
