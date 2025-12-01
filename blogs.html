@@ -166,38 +166,60 @@
 
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // ===== Blog listing logic =====
-    const POSTS = [
-      {
-        slug: "what-is-fadejunkie",
-        url: "./what-is-fadejunkie.html",
-        title: "What is FadeJunkie?",
-        category: "FAQ",
-        audience: "Students",
-        tagLine: "Brand / Vision",
-        summary: "Quick breakdown of what FadeJunkie actually is, who it’s for, and how each lane plugs in.",
-        readingTime: "3 min"
-      },
-      {
-        slug: "how-to-pass-state-board",
-        url: "./how-to-pass-state-board.html",
-        title: "How to Pass State Board",
-        category: "Study",
-        audience: "Students",
-        tagLine: "State Board Prep",
-        summary: "Straight walk-through of written + practical, what they really watch for, and how to prep your kit.",
-        readingTime: "8 min"
-      },
-      {
-        slug: "getting-licensed-in-texas",
-        url: "./getting-licensed-in-texas.html",
-        title: "Getting Licensed in Texas",
-        category: "Licensure",
-        audience: "Students",
-        tagLine: "Texas-Specific",
-        summary: "Hours, paperwork, and the path from student permit to full license in the state of Texas.",
-        readingTime: "6 min"
-      },
+ // ===== Blog listing logic =====
+const POSTS = [
+  {
+    slug: "what-is-fadejunkie",
+    url: "./blog.html?slug=what-is-fadejunkie",
+    title: "What is FadeJunkie?",
+    category: "FAQ",
+    audience: "Students, Barbers, Clients",
+    tagLine: "Brand / Vision",
+    summary: "Not just a brand — a blueprint built for students, barbers, and clients who want more from the culture.",
+    readingTime: "4 min"
+  },
+  {
+    slug: "how-to-choose-the-right-barber-school",
+    url: "./blog.html?slug=how-to-choose-the-right-barber-school",
+    title: "How to Choose the Right Barber School for You",
+    category: "Study",
+    audience: "Students",
+    tagLine: "Choosing the right lane",
+    summary: "How to pick a barber school that matches your goals, learning style, and future in the industry.",
+    readingTime: "4 min"
+  },
+  {
+    slug: "why-barbers-showing-up-changes-the-game",
+    url: "./blog.html?slug=why-barbers-showing-up-changes-the-game",
+    title: "Why Barbers Showing Up on FadeJunkie Changes the Game",
+    category: "Business",
+    audience: "Barbers, Students, Clients",
+    tagLine: "Culture shift",
+    summary: "Visibility, standards, and client trust all rise when barbers participate in the FadeJunkie ecosystem.",
+    readingTime: "4 min"
+  },
+  {
+    slug: "how-to-properly-oil-your-clippers",
+    url: "./blog.html?slug=how-to-properly-oil-your-clippers",
+    title: "How to Properly Oil Your Clippers",
+    category: "Clipper Care",
+    audience: "Students, Barbers",
+    tagLine: "Tool Maintenance",
+    summary: "A quick 30-second routine that keeps your blades cool, sharp, and long-lasting.",
+    readingTime: "4 min"
+  },
+  {
+    slug: "real-marketing-techniques-for-barbers",
+    url: "./blog.html?slug=real-marketing-techniques-for-barbers",
+    title: "Real Marketing Techniques for Barbers",
+    category: "Business",
+    audience: "Barbers, Students, Shop Owners",
+    tagLine: "Clientele Growth",
+    summary: "Simple, modern marketing moves barbers are using right now to get noticed and stay booked.",
+    readingTime: "4 min"
+  }
+];
+
       // add more posts here as you build them:
       // {
       //   slug: "building-your-first-book",
