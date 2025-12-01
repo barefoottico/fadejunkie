@@ -1,0 +1,68 @@
+[
+  {
+    "slug": "how-to-use-fadejunkie",
+    "title": "How to Use FadeJunkie",
+    "category": "FAQ",
+    "readingTime": "5 min",
+    "tagLine": "Guide for students, barbers, and clients",
+    "date": "2025-01-01",
+    "audience": "Students, Barbers, Clients",
+    "summary": "A simple guide to using FadeJunkie whether you're a student barber, licensed pro, or client who just wants a clean cut.",
+    "path": "./blogs/how-to-use-fadejunkie.md"
+  },
+  {
+    "slug": "what-is-fadejunkie",
+    "title": "What is FadeJunkie?",
+    "category": "FAQ",
+    "readingTime": "4 min",
+    "tagLine": "The blueprint behind the brand",
+    "date": "2025-01-01",
+    "audience": "Students, Barbers, Clients",
+    "summary": "Not just a brand — a blueprint built for students, barbers, and clients who want more from the culture.",
+    "path": "./blogs/what-is-fadejunkie.md"
+  },
+  {
+    "slug": "how-to-choose-the-right-barber-school",
+    "title": "How to Choose the Right Barber School for You",
+    "category": "Barber School",
+    "readingTime": "4 min",
+    "tagLine": "Find the school that matches your goals, learning style, and future in the industry.",
+    "date": "2025-01-01",
+    "audience": "Students",
+    "summary": "Not every school fits every student. Here's how to choose the one that actually prepares you for state board and the shop.",
+    "path": "./blogs/how-to-choose-the-right-barber-school.md"
+  },
+  {
+    "slug": "why-barbers-showing-up-changes-the-game",
+    "title": "Why Barbers Showing Up on FadeJunkie Changes the Game",
+    "category": "Barber Culture",
+    "readingTime": "4 min",
+    "tagLine": "Visibility, standards, culture — all elevated when barbers participate.",
+    "date": "2025-01-01",
+    "audience": "Barbers, Students, Clients",
+    "summary": "FadeJunkie isn’t just another app — it’s a power shift for barbers, clients, and the culture when barbers show up and participate.",
+    "path": "./blogs/why-barbers-showing-up-changes-the-game.md"
+  },
+  {
+    "slug": "how-to-properly-oil-your-clippers",
+    "title": "How to Properly Oil Your Clippers",
+    "category": "Clipper Care",
+    "readingTime": "4 min",
+    "tagLine": "Keep your tools smooth, sharp, and long-lasting.",
+    "date": "2025-01-01",
+    "audience": "Barbers, Students",
+    "summary": "Your tools are your reputation. Keep them fresh, smooth, and lasting longer by mastering this 30-second routine.",
+    "path": "./blogs/how-to-properly-oil-your-clippers.md"
+  },
+  {
+    "slug": "real-marketing-techniques-for-barbers",
+    "title": "Real Marketing Techniques for Barbers",
+    "category": "Barber Business",
+    "readingTime": "4 min",
+    "tagLine": "Simple moves that build real momentum — no marketing degree required.",
+    "date": "2025-01-01",
+    "audience": "Barbers, Students, Shop Owners",
+    "summary": "You don’t need a marketing degree to get noticed. Just a few consistent moves. Here’s how barbers are building real momentum right now.",
+    "path": "./blogs/real-marketing-techniques-for-barbers.md"
+  }
+]
