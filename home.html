@@ -341,7 +341,7 @@
       route();
     })();
 
-       /* ==========================
+           /* ==========================
        Schools Directory Widget
     ========================== */
     (function(){
@@ -359,6 +359,7 @@
 
       let SCHOOLS = [];
       let filtered = [];
+      let userLoc = null; // { lat, lng } when using "Use my location"
 
       // ---- Radius selector (Exact ZIP / 10 / 25 / 50 mi) ----
       let radiusSelect = null;
@@ -366,7 +367,7 @@
         radiusSelect = document.createElement("select");
         radiusSelect.id = "schoolRadius";
         radiusSelect.className =
-          "px-3 py-2 rounded-lg border bg-white text-sm " +
+          "mt-2 sm:mt-0 sm:ml-2 px-3 py-2 rounded-lg border bg-white text-sm " +
           "dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700";
 
         const options = [
@@ -385,9 +386,14 @@
         // insert right after the ZIP input
         elQuery.parentElement.insertBefore(radiusSelect, elQuery.nextSibling);
 
-        // re-filter when radius changes
+        // re-filter when radius changes (only if there's already a query)
         radiusSelect.addEventListener("change", () => {
-          if (elQuery.value.trim()) filterList();
+          const hasZip = elQuery && elQuery.value.trim();
+          if (userLoc) {
+            filterByUserLocation();
+          } else if (hasZip) {
+            filterList();
+          }
         });
       }
 
@@ -441,9 +447,12 @@
         return R * c;
       }
 
+      // ZIP / text-based filtering
       function filterList(){
         const qRaw = (elQuery && elQuery.value ? elQuery.value : "").trim();
         const q = qRaw.toLowerCase();
+
+        userLoc = null; // if they start typing again, we treat it as a query search
 
         // if no query, show nothing
         if (!q) {
@@ -499,6 +508,29 @@
         render(filtered);
       }
 
+      // Location-based filtering (Use my location)
+      function filterByUserLocation(){
+        if (!userLoc) {
+          filtered = [];
+          render(filtered);
+          return;
+        }
+        let radius = radiusSelect ? parseInt(radiusSelect.value, 10) || 0 : 0;
+        if (radius === 0) {
+          // if user chose "Exact ZIP only", default to 10 miles for location-based
+          radius = 10;
+          if (radiusSelect) radiusSelect.value = "10";
+        }
+
+        filtered = SCHOOLS.filter(s => {
+          if (!s.coords) return false;
+          const d = distanceMiles(userLoc.lat, userLoc.lng, s.coords.lat, s.coords.lng);
+          return d <= radius;
+        });
+
+        render(filtered);
+      }
+
       async function init() {
         try {
           const res = await fetch(JSON_URL, { cache: "no-store" });
@@ -521,7 +553,11 @@
               }
               navigator.geolocation.getCurrentPosition(
                 pos => {
-                  alert("Location saved. Distance sorting will be enabled once school coords are added.");
+                  userLoc = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                  };
+                  filterByUserLocation();
                 },
                 err => {
                   console.warn("Geolocation error:", err);
@@ -536,6 +572,7 @@
             btnReset.addEventListener("click", () => {
               if (elQuery) elQuery.value = "";
               if (radiusSelect) radiusSelect.value = "0";
+              userLoc = null;
               filtered = [];
               render(filtered);
             });
@@ -548,6 +585,7 @@
 
       init();
     })();
+
 
 
     /* ==========================
