@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FadeJunkie Blog</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: { fj: { 50:'#f8fafc', 900:'#0b0b0c' } }
+        }
+      }
+    };
+  </script>
+
+  <!-- Theme on load -->
+  <script>
+    (function(){
+      const KEY='fj_theme';
+      const saved=localStorage.getItem(KEY);
+      const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme=saved || (prefersDark?'dark':'light');
+      if(theme==='dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+
+  <!-- Markdown parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <link rel="icon" href="/favicon.ico" />
+  <meta id="metaDescription" name="description" content="FadeJunkie blog article">
+</head>
+
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+  <!-- HEADER -->
+  <header class="border-b border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-700 shadow-sm">
+    <div class="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="blogs.html" class="flex items-center gap-3">
+        <img src="./fadejunkie_logo.png" alt="FadeJunkie" class="h-8 w-auto" />
+        <span class="text-sm font-semibold tracking-tight">FadeJunkie / Blog</span>
+      </a>
+      <button id="themeToggle" class="p-0 border-none bg-transparent hover:opacity-80 transition" aria-pressed="false" title="Toggle dark mode">
+        <img id="themeIcon" src="./dark.icon.png" alt="Toggle theme" class="h-6 w-6" />
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-3xl mx-auto px-6 py-12">
+    <nav class="mb-6 text-xs text-zinc-500 dark:text-zinc-400">
+      <a href="blogs.html" class="underline">← Back to Blogs</a>
+    </nav>
+
+    <header class="mb-10">
+      <p id="postCategory" class="text-xs font-medium uppercase tracking-wide text-fj-900"></p>
+      <h1 id="postTitle" class="mt-2 text-3xl sm:text-4xl font-extrabold tracking-tight">Loading…</h1>
+      <p id="postSummary" class="mt-4 text-sm sm:text-base text-zinc-700 dark:text-zinc-300 max-w-2xl"></p>
+      <p id="postMeta" class="mt-2 text-xs text-zinc-500 dark:text-zinc-400"></p>
+    </header>
+
+    <article id="blogContent" class="prose prose-zinc dark:prose-invert prose-sm sm:prose-base max-w-none">
+      <p class="text-sm text-zinc-500 dark:text-zinc-400">Loading article…</p>
+    </article>
+
+    <p id="blogError" class="mt-6 text-sm text-red-500 hidden">
+      Could not load this article. Check the URL slug or try again later.
+    </p>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-16 border-t border-zinc-200 dark:border-zinc-800">
+    <div class="max-w-3xl mx-auto px-6 py-6 text-xs flex items-center justify-between text-zinc-500 dark:text-zinc-400">
+      <span>© <span id="year"></span> FadeJunkie</span>
+      <a href="index.html#about" class="underline hover:opacity-80">Back to FadeJunkie</a>
+    </div>
+  </footer>
+
+  <script>
+    // Theme toggle
+    (function(){
+      const KEY='fj_theme';
+      const btn=document.getElementById('themeToggle');
+      const icon=document.getElementById('themeIcon');
+      if(!btn || !icon) return;
+      function current(){ return document.documentElement.classList.contains('dark')?'dark':'light'; }
+      function render(){ 
+        const t=current(); 
+        btn.setAttribute('aria-pressed', t==='dark'); 
+        icon.src = t==='dark' ? './light.icon.png' : './dark.icon.png'; 
+      }
+      function setTheme(t){
+        if(t==='dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+        localStorage.setItem(KEY,t); 
+        render();
+      }
+      render();
+      btn.addEventListener('click',()=> setTheme(current()==='dark'?'light':'dark'));
+    })();
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ===== Blog loader =====
+    (async function loadPost(){
+      const params = new URLSearchParams(window.location.search);
+      const slug = params.get('slug');
+
+      const errorEl = document.getElementById('blogError');
+      const contentEl = document.getElementById('blogContent');
+      const titleEl = document.getElementById('postTitle');
+      const summaryEl = document.getElementById('postSummary');
+      const metaEl = document.getElementById('postMeta');
+      const catEl = document.getElementById('postCategory');
+      const metaDesc = document.getElementById('metaDescription');
+
+      if (!slug) {
+        titleEl.textContent = "Article not found";
+        contentEl.innerHTML = "<p>Missing slug in the URL. Example: <code>blog.html?slug=what-is-fadejunkie</code>.</p>";
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const res = await fetch('./blogs.json');
+        const posts = await res.json();
+        const post = posts.find(p => p.slug === slug);
+
+        if (!post) {
+          titleEl.textContent = "Article not found";
+          contentEl.innerHTML = "<p>We couldn’t find a blog post for that slug.</p>";
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        // Fill meta + header
+        document.title = post.title + " – FadeJunkie Blog";
+        if (metaDesc) metaDesc.setAttribute('content', post.summary || '');
+        catEl.textContent = post.category || '';
+        titleEl.textContent = post.title;
+        summaryEl.textContent = post.summary || '';
+        metaEl.textContent = `${post.date || ''}${post.readingTime ? " • " + post.readingTime : ""}`;
+
+        // Fetch markdown
+        const mdRes = await fetch(post.path || (`./blogs/${post.slug}.md`));
+        const mdText = await mdRes.text();
+
+        // Render markdown
+        const html = marked.parse(mdText);
+        contentEl.innerHTML = html;
+      } catch (err) {
+        console.error(err);
+        titleEl.textContent = "Error loading article";
+        contentEl.innerHTML = "<p>Something went wrong while loading this article.</p>";
+        errorEl.classList.remove('hidden');
+      }
+    })();
+  </script>
+</body>
+</html>
