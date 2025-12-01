@@ -345,6 +345,12 @@
    Schools Directory Widget
 ========================== */
 (function () {
+
+  // Only run on pages that actually have the directory
+  if (!document.getElementById("schoolGrid")) {
+    return;  // stop completely
+  }
+
   const JSON_URL = "https://raw.githubusercontent.com/barefoottico/fadejunkie/430211070b8512c117a07136e34b087971666571/texas_barber_schools.json";
 
   const elQuery  = document.getElementById("schoolQuery");
@@ -383,20 +389,18 @@
              class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
                     dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Call</a>` : ``}
         </div>
-        <div class="mt-2 text-xs text-zinc-500 dark:text-zinc-400" data-distance-for="${s.id}"></div>
       </article>
     `;
   }
 
   function render(list){
-    if (!elGrid || !elEmpty || !elCount) return;
     elGrid.innerHTML = list.map(card).join("");
     elEmpty.classList.toggle("hidden", list.length > 0);
     elCount.textContent = `${list.length} result${list.length === 1 ? "" : "s"}`;
   }
 
   function filterList(){
-    const q = (elQuery && elQuery.value ? elQuery.value : "").trim().toLowerCase();
+    const q = (elQuery?.value || "").trim().toLowerCase();
     filtered = SCHOOLS.filter(s => {
       if (!q) return true;
       return (s.name + " " + s.address).toLowerCase().includes(q);
@@ -407,18 +411,11 @@
   async function init() {
     try {
       const res = await fetch(JSON_URL, { cache: "no-store" });
-      if (!res.ok) throw new Error("Failed to load schools JSON");
       SCHOOLS  = await res.json();
       filtered = [...SCHOOLS];
-
       render(filtered);
 
-      if (elQuery) {
-        elQuery.addEventListener("input", filterList);
-      }
-
-      // hooks for geo / reset once you implement them
-      // if (btnReset) btnReset.addEventListener("click", () => { elQuery.value = ""; filterList(); });
+      if (elQuery) elQuery.addEventListener("input", filterList);
 
     } catch (err) {
       console.error("Error loading school list:", err);
@@ -427,7 +424,9 @@
   }
 
   init();
+
 })();
+
 
       // Events
       elQuery.addEventListener("input", filterList);
