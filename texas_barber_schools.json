@@ -1,0 +1,1770 @@
+[
+  {
+    "id": "5-star-barber-academy",
+    "name": "5 Star Barber Academy",
+    "address": "129 Hall Ln, Seagoville, TX 75159",
+    "coords": {
+      "lat": 32.64999771,
+      "lng": -96.54807281
+    },
+    "website": "https://5starbarberacademy.square.site/",
+    "phone": "(214) 557-3908"
+  },
+  {
+    "id": "717-barber-academy",
+    "name": "717 Barber Academy",
+    "address": "307 Main St, Frisco, TX 75036",
+    "coords": {
+      "lat": 33.15245819,
+      "lng": -96.88939667
+    },
+    "website": "http://717barberacademy.com/",
+    "phone": "(214) 707-8300"
+  },
+  {
+    "id": "a-r-c-institute-beauty-and-barbering",
+    "name": "A.R.C. INSTITUTE BEAUTY AND BARBERING",
+    "address": "2123 Southmore Ave, Pasadena, TX 77502",
+    "coords": {
+      "lat": 29.69231606,
+      "lng": -95.18418884
+    },
+    "website": null,
+    "phone": "(281) 738-6065"
+  },
+  {
+    "id": "a-and-m-barber-academy",
+    "name": "A&M Barber Academy",
+    "address": "434 E Church St, Grand Prairie, TX 75050",
+    "coords": {
+      "lat": 32.74721527,
+      "lng": -96.99846649
+    },
+    "website": "http://anmbarberacademy.com/",
+    "phone": "(214) 677-0022"
+  },
+  {
+    "id": "a-and-m-barber-academy-fort-worth",
+    "name": "A&M Barber Academy (Fort Worth)",
+    "address": "2801 Hemphill St, Fort Worth, TX 76110",
+    "coords": {
+      "lat": 32.71087265,
+      "lng": -97.33117676
+    },
+    "website": "https://www.anmbarberacademy.com/",
+    "phone": "(817) 386-7827"
+  },
+  {
+    "id": "aaction-barber-and-styling-college",
+    "name": "AACTION BARBER AND STYLING COLLEGE",
+    "address": "4460 W Walnut St, Garland, TX 75042",
+    "coords": {
+      "lat": 32.91513443,
+      "lng": -96.69914246
+    },
+    "website": "http://www.aactionbarber.com/",
+    "phone": "(972) 921-3790"
+  },
+  {
+    "id": "acres-homes-barber-college",
+    "name": "Acres Homes Barber College",
+    "address": "2306 Ferguson Way, Houston, TX 77088",
+    "coords": {
+      "lat": 29.87811852,
+      "lng": -95.44477844
+    },
+    "website": null,
+    "phone": "(281) 931-5591"
+  },
+  {
+    "id": "affordable-barber-academy-abilene",
+    "name": "Affordable Barber Academy Abilene",
+    "address": "3241 S 1st St, Abilene, TX 79605",
+    "coords": {
+      "lat": 32.45067978,
+      "lng": -99.76347351
+    },
+    "website": "https://www.affordablebarberacademyabi.com/",
+    "phone": "(325) 514-8531"
+  },
+  {
+    "id": "alamo-city-barber-college",
+    "name": "Alamo City Barber College",
+    "address": "8910 Bandera Rd, San Antonio, TX 78250",
+    "coords": {
+      "lat": 29.52703857,
+      "lng": -98.63954163
+    },
+    "website": "http://www.alamocitybarbercollege.com/",
+    "phone": "(210) 523-7777"
+  },
+  {
+    "id": "all-around-barber-school",
+    "name": "All Around Barber School",
+    "address": "3333 County Road 119, Hutto, TX 78634",
+    "coords": {
+      "lat": 30.58178902,
+      "lng": -97.57237244
+    },
+    "website": "https://allaroundbarberschoo.com/",
+    "phone": "(512) 698-8046"
+  },
+  {
+    "id": "alliance-barber-academy",
+    "name": "Alliance Barber Academy",
+    "address": "4202 Ruben M Torres Blvd, Brownsville, TX 78526",
+    "coords": {
+      "lat": 25.94745255,
+      "lng": -97.45143127
+    },
+    "website": null,
+    "phone": "(956) 545-0062"
+  },
+  {
+    "id": "anngee-s-barber-academy",
+    "name": "AnnGee's Barber Academy",
+    "address": "4200 W Illinois Ave, Midland, TX 79703",
+    "coords": {
+      "lat": 31.98905945,
+      "lng": -102.1303253
+    },
+    "website": null,
+    "phone": "(432) 699-0013"
+  },
+  {
+    "id": "ashrei-barber-academy",
+    "name": "Ashrei Barber Academy",
+    "address": "12879 Josey Ln, Farmers Branch, TX 75234",
+    "coords": {
+      "lat": 32.92159653,
+      "lng": -96.88282013
+    },
+    "website": null,
+    "phone": "(469) 588-4931"
+  },
+  {
+    "id": "barber-academy",
+    "name": "Barber Academy",
+    "address": "1236 W Kemper Rd, Cincinnati, OH 45240",
+    "coords": {
+      "lat": 39.29002762,
+      "lng": -84.52638245
+    },
+    "website": "https://www.barberacademy.info/",
+    "phone": "(513) 996-0066"
+  },
+  {
+    "id": "barber-institute-of-texas-lewisville",
+    "name": "Barber Institute of Texas-Lewisville",
+    "address": "2325 S Stemmons Fwy, Lewisville, TX 75067",
+    "coords": {
+      "lat": 33.00535583,
+      "lng": -96.97904968
+    },
+    "website": "http://www.bit.edu/",
+    "phone": "(469) 702-6480"
+  },
+  {
+    "id": "barber-life-academy",
+    "name": "Barber Life Academy",
+    "address": "9526 N Sam Houston Pkwy E, Humble, TX 77396",
+    "coords": {
+      "lat": 29.93346024,
+      "lng": -95.24724579
+    },
+    "website": "http://barberlifeacademy.com/",
+    "phone": "(832) 739-9466"
+  },
+  {
+    "id": "barbers-trade-school-inc",
+    "name": "Barbers Trade School, Inc.",
+    "address": "665 Orleans St, Beaumont, TX 77701",
+    "coords": {
+      "lat": 30.08156013,
+      "lng": -94.09764099
+    },
+    "website": "https://barbersinctx.com/",
+    "phone": "(409) 838-9094"
+  },
+  {
+    "id": "baytown-beauty-and-barber-college",
+    "name": "Baytown Beauty & Barber College",
+    "address": "808 Park St, Baytown, TX 77520",
+    "coords": {
+      "lat": 29.7470417,
+      "lng": -94.97908783
+    },
+    "website": "http://recosmetology.com/",
+    "phone": "(281) 420-2421"
+  },
+  {
+    "id": "ben-barber-innovation-academy",
+    "name": "Ben Barber Innovation Academy",
+    "address": "1120 W Debbie Ln, Mansfield, TX 76063",
+    "coords": {
+      "lat": 32.5922966,
+      "lng": -97.15983582
+    },
+    "website": "http://bbcta.mansfieldisd.org/",
+    "phone": "(682) 314-1600"
+  },
+  {
+    "id": "bladesmith-barber-college",
+    "name": "Bladesmith Barber College",
+    "address": "1100 Dallas Dr, Denton, TX 76205",
+    "coords": {
+      "lat": 33.19746017,
+      "lng": -97.12301636
+    },
+    "website": "http://bladesmithbarbercollege.com/",
+    "phone": "(940) 222-2919"
+  },
+  {
+    "id": "blanco-s-flawless-barber-school",
+    "name": "Blanco's Flawless Barber School",
+    "address": "1235 S Josey Ln, Carrollton, TX 75006",
+    "coords": {
+      "lat": 32.95122147,
+      "lng": -96.88942719
+    },
+    "website": "http://all-flawless.com/",
+    "phone": "(469) 900-8244"
+  },
+  {
+    "id": "blessed-hands-barber-cosmetology-college",
+    "name": "Blessed Hands Barber Cosmetology College",
+    "address": "11101 Leopard St, Corpus Christi, TX 78410",
+    "coords": {
+      "lat": 27.84376907,
+      "lng": -97.58460999
+    },
+    "website": null,
+    "phone": "(361) 356-0899"
+  },
+  {
+    "id": "brighton-barber-institute",
+    "name": "Brighton Barber Institute",
+    "address": "133 W Harwood Rd, Hurst, TX 76054",
+    "coords": {
+      "lat": 32.84892654,
+      "lng": -97.17028809
+    },
+    "website": "http://brightonbarber.com/",
+    "phone": "(817) 785-7051"
+  },
+  {
+    "id": "bronx-barber-college",
+    "name": "Bronx Barber College",
+    "address": "1360 Lee Trevino Dr, El Paso, TX 79936",
+    "coords": {
+      "lat": 31.74370766,
+      "lng": -106.3203964
+    },
+    "website": "https://bronxbarbercollege.com/",
+    "phone": "(915) 260-9088"
+  },
+  {
+    "id": "br-der-barber-academy",
+    "name": "Br\u00fcder Barber Academy",
+    "address": "Avenida Manuel J. Clouthier 9845, 32583 Ju\u00e1rez",
+    "coords": {
+      "lat": 31.66276741,
+      "lng": -106.3935165
+    },
+    "website": "https://www.facebook.com/BruderBarberAcademy/",
+    "phone": "656 790 7998"
+  },
+  {
+    "id": "ca-barber-and-cosmetology-school",
+    "name": "CA Barber and Cosmetology School",
+    "address": "403 E Davis St, Conroe, TX 77301",
+    "coords": {
+      "lat": 30.31298447,
+      "lng": -95.45227814
+    },
+    "website": null,
+    "phone": "(832) 666-7763"
+  },
+  {
+    "id": "capelli-beauty-and-barber-college",
+    "name": "Capelli Beauty and Barber College",
+    "address": "5720 Trowbridge Dr, El Paso, TX 79925",
+    "coords": {
+      "lat": 31.78102303,
+      "lng": -106.4192047
+    },
+    "website": "https://capelliedu.com/",
+    "phone": "(915) 222-8633"
+  },
+  {
+    "id": "central-texas-barber-college",
+    "name": "Central Texas Barber College",
+    "address": "3602 Watercrest Rd, Killeen, TX 76549",
+    "coords": {
+      "lat": 31.11055756,
+      "lng": -97.78012085
+    },
+    "website": "https://centraltxbarbercollege.com/",
+    "phone": "(254) 432-4439"
+  },
+  {
+    "id": "cf-barber-academy-llc",
+    "name": "CF Barber Academy LLC",
+    "address": "900 Highway 80, San Marcos, TX 78666",
+    "coords": {
+      "lat": 29.88066292,
+      "lng": -97.92030334
+    },
+    "website": "https://cfbarberacademy.com/",
+    "phone": "(512) 216-6489"
+  },
+  {
+    "id": "champions-barber-and-beauty-academy",
+    "name": "Champions Barber and Beauty Academy",
+    "address": "3336 Garden Dr, Waco, TX 76706",
+    "coords": {
+      "lat": 31.50756454,
+      "lng": -97.12879181
+    },
+    "website": "https://championsacademywaco.com/",
+    "phone": "(254) 300-2320"
+  },
+  {
+    "id": "cortex-college-of-barbering-and-cosmetology",
+    "name": "Cortex College of Barbering and Cosmetology",
+    "address": "2576 E League City Pkwy, League City, TX 77573",
+    "coords": {
+      "lat": 29.50519371,
+      "lng": -95.04364014
+    },
+    "website": null,
+    "phone": "(832) 661-2318"
+  },
+  {
+    "id": "cut-and-shave-barber-college",
+    "name": "Cut & Shave Barber College",
+    "address": "1139 Gembler Rd, San Antonio, TX 78219",
+    "coords": {
+      "lat": 29.43590546,
+      "lng": -98.41101074
+    },
+    "website": "https://www.cutandshavebarbercollege.com/",
+    "phone": "(210) 273-8340"
+  },
+  {
+    "id": "dallas-barber-and-stylist-clg",
+    "name": "Dallas Barber & Stylist Clg",
+    "address": "9357 Forest Ln, Dallas, TX 75243",
+    "coords": {
+      "lat": 32.90992355,
+      "lng": -96.73690033
+    },
+    "website": "http://www.dallasbarberandstylistcollege.com/",
+    "phone": "(214) 575-2168"
+  },
+  {
+    "id": "dallas-barber-and-stylist-college",
+    "name": "Dallas Barber & Stylist College",
+    "address": "10130 Forest Ln, Dallas, TX 75243",
+    "coords": {
+      "lat": 32.90851212,
+      "lng": -96.71087646
+    },
+    "website": null,
+    "phone": null
+  },
+  {
+    "id": "dallas-barber-and-stylist-college",
+    "name": "Dallas Barber & Stylist College",
+    "address": "3909 Frankford Rd, Dallas, TX 75287",
+    "coords": {
+      "lat": 32.99740219,
+      "lng": -96.84709167
+    },
+    "website": null,
+    "phone": "(469) 758-0122"
+  },
+  {
+    "id": "dallas-barber-and-stylist-college",
+    "name": "Dallas Barber & Stylist College",
+    "address": "5504 Matlock Rd, Arlington, TX 76018",
+    "coords": {
+      "lat": 32.65584946,
+      "lng": -97.1156311
+    },
+    "website": "http://dallasbarberandstylistcollege.com/",
+    "phone": "(214) 575-2168"
+  },
+  {
+    "id": "dallas-beauty-and-barber-academy",
+    "name": "Dallas Beauty And Barber Academy",
+    "address": "2121 Northwest Hwy, Garland, TX 75041",
+    "coords": {
+      "lat": 32.86544418,
+      "lng": -96.65872955
+    },
+    "website": "http://www.dallasbeautyacademy.com/",
+    "phone": "(214) 227-5939"
+  },
+  {
+    "id": "dallas-blends-barber-academy",
+    "name": "Dallas Blends Barber Academy",
+    "address": "2902 S Buckner Blvd, Dallas, TX 75227",
+    "coords": {
+      "lat": 32.7611618,
+      "lng": -96.68161011
+    },
+    "website": "http://dallasblends.com/",
+    "phone": "(214) 617-5489"
+  },
+  {
+    "id": "dallas-blends-barber-academy-garland",
+    "name": "Dallas Blends Barber Academy Garland",
+    "address": "965 W Centerville Rd, Garland, TX 75041",
+    "coords": {
+      "lat": 32.86015701,
+      "lng": -96.64549255
+    },
+    "website": "http://www.dallasblends.com/",
+    "phone": "(214) 617-5489"
+  },
+  {
+    "id": "dallas-lash-barber-and-beauty-academy",
+    "name": "Dallas Lash Barber & Beauty Academy",
+    "address": "801 S Greenville Ave, Allen, TX 75002",
+    "coords": {
+      "lat": 33.08650589,
+      "lng": -96.67102051
+    },
+    "website": "http://dallaslashacademy.com/",
+    "phone": "(972) 382-5777"
+  },
+  {
+    "id": "dapper-barber-academy",
+    "name": "Dapper Barber Academy",
+    "address": "2334 W Buckingham Rd, Garland, TX 75042",
+    "coords": {
+      "lat": 32.92959976,
+      "lng": -96.66175079
+    },
+    "website": "http://www.dapperbarber.co/",
+    "phone": "(469) 562-9224"
+  },
+  {
+    "id": "dapper-g-barber-college",
+    "name": "Dapper G Barber College",
+    "address": "1305 SW Loop 410, San Antonio, TX 78227",
+    "coords": {
+      "lat": 29.42290688,
+      "lng": -98.65169525
+    },
+    "website": "https://sanantoniomenshaircuts.com/",
+    "phone": "(210) 328-7680"
+  },
+  {
+    "id": "deluxe-barber-college",
+    "name": "Deluxe Barber College",
+    "address": "1212 W Parmer Ln, Austin, TX 78727",
+    "coords": {
+      "lat": 30.40921402,
+      "lng": -97.68004608
+    },
+    "website": "http://www.deluxebarbercollege.com/",
+    "phone": "(512) 719-9999"
+  },
+  {
+    "id": "deluxe-barber-college",
+    "name": "Deluxe Barber College",
+    "address": "12636 Nacogdoches Rd, San Antonio, TX 78217",
+    "coords": {
+      "lat": 29.55490494,
+      "lng": -98.40079498
+    },
+    "website": "http://deluxebarbercollege.org/",
+    "phone": "(210) 655-9999"
+  },
+  {
+    "id": "dooney-s-barber-and-beauty-academy",
+    "name": "Dooney's Barber & Beauty Academy",
+    "address": "4333 Gannon Ln, Dallas, TX 75237",
+    "coords": {
+      "lat": 32.65708542,
+      "lng": -96.88977814
+    },
+    "website": "http://www.dooneysacademy.com/",
+    "phone": "(833) 366-6397"
+  },
+  {
+    "id": "east-texas-barber-and-beauty-school-barbershop-hair-salon",
+    "name": "East Texas Barber & Beauty School / Barbershop / Hair Salon",
+    "address": "335 S Bonner Ave, Tyler, TX 75702",
+    "coords": {
+      "lat": 32.3471756,
+      "lng": -95.30631256
+    },
+    "website": null,
+    "phone": "(469) 970-1324"
+  },
+  {
+    "id": "el-paso-beauty-and-barber-academy",
+    "name": "El Paso Beauty and Barber Academy",
+    "address": "5907 Brook Hollow Dr, El Paso, TX 79925",
+    "coords": {
+      "lat": 31.78681374,
+      "lng": -106.4169312
+    },
+    "website": "https://elpasobeautyandbarberacademy.com/",
+    "phone": "(915) 289-8088"
+  },
+  {
+    "id": "el-pipo-barber-college",
+    "name": "El Pipo Barber College",
+    "address": "1012 N Raynor St, El Paso, TX 79903",
+    "coords": {
+      "lat": 31.78444099,
+      "lng": -106.4597168
+    },
+    "website": "http://facebook.com/elpipobarbercollege",
+    "phone": "(915) 562-4069"
+  },
+  {
+    "id": "elegance-barber-and-styling-academy",
+    "name": "Elegance Barber & Styling Academy",
+    "address": "9490 Webb Chapel Rd, Dallas, TX 75220",
+    "coords": {
+      "lat": 32.86303711,
+      "lng": -96.8598175
+    },
+    "website": "https://elegancebarberandstylingacademy.com/",
+    "phone": "(682) 406-1120"
+  },
+  {
+    "id": "elevation-barber-college",
+    "name": "Elevation Barber College",
+    "address": "4417 Rittiman Rd, San Antonio, TX 78218",
+    "coords": {
+      "lat": 29.48477745,
+      "lng": -98.40703583
+    },
+    "website": "https://elevationbarbercolleges.com/",
+    "phone": "(210) 867-6069"
+  },
+  {
+    "id": "elite-barber-institute-llc",
+    "name": "Elite Barber Institute LLC",
+    "address": "2108 W Nolana Ave, McAllen, TX 78504",
+    "coords": {
+      "lat": 26.24167442,
+      "lng": -98.23661041
+    },
+    "website": null,
+    "phone": "(956) 929-6403"
+  },
+  {
+    "id": "enrichment-barber-college",
+    "name": "Enrichment Barber College",
+    "address": "11220 Perrin Beitel Rd, San Antonio, TX 78217",
+    "coords": {
+      "lat": 29.5415802,
+      "lng": -98.4105072
+    },
+    "website": "https://www.enrichmentbarbercollege.com/",
+    "phone": "(210) 440-4811"
+  },
+  {
+    "id": "epic-barber-college",
+    "name": "Epic Barber College",
+    "address": "13018 Woodforest Blvd, Houston, TX 77015",
+    "coords": {
+      "lat": 29.79370117,
+      "lng": -95.19458008
+    },
+    "website": "http://www.epicbarbercollege.com/",
+    "phone": "(713) 292-7036"
+  },
+  {
+    "id": "exclusiv-barber-and-beauty-academy",
+    "name": "Exclusiv Barber and Beauty Academy",
+    "address": "713 TX-323 W Loop, Tyler, TX 75701",
+    "coords": {
+      "lat": 32.30430222,
+      "lng": -95.31010437
+    },
+    "website": "http://www.exclusivacademy.com/",
+    "phone": "(903) 390-6210"
+  },
+  {
+    "id": "exclusive-barber-academy-shop",
+    "name": "Exclusive Barber Academy Shop",
+    "address": "13500 W Airport Blvd, Sugar Land, TX 77498",
+    "coords": {
+      "lat": 29.65147781,
+      "lng": -95.62039185
+    },
+    "website": "https://www.exclusivebarberacademy.com/",
+    "phone": "(832) 680-9849"
+  },
+  {
+    "id": "expert-barber-beauty-academy",
+    "name": "Expert barber beauty academy",
+    "address": "1000 W Rosemeade Pkwy, Carrollton, TX 75007",
+    "coords": {
+      "lat": 33.01162338,
+      "lng": -96.91228485
+    },
+    "website": "http://www.expertbarberbeauty.com/",
+    "phone": "(469) 626-0064"
+  },
+  {
+    "id": "expert-barber-beauty-school",
+    "name": "Expert Barber Beauty School",
+    "address": "2800 Virginia Pkwy, McKinney, TX 75071",
+    "coords": {
+      "lat": 33.19951248,
+      "lng": -96.65544128
+    },
+    "website": "https://www.expertbarberbeauty.com/",
+    "phone": "(903) 864-5440"
+  },
+  {
+    "id": "eyes-on-me-advanced-barber-college",
+    "name": "Eyes On Me Advanced Barber College",
+    "address": "242 N LBJ Dr, San Marcos, TX 78666",
+    "coords": {
+      "lat": 29.88417816,
+      "lng": -97.93992615
+    },
+    "website": null,
+    "phone": "(817) 948-0831"
+  },
+  {
+    "id": "fade-fellas-barber-school",
+    "name": "Fade Fellas Barber School",
+    "address": "2760 E Trinity Mills Rd, Carrollton, TX 75006",
+    "coords": {
+      "lat": 32.98583984,
+      "lng": -96.85716248
+    },
+    "website": "http://www.fadefellasbarberschool.com/",
+    "phone": "(940) 279-3565"
+  },
+  {
+    "id": "fade-em-all-barber-college",
+    "name": "Fade\u2019em All Barber College",
+    "address": "1599 Bandera Rd, San Antonio, TX 78228",
+    "coords": {
+      "lat": 29.4682827,
+      "lng": -98.57035065
+    },
+    "website": "https://www.fadeemallbarbercollege.com/",
+    "phone": "(210) 475-3345"
+  },
+  {
+    "id": "finetta-barber-and-beauty-academy",
+    "name": "Finetta Barber and Beauty Academy",
+    "address": "1808 Brothers Blvd, College Station, TX 77845",
+    "coords": {
+      "lat": 30.59599304,
+      "lng": -96.29912567
+    },
+    "website": "http://www.finettabarberandbeautyacademy.com/",
+    "phone": "(979) 703-2383"
+  },
+  {
+    "id": "five-star-elite-fades-barber-college",
+    "name": "Five Star Elite Fades Barber College",
+    "address": "10920 Will Clayton Pkwy, Humble, TX 77396",
+    "coords": {
+      "lat": 29.97847176,
+      "lng": -95.21716309
+    },
+    "website": "https://fivestarelitefadesbarbercollege.com/",
+    "phone": "(281) 883-4929"
+  },
+  {
+    "id": "franklin-barber-institute",
+    "name": "Franklin Barber Institute",
+    "address": "6521 Highway 6 N, Houston, TX 77084",
+    "coords": {
+      "lat": 29.87207603,
+      "lng": -95.64685059
+    },
+    "website": "http://www.franklininstitute.net/",
+    "phone": "(832) 683-4792"
+  },
+  {
+    "id": "franklin-barber-institute-2",
+    "name": "Franklin Barber Institute #2",
+    "address": "13318 Almeda Rd, Houston, TX 77045",
+    "coords": {
+      "lat": 29.61442757,
+      "lng": -95.41983032
+    },
+    "website": "http://www.franklininstitute.net/",
+    "phone": "(713) 645-9060"
+  },
+  {
+    "id": "franklin-barber-institute-3",
+    "name": "Franklin Barber Institute #3",
+    "address": "8030 FM 1765, Texas City, TX 77591",
+    "coords": {
+      "lat": 29.37895775,
+      "lng": -95.00057983
+    },
+    "website": "http://www.franklininstitute.net/",
+    "phone": "(832) 683-4792"
+  },
+  {
+    "id": "ga-beauty-and-barber-school",
+    "name": "GA Beauty & Barber School",
+    "address": "3301 N Ware Rd, McAllen, TX 78501",
+    "coords": {
+      "lat": 26.23758125,
+      "lng": -98.25720215
+    },
+    "website": "http://www.gabeautybarber.com/",
+    "phone": "(956) 664-2233"
+  },
+  {
+    "id": "game-changers-barber-academy",
+    "name": "Game Changers Barber Academy",
+    "address": "7224 Blanco Rd, San Antonio, TX 78216",
+    "coords": {
+      "lat": 29.52390099,
+      "lng": -98.50411224
+    },
+    "website": "https://www.gamechangersbarberacademy.com/",
+    "phone": "(210) 290-8041"
+  },
+  {
+    "id": "gloria-s-barber-college",
+    "name": "Gloria's Barber College",
+    "address": "6812 Bandera Rd, San Antonio, TX 78238",
+    "coords": {
+      "lat": 29.49622536,
+      "lng": -98.62174225
+    },
+    "website": "http://www.gloriasbarbercollege.net/",
+    "phone": "(210) 543-2288"
+  },
+  {
+    "id": "goldstar-academy-barber-and-cosmetology",
+    "name": "GoldStar Academy Barber & Cosmetology",
+    "address": "1123 E Villa Maria Rd, Bryan, TX 77802",
+    "coords": {
+      "lat": 30.6491127,
+      "lng": -96.34699249
+    },
+    "website": "https://goldstarbarberacademy.com/",
+    "phone": "(979) 485-2997"
+  },
+  {
+    "id": "graham-s-barber-college",
+    "name": "Graham's Barber College",
+    "address": "3016 Al Lipscomb Way, Dallas, TX 75215",
+    "coords": {
+      "lat": 32.77396011,
+      "lng": -96.76841736
+    },
+    "website": "http://grahamsbarbercollege.com/",
+    "phone": "(214) 421-8040"
+  },
+  {
+    "id": "gulf-coast-barber-college",
+    "name": "Gulf Coast Barber College",
+    "address": "100 Perkins Ave, League City, TX 77573",
+    "coords": {
+      "lat": 29.51124954,
+      "lng": -95.09343719
+    },
+    "website": "http://www.gulfcoastbarbercollege.com/",
+    "phone": "(281) 989-1244"
+  },
+  {
+    "id": "hair-expressions-barber-school",
+    "name": "Hair Expressions Barber School",
+    "address": "4027 Ayers St, Corpus Christi, TX 78415",
+    "coords": {
+      "lat": 27.75237083,
+      "lng": -97.41743469
+    },
+    "website": null,
+    "phone": "(361) 225-1041"
+  },
+  {
+    "id": "headlines-barber-college",
+    "name": "Headlines barber college",
+    "address": "2501 N Dixie Blvd, Odessa, TX 79761",
+    "coords": {
+      "lat": 31.87017441,
+      "lng": -102.3691864
+    },
+    "website": "http://headlinesbarbercollege.com/",
+    "phone": "(432) 332-2889"
+  },
+  {
+    "id": "heb-barber-academy",
+    "name": "HEB Barber Academy",
+    "address": "760 E Pipeline Rd, Hurst, TX 76053",
+    "coords": {
+      "lat": 32.82308197,
+      "lng": -97.15606689
+    },
+    "website": "http://www.hebbarberacademy.org/",
+    "phone": "(817) 583-5271"
+  },
+  {
+    "id": "houston-barber-school",
+    "name": "Houston Barber School",
+    "address": "313 Rankin Rd, Houston, TX 77073",
+    "coords": {
+      "lat": 29.96632767,
+      "lng": -95.41561127
+    },
+    "website": "http://htxbarberschool.com/",
+    "phone": "(281) 821-0681"
+  },
+  {
+    "id": "houston-barber-school",
+    "name": "Houston Barber School",
+    "address": "9525 Southwest Fwy, Houston, TX 77074",
+    "coords": {
+      "lat": 29.67705536,
+      "lng": -95.53903198
+    },
+    "website": "http://htxbarberschool.com/",
+    "phone": "(281) 821-0681"
+  },
+  {
+    "id": "houston-barber-school",
+    "name": "Houston Barber School",
+    "address": "7715 FM 1960 Bypass Rd W, Humble, TX 77338",
+    "coords": {
+      "lat": 30.00499153,
+      "lng": -95.31033325
+    },
+    "website": "https://htxbarberschool.com/",
+    "phone": "(281) 821-0681"
+  },
+  {
+    "id": "icon-school-of-barbering",
+    "name": "Icon School of Barbering",
+    "address": "7016 Scott St, Houston, TX 77021",
+    "coords": {
+      "lat": 29.6893177,
+      "lng": -95.36383057
+    },
+    "website": "http://www.iconschoolofbarbering.com/",
+    "phone": "(281) 888-7179"
+  },
+  {
+    "id": "illumination-barber-school",
+    "name": "Illumination Barber School",
+    "address": "12260 Gulf Fwy, Houston, TX 77034",
+    "coords": {
+      "lat": 29.62103653,
+      "lng": -95.22290802
+    },
+    "website": null,
+    "phone": "(832) 212-3361"
+  },
+  {
+    "id": "immaculate-cut-barber-institute",
+    "name": "Immaculate Cut Barber Institute",
+    "address": "Laredo, TX 78041",
+    "coords": {
+      "lat": 27.5510788,
+      "lng": -99.48053741
+    },
+    "website": "https://immaculatecut.com/",
+    "phone": null
+  },
+  {
+    "id": "immaculate-cut-barber-institute-fort-worth-tx",
+    "name": "Immaculate Cut Barber Institute Fort Worth, Tx",
+    "address": "6080 S Hulen St, Fort Worth, TX 76132",
+    "coords": {
+      "lat": 32.65872574,
+      "lng": -97.40219116
+    },
+    "website": "http://www.immaculatecut.com/",
+    "phone": "(956) 754-8555"
+  },
+  {
+    "id": "impact-barber-academy-austin",
+    "name": "IMPACT Barber Academy Austin",
+    "address": "5339 Burnet Rd, Austin, TX 78756",
+    "coords": {
+      "lat": 30.32711601,
+      "lng": -97.73943329
+    },
+    "website": "https://impactbarberacademy.com/",
+    "phone": "(512) 458-2620"
+  },
+  {
+    "id": "inspire-institute-of-barbering-and-cosmetology",
+    "name": "Inspire Institute of Barbering & Cosmetology",
+    "address": "3730 N Josey Ln, Carrollton, TX 75007",
+    "coords": {
+      "lat": 33.01322937,
+      "lng": -96.88598633
+    },
+    "website": null,
+    "phone": "(469) 900-6386"
+  },
+  {
+    "id": "jackson-barber-college",
+    "name": "JACKSON Barber College",
+    "address": "Bellfort Ave, Houston, TX 77051",
+    "coords": {
+      "lat": 29.66929817,
+      "lng": -95.35915375
+    },
+    "website": "http://www.jacksonbarbercollege.com/",
+    "phone": "(832) 804-6046"
+  },
+  {
+    "id": "kalibur-barber-college",
+    "name": "Kalibur Barber College",
+    "address": "1801 W Polo Rd, Grand Prairie, TX 75052",
+    "coords": {
+      "lat": 32.65758133,
+      "lng": -97.02870178
+    },
+    "website": "http://kaliburbarbercollege.org/",
+    "phone": "(972) 522-7730"
+  },
+  {
+    "id": "km-beauty-and-barber-institute",
+    "name": "Km Beauty And Barber Institute",
+    "address": "2045 Forest Ln, Garland, TX 75042",
+    "coords": {
+      "lat": 32.90943146,
+      "lng": -96.65917969
+    },
+    "website": null,
+    "phone": "(214) 861-5357"
+  },
+  {
+    "id": "liras-barber-acedemy",
+    "name": "Liras Barber Acedemy",
+    "address": "10793 Harry Hines Blvd, Dallas, TX 75220",
+    "coords": {
+      "lat": 32.87479782,
+      "lng": -96.88473511
+    },
+    "website": null,
+    "phone": "(972) 704-8269"
+  },
+  {
+    "id": "lone-star-barber-and-esthetics-academy",
+    "name": "Lone Star Barber & Esthetics Academy",
+    "address": "6010 Lieutenant Jg Barnett Rd, Fort Worth, TX 76114",
+    "coords": {
+      "lat": 32.77568817,
+      "lng": -97.41268158
+    },
+    "website": null,
+    "phone": "(817) 797-6465"
+  },
+  {
+    "id": "madison-barber-stylist-school",
+    "name": "Madison Barber Stylist School",
+    "address": "1737A Troup Hwy, Tyler, TX 75701",
+    "coords": {
+      "lat": 32.31777191,
+      "lng": -95.28057098
+    },
+    "website": "http://madisonbarberstylistschool.com/",
+    "phone": "(903) 952-5198"
+  },
+  {
+    "id": "manuel-and-theresa-s-school-hair",
+    "name": "Manuel & Theresa's School-Hair",
+    "address": "715 S Texas Ave, Bryan, TX 77803",
+    "coords": {
+      "lat": 30.66696739,
+      "lng": -96.3706665
+    },
+    "website": "http://www.manuelandtheresasschoolofhair.com/",
+    "phone": "(979) 821-0076"
+  },
+  {
+    "id": "marqblendz-barber-academy-co",
+    "name": "MarqBlendz Barber Academy Co",
+    "address": "1107 Coker St, Irving, TX 75062",
+    "coords": {
+      "lat": 32.85381317,
+      "lng": -96.95973206
+    },
+    "website": "https://mbschool.carrd.co/",
+    "phone": "(469) 955-4513"
+  },
+  {
+    "id": "master-barbers-institute",
+    "name": "Master Barbers Institute",
+    "address": "622 W Jefferson Blvd, Dallas, TX 75208",
+    "coords": {
+      "lat": 32.74284363,
+      "lng": -96.83312225
+    },
+    "website": "http://www.masterbarbersinstitute.com/",
+    "phone": "(214) 942-2101"
+  },
+  {
+    "id": "mei-barber-school",
+    "name": "Mei Barber School",
+    "address": "205 E Elizabeth St, Brownsville, TX 78520",
+    "coords": {
+      "lat": 25.90784645,
+      "lng": -97.50514221
+    },
+    "website": "http://www.meibarberschool.com/",
+    "phone": "(956) 546-9999"
+  },
+  {
+    "id": "mesa-barber-school-inc",
+    "name": "Mesa Barber School Inc.",
+    "address": "8523 Mesa Dr, Houston, TX 77028",
+    "coords": {
+      "lat": 29.83995819,
+      "lng": -95.26330566
+    },
+    "website": "http://www.mesabarbercollege.org/",
+    "phone": "(713) 491-0290"
+  },
+  {
+    "id": "michael-s-barber-and-hairstylists-academy",
+    "name": "Michael's Barber and Hairstylists Academy",
+    "address": "2413 W Airport Fwy, Irving, TX 75062",
+    "coords": {
+      "lat": 32.83862686,
+      "lng": -96.97833252
+    },
+    "website": "https://www.michaelsbarberacademy.com/",
+    "phone": "(972) 594-7700"
+  },
+  {
+    "id": "mid-cities-barber-college",
+    "name": "Mid Cities Barber College",
+    "address": "2345 SW 3rd St, Grand Prairie, TX 75051",
+    "coords": {
+      "lat": 32.71033478,
+      "lng": -97.00696564
+    },
+    "website": "http://www.midcitiesbarbercollege.edu/",
+    "phone": "(972) 642-1892"
+  },
+  {
+    "id": "modern-barber-and-beauty-institute",
+    "name": "Modern Barber & Beauty Institute",
+    "address": "425 Northpoint Crossing, College Station, TX 77840",
+    "coords": {
+      "lat": 30.62802696,
+      "lng": -96.33551788
+    },
+    "website": "http://modernbbi.com/",
+    "phone": "(979) 704-3033"
+  },
+  {
+    "id": "modern-barber-college",
+    "name": "Modern Barber College",
+    "address": "2401 Fannin St, Houston, TX 77002",
+    "coords": {
+      "lat": 29.74582481,
+      "lng": -95.37220001
+    },
+    "website": "https://www.modernbarbercollege.com/",
+    "phone": "(713) 520-0855"
+  },
+  {
+    "id": "modern-image-institute-barber-and-stylist-richardson",
+    "name": "Modern Image Institute Barber & Stylist - Richardson",
+    "address": "1300 E Belt Line Rd, Richardson, TX 75081",
+    "coords": {
+      "lat": 32.94503784,
+      "lng": -96.70185852
+    },
+    "website": "https://modernimageco.com/pages/institute",
+    "phone": "(469) 471-6436"
+  },
+  {
+    "id": "montana-barber-institute",
+    "name": "Montana Barber Institute",
+    "address": "1920 N Zaragoza Rd, El Paso, TX 79938",
+    "coords": {
+      "lat": 31.76332664,
+      "lng": -106.2656555
+    },
+    "website": "http://montanabarberinstitute.com/",
+    "phone": "(915) 760-7964"
+  },
+  {
+    "id": "mtb-barber-academy",
+    "name": "MTB Barber Academy",
+    "address": "3901 W Arkansas Ln, Arlington, TX 76016",
+    "coords": {
+      "lat": 32.70757675,
+      "lng": -97.1655426
+    },
+    "website": "http://www.mtbbarberacademy.com/",
+    "phone": "(817) 372-0470"
+  },
+  {
+    "id": "mystros-barber-academy",
+    "name": "Mystros Barber Academy",
+    "address": "1434 Cypress Creek Pkwy, Houston, TX 77090",
+    "coords": {
+      "lat": 30.01389885,
+      "lng": -95.45314789
+    },
+    "website": "http://mystrosbarberacademy.org/",
+    "phone": "(832) 286-4248"
+  },
+  {
+    "id": "mystros-barber-academy",
+    "name": "Mystros Barber Academy",
+    "address": "1434 FM-1960, Houston, TX 77090",
+    "coords": {
+      "lat": 30.01389885,
+      "lng": -95.45314789
+    },
+    "website": "https://www.mystrosbarberacademy.org/",
+    "phone": "(832) 286-6666"
+  },
+  {
+    "id": "mystros-barber-academy",
+    "name": "Mystros Barber Academy",
+    "address": "2420 Cartwright Rd, Missouri City, TX 77489",
+    "coords": {
+      "lat": 29.58349228,
+      "lng": -95.54033661
+    },
+    "website": "http://mystrosbarberacademy.org/",
+    "phone": "(832) 286-4248"
+  },
+  {
+    "id": "name",
+    "name": "Name",
+    "address": "Address",
+    "coords": null,
+    "website": "Website",
+    "phone": "Phone"
+  },
+  {
+    "id": "neecee-s-barber-and-cosmetology-college-abilene",
+    "name": "NeeCee\u2019s Barber & Cosmetology College Abilene",
+    "address": "1813 Industrial Blvd, Abilene, TX 79602",
+    "coords": {
+      "lat": 32.40098953,
+      "lng": -99.74500275
+    },
+    "website": "https://neeceescollege.com/",
+    "phone": "(325) 673-7970"
+  },
+  {
+    "id": "neecee-s-barber-college",
+    "name": "NeeCee\u2019s Barber College",
+    "address": "11220 N Lamar Blvd, Austin, TX 78753",
+    "coords": {
+      "lat": 30.38232422,
+      "lng": -97.68830109
+    },
+    "website": "https://neeceescollege.com/",
+    "phone": "(512) 330-4450"
+  },
+  {
+    "id": "next-top-barber-academy",
+    "name": "Next Top Barber Academy",
+    "address": "5203 Bob Bullock Loop, Laredo, TX 78041",
+    "coords": {
+      "lat": 27.5445118,
+      "lng": -99.44979858
+    },
+    "website": "http://www.nexttopbarberacademy.com/",
+    "phone": "(956) 606-1444"
+  },
+  {
+    "id": "o-g-s-school-of-hair-design",
+    "name": "O.G.'s School of Hair design",
+    "address": "S W.S. Young Dr, Killeen, TX 76542",
+    "coords": {
+      "lat": 31.08917809,
+      "lng": -97.7219162
+    },
+    "website": "https://ogbarberschool.com/",
+    "phone": "(254) 526-4339"
+  },
+  {
+    "id": "odessa-college",
+    "name": "Odessa College",
+    "address": "201 W University Blvd, Odessa, TX 79764",
+    "coords": {
+      "lat": 31.86573792,
+      "lng": -102.3837357
+    },
+    "website": "http://www.odessa.edu/",
+    "phone": "(432) 335-6400"
+  },
+  {
+    "id": "oz-barber-and-piercing-academy",
+    "name": "OZ Barber and Piercing Academy",
+    "address": "531 W Jefferson Blvd, Dallas, TX 75208",
+    "coords": {
+      "lat": 32.74342728,
+      "lng": -96.83155823
+    },
+    "website": "https://usmapy.xyz/business/oz-barber-and-piercing-academy-Kr3SzjtA",
+    "phone": "(214) 659-1951"
+  },
+  {
+    "id": "papito-blessedhands-barber-academy",
+    "name": "Papito Blessedhands Barber Academy",
+    "address": "1809 W Berry St, Fort Worth, TX 76110",
+    "coords": {
+      "lat": 32.7057991,
+      "lng": -97.34642792
+    },
+    "website": "http://www.pbhacademy.com/",
+    "phone": "(817) 386-2729"
+  },
+  {
+    "id": "paul-mitchell-the-barber-school",
+    "name": "Paul Mitchell The Barber School",
+    "address": "1723 N Loop 1604 E, San Antonio, TX 78232",
+    "coords": {
+      "lat": 29.61022186,
+      "lng": -98.4656601
+    },
+    "website": "https://paulmitchell.edu/sanantonio",
+    "phone": "(210) 523-8333"
+  },
+  {
+    "id": "pearland-barber-college",
+    "name": "Pearland Barber College",
+    "address": "3631 S Main St, Pearland, TX 77581",
+    "coords": {
+      "lat": 29.54233932,
+      "lng": -95.27359772
+    },
+    "website": "http://www.pearlandbarbercollege.com/",
+    "phone": "(832) 303-9158"
+  },
+  {
+    "id": "pearland-beauty-and-barber-college",
+    "name": "Pearland Beauty and Barber College",
+    "address": "1801 Country Place Pkwy, Pearland, TX 77584",
+    "coords": {
+      "lat": 29.57961845,
+      "lng": -95.38181305
+    },
+    "website": "https://www.pearlandbeautyandbarber.com/",
+    "phone": "(832) 206-1573"
+  },
+  {
+    "id": "premier-barber-school",
+    "name": "Premier Barber School",
+    "address": "8795 Antoine Dr, Houston, TX 77088",
+    "coords": {
+      "lat": 29.89288139,
+      "lng": -95.4806366
+    },
+    "website": "http://www.premierbarberschool.com/",
+    "phone": "(346) 754-5786"
+  },
+  {
+    "id": "prestige-barber-college",
+    "name": "Prestige barber college",
+    "address": "818 Maple Ave, Odessa, TX 79761",
+    "coords": {
+      "lat": 31.85937119,
+      "lng": -102.3583145
+    },
+    "website": "https://www.prestigebarbercollege.net/",
+    "phone": "(432) 653-4748"
+  },
+  {
+    "id": "prime-barber-academy",
+    "name": "Prime Barber Academy",
+    "address": "3304 Coit Rd, Plano, TX 75023",
+    "coords": {
+      "lat": 33.04232788,
+      "lng": -96.76934052
+    },
+    "website": null,
+    "phone": "(972) 854-8443"
+  },
+  {
+    "id": "pro-fades-barber-academy",
+    "name": "Pro Fades Barber Academy",
+    "address": "8074 Ferguson Rd, Dallas, TX 75228",
+    "coords": {
+      "lat": 32.80233002,
+      "lng": -96.71164703
+    },
+    "website": null,
+    "phone": "(469) 554-2145"
+  },
+  {
+    "id": "prospect-barber-institute",
+    "name": "Prospect Barber Institute",
+    "address": "2601 Gus Thomasson Rd, Mesquite, TX 75150",
+    "coords": {
+      "lat": 32.79937363,
+      "lng": -96.63446808
+    },
+    "website": null,
+    "phone": "(214) 730-8291"
+  },
+  {
+    "id": "quality-barber-college",
+    "name": "Quality Barber College",
+    "address": "12363 S Main St, Houston, TX 77035",
+    "coords": {
+      "lat": 29.64617348,
+      "lng": -95.46052551
+    },
+    "website": "https://qualitybarbercollege.com/",
+    "phone": "(713) 900-4722"
+  },
+  {
+    "id": "renew-barber-academy",
+    "name": "Renew Barber Academy",
+    "address": "2650 Midway Rd, Carrollton, TX 75006",
+    "coords": {
+      "lat": 32.98633957,
+      "lng": -96.84152985
+    },
+    "website": "http://renewbarberacademy.com/",
+    "phone": "(214) 789-7337"
+  },
+  {
+    "id": "richerson-s-master-barber-academy",
+    "name": "Richerson's Master Barber Academy",
+    "address": "5144 Trail Lake Dr, Fort Worth, TX 76133",
+    "coords": {
+      "lat": 32.67008972,
+      "lng": -97.37728119
+    },
+    "website": "https://www.richersonsmasterbarberacademy.com/",
+    "phone": "(682) 224-2640"
+  },
+  {
+    "id": "ridica-cosmetology-and-barber-school",
+    "name": "Ridica Cosmetology and Barber School",
+    "address": "7820 FM 1960 Rd E, Humble, TX 77346",
+    "coords": {
+      "lat": 30.00037956,
+      "lng": -95.15623474
+    },
+    "website": "http://www.ridicas.com/",
+    "phone": "(346) 345-2525"
+  },
+  {
+    "id": "rio-men-barber-school",
+    "name": "RIO Men Barber School",
+    "address": "5000 N 23rd St, McAllen, TX 78504",
+    "coords": {
+      "lat": 26.25107002,
+      "lng": -98.23685455
+    },
+    "website": "http://www.facebook.com/RIO-Men-barber-school-1131304733731766/?ref=bookmarks",
+    "phone": "(956) 900-1979"
+  },
+  {
+    "id": "riverside-barber-and-beauty-institute",
+    "name": "Riverside Barber & Beauty Institute",
+    "address": "707 N Riverside Dr, Fort Worth, TX 76111",
+    "coords": {
+      "lat": 32.7735405,
+      "lng": -97.3019104
+    },
+    "website": "https://www.riversidebbinstitute.com/",
+    "phone": "(817) 386-9719"
+  },
+  {
+    "id": "sharp-cuts-barber-and-beauty-college",
+    "name": "Sharp Cuts Barber and Beauty College",
+    "address": "5304 W Elms Rd, Killeen, TX 76549",
+    "coords": {
+      "lat": 31.10217476,
+      "lng": -97.80266571
+    },
+    "website": "https://sharpcutsbbcollege.com/",
+    "phone": "(866) 615-6231"
+  },
+  {
+    "id": "shear-genius-barber-and-beauty-school",
+    "name": "Shear Genius Barber & Beauty School",
+    "address": "15209 Westheimer Rd, Houston, TX 77082",
+    "coords": {
+      "lat": 29.73152351,
+      "lng": -95.65383911
+    },
+    "website": "http://www.sheargeniusbarberschool.com/",
+    "phone": "(713) 373-2936"
+  },
+  {
+    "id": "sol-barber-and-styling-academy",
+    "name": "SOL Barber & Styling Academy",
+    "address": "531 W Jefferson Blvd, Dallas, TX 75208",
+    "coords": {
+      "lat": 32.74342728,
+      "lng": -96.83155823
+    },
+    "website": null,
+    "phone": "(214) 245-8730"
+  },
+  {
+    "id": "south-post-oak-barber-college",
+    "name": "South Post Oak Barber College",
+    "address": "14217 S Post Oak Rd, Houston, TX 77045",
+    "coords": {
+      "lat": 29.62063217,
+      "lng": -95.46450806
+    },
+    "website": "https://southpostoakbarbercollege.com/",
+    "phone": "(832) 649-5992"
+  },
+  {
+    "id": "south-texas-barber-college",
+    "name": "South Texas Barber College",
+    "address": "3917 Ayers St, Corpus Christi, TX 78415",
+    "coords": {
+      "lat": 27.75479126,
+      "lng": -97.41699219
+    },
+    "website": "http://www.texasbarber.com/",
+    "phone": "(361) 855-0262"
+  },
+  {
+    "id": "southwest-barber-institute",
+    "name": "Southwest Barber Institute",
+    "address": "8500 Dyer St, El Paso, TX 79904",
+    "coords": {
+      "lat": 31.85810471,
+      "lng": -106.4354172
+    },
+    "website": "http://swbi.info/",
+    "phone": "(915) 257-1415"
+  },
+  {
+    "id": "state-barber-and-cosmetology-school",
+    "name": "State Barber & Cosmetology School",
+    "address": "1030 W Arkansas Ln, Arlington, TX 76013",
+    "coords": {
+      "lat": 32.70552826,
+      "lng": -97.11946106
+    },
+    "website": "http://www.sbcschools.net/",
+    "phone": "(817) 991-8367"
+  },
+  {
+    "id": "state-barber-and-cosmetology-school",
+    "name": "State Barber & Cosmetology School",
+    "address": "1221 W Airport Fwy, Irving, TX 75062",
+    "coords": {
+      "lat": 32.83782196,
+      "lng": -96.96183777
+    },
+    "website": "http://www.sbcschools.net/",
+    "phone": "(817) 991-8367"
+  },
+  {
+    "id": "super-barber-and-beauty-academy-llc",
+    "name": "Super Barber and Beauty Academy LLC.",
+    "address": "18855 W Little York Rd, Katy, TX 77449",
+    "coords": {
+      "lat": 29.8639183,
+      "lng": -95.6971817
+    },
+    "website": "http://www.superbarberandbeautyacademy.com/",
+    "phone": "(713) 582-1795"
+  },
+  {
+    "id": "tcp-beauty-and-barber-college",
+    "name": "TCP Beauty and Barber College",
+    "address": "6220 Westpark Dr, Houston, TX 77057",
+    "coords": {
+      "lat": 29.72434235,
+      "lng": -95.49316406
+    },
+    "website": "https://www.tcpbeautycollege.com/",
+    "phone": "(832) 216-5818"
+  },
+  {
+    "id": "texas-barber-and-beauty-academy",
+    "name": "Texas Barber & Beauty Academy",
+    "address": "8045 Pinebrook Dr, San Antonio, TX 78230",
+    "coords": {
+      "lat": 29.51088715,
+      "lng": -98.5497818
+    },
+    "website": "http://www.texasbarberandbeautyacademy.com/",
+    "phone": "(210) 909-3336"
+  },
+  {
+    "id": "texas-barber-college",
+    "name": "Texas Barber College",
+    "address": "9888 Ferguson Rd, Dallas, TX 75228",
+    "coords": {
+      "lat": 32.82287979,
+      "lng": -96.67678833
+    },
+    "website": "http://txbarber.edu/",
+    "phone": "(713) 953-0262"
+  },
+  {
+    "id": "texas-fadez-barber-school",
+    "name": "Texas Fadez Barber School",
+    "address": "1210 S Main St, Duncanville, TX 75137",
+    "coords": {
+      "lat": 32.63928223,
+      "lng": -96.90796661
+    },
+    "website": null,
+    "phone": "(469) 513-2512"
+  },
+  {
+    "id": "the-academy-of-barbering",
+    "name": "The Academy of Barbering",
+    "address": "751 W Wheatland Rd, Duncanville, TX 75116",
+    "coords": {
+      "lat": 32.64860535,
+      "lng": -96.92457581
+    },
+    "website": null,
+    "phone": "(469) 868-6073"
+  },
+  {
+    "id": "the-barber-education-academy-inc",
+    "name": "The Barber Education Academy Inc.",
+    "address": "1505 Calle del Norte, Laredo, TX 78041",
+    "coords": {
+      "lat": 27.55583382,
+      "lng": -99.48058319
+    },
+    "website": "http://thebarbereducation.com/",
+    "phone": "(956) 608-3232"
+  },
+  {
+    "id": "the-barbers-realm-barber-academy",
+    "name": "The Barbers Realm Barber Academy",
+    "address": "1925 E Belt Line Rd, Carrollton, TX 75006",
+    "coords": {
+      "lat": 32.95419312,
+      "lng": -96.88738251
+    },
+    "website": "https://thebarbersrealmbarberacademy.com/contact-us",
+    "phone": "(214) 406-3563"
+  },
+  {
+    "id": "the-hair-academy",
+    "name": "The Hair Academy",
+    "address": "4555 E University Blvd, Odessa, TX 79762",
+    "coords": {
+      "lat": 31.8801384,
+      "lng": -102.3312302
+    },
+    "website": "https://thehairacademy.live/",
+    "phone": "(432) 614-1364"
+  },
+  {
+    "id": "the-men-barber-school",
+    "name": "The Men Barber School",
+    "address": "1925 Rutland Dr, Austin, TX 78758",
+    "coords": {
+      "lat": 30.37887001,
+      "lng": -97.71320343
+    },
+    "website": "https://themenbarberschool.com/",
+    "phone": "(737) 202-4652"
+  },
+  {
+    "id": "tonsore-master-academy",
+    "name": "Tonsore Master Academy",
+    "address": "6856 Ingram Rd, San Antonio, TX 78238",
+    "coords": {
+      "lat": 29.46425629,
+      "lng": -98.62394714
+    },
+    "website": "http://www.tonsore.com/",
+    "phone": "(210) 816-3868"
+  },
+  {
+    "id": "top-of-the-line-barber-school",
+    "name": "TOP OF THE LINE BARBER SCHOOL",
+    "address": "5806 Walzem Rd, San Antonio, TX 78218",
+    "coords": {
+      "lat": 29.50874519,
+      "lng": -98.3712616
+    },
+    "website": "http://totlbarberschool.org/",
+    "phone": "(210) 646-0567"
+  },
+  {
+    "id": "tpca-barber-school",
+    "name": "TPCA Barber School",
+    "address": "3020 N Meadow Ave, Laredo, TX 78040",
+    "coords": {
+      "lat": 27.52378654,
+      "lng": -99.48078918
+    },
+    "website": "http://www.tpcalaredo.com/barber",
+    "phone": "(956) 744-6139"
+  },
+  {
+    "id": "tre-s-barber-institute",
+    "name": "Tre's Barber Institute",
+    "address": "3220 Amy Donovan Plaza, Austin, TX 78758",
+    "coords": {
+      "lat": 30.39738846,
+      "lng": -97.72724915
+    },
+    "website": "http://beacons.ai/tbiaustin",
+    "phone": "(737) 397-9408"
+  },
+  {
+    "id": "trend-barber-college",
+    "name": "Trend Barber College",
+    "address": "8250 W Bellfort Ave, Houston, TX 77071",
+    "coords": {
+      "lat": 29.65616608,
+      "lng": -95.52210999
+    },
+    "website": "http://www.trendbarbercollege.org/",
+    "phone": "(713) 721-0000"
+  },
+  {
+    "id": "trend-barber-college",
+    "name": "Trend Barber College",
+    "address": "14806 Ella Blvd, Houston, TX 77090",
+    "coords": {
+      "lat": 29.98208618,
+      "lng": -95.43523407
+    },
+    "website": "http://trendbarbercollege.org/",
+    "phone": "(281) 440-8383"
+  },
+  {
+    "id": "trendsetters-barber-and-beauty-college",
+    "name": "Trendsetters Barber and Beauty College",
+    "address": "9120 Perrin Beitel Rd, San Antonio, TX 78217",
+    "coords": {
+      "lat": 29.52305222,
+      "lng": -98.41054535
+    },
+    "website": "https://trendsettersbarberandbeautycollege.com/",
+    "phone": "(210) 999-5301"
+  },
+  {
+    "id": "trendz-barber-academy",
+    "name": "Trendz Barber Academy",
+    "address": "3602 Slide Rd, Lubbock, TX 79414",
+    "coords": {
+      "lat": 33.56211853,
+      "lng": -101.9246063
+    },
+    "website": "http://www.trendzbarberacademy.com/",
+    "phone": "(806) 239-0546"
+  },
+  {
+    "id": "tru-elevation-barber-and-beauty-academy",
+    "name": "Tru Elevation Barber and Beauty Academy",
+    "address": "5787 S Hampton Rd, Dallas, TX 75232",
+    "coords": {
+      "lat": 32.67829895,
+      "lng": -96.85797119
+    },
+    "website": "https://www.truelevationbarberacademy.com/",
+    "phone": "(214) 945-4424"
+  },
+  {
+    "id": "universal-barbering-of-houston",
+    "name": "Universal Barbering Of Houston",
+    "address": "12344 Gulf Fwy, Houston, TX 77034",
+    "coords": {
+      "lat": 29.61795425,
+      "lng": -95.22187042
+    },
+    "website": "https://myhoustonbarberschool.com/",
+    "phone": "(832) 630-0500"
+  },
+  {
+    "id": "victoria-cosmetology-and-barber-academy",
+    "name": "Victoria Cosmetology & Barber Academy",
+    "address": "17395 Tomball Pkwy, Houston, TX 77064",
+    "coords": {
+      "lat": 29.95561981,
+      "lng": -95.54264069
+    },
+    "website": null,
+    "phone": "(346) 206-3199"
+  },
+  {
+    "id": "vip-kings-barber-college",
+    "name": "Vip Kings Barber College",
+    "address": "5747 Calf Creek Dr, Fort Worth, TX 76179",
+    "coords": {
+      "lat": 32.66018295,
+      "lng": -97.36151886
+    },
+    "website": "http://www.vipkingsbarbercollege.com/",
+    "phone": "(817) 952-8440"
+  },
+  {
+    "id": "visionz-barber-academy",
+    "name": "Visionz Barber Academy",
+    "address": "2823 Civic Cir, Amarillo, TX 79109",
+    "coords": {
+      "lat": 35.19202423,
+      "lng": -101.8694916
+    },
+    "website": "http://www.visionzbarberacademy.com/",
+    "phone": "(806) 759-0189"
+  },
+  {
+    "id": "west-texas-barber-academy",
+    "name": "West Texas Barber Academy",
+    "address": "1915 19th St, Lubbock, TX 79401",
+    "coords": {
+      "lat": 33.5774765,
+      "lng": -101.8580627
+    },
+    "website": "https://wtbarberacademy.com/",
+    "phone": "(806) 407-5130"
+  },
+  {
+    "id": "williams-barber-college",
+    "name": "Williams Barber College",
+    "address": "520 S WW White Rd, San Antonio, TX 78220",
+    "coords": {
+      "lat": 29.42318153,
+      "lng": -98.40518951
+    },
+    "website": "http://www.texasbarber.com/schoolr.htm",
+    "phone": "(210) 337-6471"
+  },
+  {
+    "id": "williams-barber-college",
+    "name": "Williams Barber College",
+    "address": "1251 Evans Ave, Fort Worth, TX 76104",
+    "coords": {
+      "lat": 32.73083115,
+      "lng": -97.31813049
+    },
+    "website": "http://www.williamsbarbercollege.com/",
+    "phone": "(817) 335-9681"
+  },
+  {
+    "id": "wymaster-barber-and-beauty-college",
+    "name": "WyMaster Barber & Beauty College",
+    "address": "Private Address in Haltom City, Texas",
+    "coords": {
+      "lat": 32.7998848,
+      "lng": -97.24475861
+    },
+    "website": "http://www.wymasterbbc.com/",
+    "phone": "(817) 849-2344"
+  }
+]
