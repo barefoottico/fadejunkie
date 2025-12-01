@@ -381,12 +381,12 @@
           { value: "25", label: "Within 25 mi" },
           { value: "50", label: "Within 50 mi" },
         ];
-        options.forEach(opt => {
-          const o = document.createElement("option");
-          o.value = opt.value;
-          o.textContent = opt.label + " (beta)";
-          radiusSelect.appendChild(o);
-        });
+       options.forEach(opt => {
+  const o = document.createElement("option");
+  o.value = opt.value;
+  o.textContent = opt.label;  // removed beta
+  radiusSelect.appendChild(o);
+});
 
         // insert right after the ZIP input
         elQuery.parentElement.insertBefore(radiusSelect, elQuery.nextSibling);
