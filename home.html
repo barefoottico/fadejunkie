@@ -341,7 +341,7 @@
       route();
     })();
 
-    /* ==========================
+       /* ==========================
        Schools Directory Widget
     ========================== */
     (function(){
@@ -359,6 +359,37 @@
 
       let SCHOOLS = [];
       let filtered = [];
+
+      // ---- Radius selector (Exact ZIP / 10 / 25 / 50 mi) ----
+      let radiusSelect = null;
+      if (elQuery && elQuery.parentElement) {
+        radiusSelect = document.createElement("select");
+        radiusSelect.id = "schoolRadius";
+        radiusSelect.className =
+          "px-3 py-2 rounded-lg border bg-white text-sm " +
+          "dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700";
+
+        const options = [
+          { value: "0",  label: "Exact ZIP only" },
+          { value: "10", label: "Within 10 mi" },
+          { value: "25", label: "Within 25 mi" },
+          { value: "50", label: "Within 50 mi" },
+        ];
+        options.forEach(opt => {
+          const o = document.createElement("option");
+          o.value = opt.value;
+          o.textContent = opt.label + " (beta)";
+          radiusSelect.appendChild(o);
+        });
+
+        // insert right after the ZIP input
+        elQuery.parentElement.insertBefore(radiusSelect, elQuery.nextSibling);
+
+        // re-filter when radius changes
+        radiusSelect.addEventListener("change", () => {
+          if (elQuery.value.trim()) filterList();
+        });
+      }
 
       function mapsDirHref(address){
         return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
@@ -396,12 +427,75 @@
         elCount.textContent = `${list.length} result${list.length===1?"":"s"}`;
       }
 
+      // Haversine distance in miles
+      function distanceMiles(lat1, lon1, lat2, lon2) {
+        const R = 3958.8; // miles
+        const toRad = d => d * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a =
+          Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+      }
+
       function filterList(){
-        const q = (elQuery && elQuery.value ? elQuery.value : "").trim().toLowerCase();
+        const qRaw = (elQuery && elQuery.value ? elQuery.value : "").trim();
+        const q = qRaw.toLowerCase();
+
+        // if no query, show nothing
+        if (!q) {
+          filtered = [];
+          render(filtered);
+          return;
+        }
+
+        const isZip = /^\d{5}$/.test(qRaw);
+        const radius = radiusSelect ? parseInt(radiusSelect.value, 10) || 0 : 0;
+
+        // SIMPLE MODE: not a ZIP or radius == 0 → normal text search
+        if (!isZip || radius === 0) {
+          filtered = SCHOOLS.filter(s =>
+            (s.name + " " + s.address).toLowerCase().includes(q)
+          );
+          render(filtered);
+          return;
+        }
+
+        // ZIP + radius: center on schools with that ZIP, then expand
+        const exactZipSchools = SCHOOLS.filter(s =>
+          s.address && s.address.includes(qRaw) && s.coords
+        );
+
+        if (!exactZipSchools.length) {
+          // fallback to text search if we can't find coords for that ZIP
+          filtered = SCHOOLS.filter(s =>
+            (s.name + " " + s.address).toLowerCase().includes(q)
+          );
+          render(filtered);
+          return;
+        }
+
+        // center = average of coords of exact-zip schools
+        const center = exactZipSchools.reduce(
+          (acc, s) => {
+            acc.lat += s.coords.lat;
+            acc.lng += s.coords.lng;
+            return acc;
+          },
+          { lat: 0, lng: 0 }
+        );
+        center.lat /= exactZipSchools.length;
+        center.lng /= exactZipSchools.length;
+
         filtered = SCHOOLS.filter(s => {
-          if (!q) return true;
-          return (s.name + " " + s.address).toLowerCase().includes(q);
+          if (!s.coords) return false;
+          const d = distanceMiles(center.lat, center.lng, s.coords.lat, s.coords.lng);
+          return d <= radius;
         });
+
         render(filtered);
       }
 
@@ -410,8 +504,9 @@
           const res = await fetch(JSON_URL, { cache: "no-store" });
           if (!res.ok) throw new Error("Failed to load schools JSON");
           SCHOOLS  = await res.json();
-          filtered = [...SCHOOLS];
 
+          // 🔑 DO NOT render everything by default
+          filtered = [];
           render(filtered);
 
           if (elQuery) {
@@ -440,7 +535,8 @@
           if (btnReset) {
             btnReset.addEventListener("click", () => {
               if (elQuery) elQuery.value = "";
-              filtered = [...SCHOOLS];
+              if (radiusSelect) radiusSelect.value = "0";
+              filtered = [];
               render(filtered);
             });
           }
@@ -452,6 +548,7 @@
 
       init();
     })();
+
 
     /* ==========================
    Barbershop Directory Widget
