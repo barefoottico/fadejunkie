@@ -341,122 +341,116 @@
       route();
     })();
 
-/* ==========================
-   Schools Directory Widget
-========================== */
-(function () {
+    /* ==========================
+       Schools Directory Widget
+    ========================== */
+    (function(){
+      const JSON_URL = "https://raw.githubusercontent.com/barefoottico/fadejunkie/430211070b8512c117a07136e34b087971666571/texas_barber_schools.json";
 
-  // Only run on pages that actually have the directory
-  if (!document.getElementById("schoolGrid")) {
-    return;  // stop completely
-  }
+      const elQuery  = document.getElementById("schoolQuery");
+      const elGrid   = document.getElementById("schoolGrid");
+      const elEmpty  = document.getElementById("schoolEmpty");
+      const elCount  = document.getElementById("schoolCount");
+      const btnGeo   = document.getElementById("useLocation");
+      const btnReset = document.getElementById("resetSchoolFilters");
 
-  const JSON_URL = "https://raw.githubusercontent.com/barefoottico/fadejunkie/430211070b8512c117a07136e34b087971666571/texas_barber_schools.json";
+      // if the directory isn't on this page for some reason, bail
+      if (!elGrid || !elCount || !elEmpty) return;
 
-  const elQuery  = document.getElementById("schoolQuery");
-  const elGrid   = document.getElementById("schoolGrid");
-  const elEmpty  = document.getElementById("schoolEmpty");
-  const elCount  = document.getElementById("schoolCount");
-  const btnGeo   = document.getElementById("useLocation");
-  const btnReset = document.getElementById("resetSchoolFilters");
+      let SCHOOLS = [];
+      let filtered = [];
 
-  let userLoc  = null;
-  let SCHOOLS  = [];
-  let filtered = [];
+      function mapsDirHref(address){
+        return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
+      }
 
-  function mapsDirHref(address){
-    return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
-  }
+      function card(s){
+        const hasPhone = !!s.phone;
+        const hasSite  = !!s.website;
+        return `
+          <article class="rounded-2xl border border-zinc-200 bg-white shadow p-5
+                          dark:bg-zinc-800 dark:border-zinc-700">
+            <h4 class="text-lg font-semibold">${s.name}</h4>
+            <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${s.address}</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <a href="${mapsDirHref(s.address)}" target="_blank" rel="noopener"
+                 class="px-3 py-1.5 rounded-lg bg-black text-white text-sm hover:opacity-90
+                        dark:bg-zinc-100 dark:text-zinc-900">Directions</a>
+              ${hasSite ? `
+              <a href="${s.website}" target="_blank" rel="noopener"
+                 class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
+                        dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Website</a>` : ``}
+              ${hasPhone ? `
+              <a href="tel:${s.phone.replace(/[^+\d]/g,'')}"
+                 class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
+                        dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Call</a>` : ``}
+            </div>
+            <div class="mt-2 text-xs text-zinc-500 dark:text-zinc-400" data-distance-for="${s.id}"></div>
+          </article>
+        `;
+      }
 
-  function card(s){
-    const hasPhone = !!s.phone;
-    const hasSite  = !!s.website;
-    return `
-      <article class="rounded-2xl border border-zinc-200 bg-white shadow p-5
-                      dark:bg-zinc-800 dark:border-zinc-700">
-        <h4 class="text-lg font-semibold">${s.name}</h4>
-        <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${s.address}</p>
-        <div class="mt-3 flex flex-wrap gap-2">
-          <a href="${mapsDirHref(s.address)}" target="_blank" rel="noopener"
-             class="px-3 py-1.5 rounded-lg bg-black text-white text-sm hover:opacity-90
-                    dark:bg-zinc-100 dark:text-zinc-900">Directions</a>
-          ${hasSite ? `
-          <a href="${s.website}" target="_blank" rel="noopener"
-             class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
-                    dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Website</a>` : ``}
-          ${hasPhone ? `
-          <a href="tel:${s.phone.replace(/[^+\d]/g,'')}"
-             class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
-                    dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Call</a>` : ``}
-        </div>
-      </article>
-    `;
-  }
+      function render(list){
+        elGrid.innerHTML = list.map(card).join("");
+        elEmpty.classList.toggle("hidden", list.length > 0);
+        elCount.textContent = `${list.length} result${list.length===1?"":"s"}`;
+      }
 
-  function render(list){
-    elGrid.innerHTML = list.map(card).join("");
-    elEmpty.classList.toggle("hidden", list.length > 0);
-    elCount.textContent = `${list.length} result${list.length === 1 ? "" : "s"}`;
-  }
-
-  function filterList(){
-    const q = (elQuery?.value || "").trim().toLowerCase();
-    filtered = SCHOOLS.filter(s => {
-      if (!q) return true;
-      return (s.name + " " + s.address).toLowerCase().includes(q);
-    });
-    render(filtered);
-  }
-
-  async function init() {
-    try {
-      const res = await fetch(JSON_URL, { cache: "no-store" });
-      SCHOOLS  = await res.json();
-      filtered = [...SCHOOLS];
-      render(filtered);
-
-      if (elQuery) elQuery.addEventListener("input", filterList);
-
-    } catch (err) {
-      console.error("Error loading school list:", err);
-      render([]);
-    }
-  }
-
-  init();
-
-})();
-
-
-      // Events
-      elQuery.addEventListener("input", filterList);
-
-      btnGeo.addEventListener("click", () => {
-        if (!navigator.geolocation) {
-          alert("Geolocation not supported on this device/browser.");
-          return;
-        }
-        navigator.geolocation.getCurrentPosition(
-          pos => {
-            // userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-            alert("Location saved. Distance sorting will be enabled once school coords are added.");
-          },
-          err => {
-            console.warn("Geolocation error:", err);
-            alert("Could not get your location. You can still search by city/ZIP.");
-          },
-          { enableHighAccuracy: true, timeout: 8000 }
-        );
-      });
-
-      btnReset.addEventListener("click", () => {
-        elQuery.value = "";
-        filtered = [...SCHOOLS];
+      function filterList(){
+        const q = (elQuery && elQuery.value ? elQuery.value : "").trim().toLowerCase();
+        filtered = SCHOOLS.filter(s => {
+          if (!q) return true;
+          return (s.name + " " + s.address).toLowerCase().includes(q);
+        });
         render(filtered);
-      });
+      }
 
-      // Initial render
-      render(filtered);
+      async function init() {
+        try {
+          const res = await fetch(JSON_URL, { cache: "no-store" });
+          if (!res.ok) throw new Error("Failed to load schools JSON");
+          SCHOOLS  = await res.json();
+          filtered = [...SCHOOLS];
+
+          render(filtered);
+
+          if (elQuery) {
+            elQuery.addEventListener("input", filterList);
+          }
+
+          if (btnGeo) {
+            btnGeo.addEventListener("click", () => {
+              if (!navigator.geolocation) {
+                alert("Geolocation not supported on this device/browser.");
+                return;
+              }
+              navigator.geolocation.getCurrentPosition(
+                pos => {
+                  alert("Location saved. Distance sorting will be enabled once school coords are added.");
+                },
+                err => {
+                  console.warn("Geolocation error:", err);
+                  alert("Could not get your location. You can still search by city/ZIP.");
+                },
+                { enableHighAccuracy: true, timeout: 8000 }
+              );
+            });
+          }
+
+          if (btnReset) {
+            btnReset.addEventListener("click", () => {
+              if (elQuery) elQuery.value = "";
+              filtered = [...SCHOOLS];
+              render(filtered);
+            });
+          }
+        } catch (err) {
+          console.error("Error loading school list:", err);
+          render([]);
+        }
+      }
+
+      init();
     })();
 
     /* ==========================
@@ -564,4 +558,3 @@
   </script>
 </body>
 </html>
-
