@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Milady Barber Test Prep</title>
+
+ <!-- 1) Load Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- 2) Tell the CDN to use class-based dark mode -->
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+
+<!-- 3) Set initial theme ASAP to avoid flash -->
+<script>
+  (function () {
+    const KEY = 'fj_theme';
+    const saved = localStorage.getItem(KEY);
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    if (theme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  })();
+</script>
+</head>
+
+  <body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+  <main class="max-w-xl mx-auto px-6 py-12">
+    
+<!-- Top bar: buttons only -->
+<div class="flex justify-between items-center mb-6">
+  <!-- Theme toggle (icon swap, bigger, no bg) -->
+  <button id="themeToggle"
+    class="p-0 border-none bg-transparent hover:opacity-80 transition"
+    aria-pressed="false" title="Toggle dark mode">
+    <img id="themeIcon" src="./dark.icon.png" alt="Toggle theme" class="h-10 w-10" />
+  </button>
+
+  <!-- Back to Student Resources (icon only, bigger, no bg) -->
+  <a href="./student.html" aria-label="Back to Student Resources" title="Back to Student Resources"
+     class="p-0 border-none bg-transparent hover:opacity-80 transition">
+    <img src="./right_hand.icon.png" alt="Back" class="h-10 w-10" />
+  </a>
+</div>
+
+
+
+<!-- Centered logo + title -->
+      <a href="./index.html" title="Home" class="block w-fit mx-auto">
+        <img src="./fadejunkie_logo.png" alt="FadeJunkie logo"
+             class="mx-auto h-16 w-auto mb-3 select-none pointer-events-auto dark:invert" />
+      </a>
+<header class="text-center">
+  <h1 class="text-2xl font-bold">Study smarter, not longer</h1>
+  <p class="text-zinc-600 dark:text-zinc-300 mt-2">
+    Tap <strong>Open Play</strong> for quick reps. Tap <strong>Test Mode</strong> for a chapter-based check.
+  </p>
+</header>
+
+
+
+
+
+    <!-- Landing CTA: shown on first load only -->
+   <section id="cta" class="mt-2 flex gap-3 flex-wrap justify-center">
+      <button id="openPlayBtn"
+        class="px-4 py-2 rounded-xl shadow bg-white border border-zinc-200 hover:bg-zinc-100
+               dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+        Open Play
+      </button>
+      <button id="testModeBtn"
+        class="px-4 py-2 rounded-xl shadow bg-black text-white hover:opacity-90
+               dark:bg-zinc-100 dark:text-zinc-900">
+        Start Test
+      </button>
+    </section>
+
+    <!-- Test config (hidden until Test Mode) -->
+    <section id="testConfig" class="mt-4 hidden">
+      <label for="tmCountRange" class="block text-sm text-zinc-600 dark:text-zinc-300 mb-1">Questions per test</label>
+      <div class="flex items-center gap-3">
+        <input id="tmCountRange" type="range" min="0" max="3" step="1" value="0" class="w-full" />
+        <span id="tmCountLabel" class="text-sm font-medium w-12 text-right">20</span>
+        <button id="tmApplyCount"
+          class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+          Apply
+        </button>
+      </div>
+      <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+        20 • 50 • 100 • 150 — press <kbd>Enter</kbd> on the slider or click Apply.
+        <span class="text-amber-700">Changing the number will restart any in-progress test.</span>
+      </p>
+    </section><!-- RESOURCES (visible only before a mode is chosen) -->
+<section id="resources" class="mt-10 max-w-xl mx-auto">
+  <h2 class="text-lg font-bold uppercase tracking-wide text-zinc-800 dark:text-zinc-100 mb-3">
+    More resources
+  </h2>
+
+  <a href="https://fadejunkietdlrprep.my.canva.site/tbba" target="_blank" class="group block">
+    <div class="rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow
+                hover:shadow-lg transition-shadow bg-white dark:bg-zinc-900">
+      <img
+        src="./tdlr_bpeg_banner.png"
+        alt="TDLR Barber Practical Exam Guide"
+        class="w-full h-40 sm:h-52 md:h-60 object-cover"
+      />
+     <div class="p-4 flex items-start justify-between">
+  <div class="flex-1">
+    <p class="text-xs text-zinc-500 dark:text-zinc-400">PDF • Student members</p>
+    <p class="text-base font-semibold">TDLR Barber Practical Exam Guide</p>
+    <p class="text- xs text-zinc-500 dark:text-zinc-400 mt-2">
+      A visual, step-by-step breakdown of the hands-on TDLR Practical — setup,
+      sanitation, timing, and exactly what examiners look for.
+    </p>
+  </div>
+</div>
+  </a>
+</section>
+
+
+    <!-- Loading / error (hidden until a mode is chosen) -->
+    <section id="loadWrap" class="mt-8 hidden">
+      <div id="status" class="text-sm text-zinc-700 dark:text-zinc-300">Loading datasets…</div>
+      <div id="error" class="hidden text-sm text-red-600 mt-2 dark:text-red-400"></div>
+    </section>
+
+    <!-- Filter bar (hidden until a mode is chosen) -->
+    <section id="app" class="mt-4 hidden">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-zinc-500 dark:text-zinc-400">Filter:</span>
+          <div id="setPills" class="flex flex-wrap gap-2"></div>
+        </div>
+        <div id="statusSummary" class="text-sm text-zinc-700 dark:text-zinc-300 whitespace-nowrap"></div>
+      </div>
+    </section>
+
+    <!-- OPEN PLAY VIEW -->
+    <section id="openPlayView" class="hidden max-w-xl mx-auto mt-8">
+      <div class="flex items-center justify-between mb-3">
+        <div id="opProgress" class="text-sm text-neutral-600 dark:text-zinc-300">0 / 0</div>
+        <div class="flex items-center gap-2">
+          <button id="opShuffleBtn"
+            class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+            Shuffle: Off
+          </button>
+          <button id="opStarFilterBtn"
+            class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+            Starred: All
+          </button>
+        </div>
+      </div>
+
+      <div id="opCard"
+           class="relative rounded-2xl border bg-white shadow p-6 min-h-[220px] cursor-pointer select-none
+                  dark:bg-zinc-800 dark:border-zinc-700"
+           tabindex="0" aria-live="polite">
+        <div id="opFront" class="block">
+          <div id="opQuestion" class="text-lg font-semibold mb-4">Question will appear here</div>
+          <ul id="opOptions" class="space-y-2 text-base"></ul>
+        </div>
+        <div id="opBack" class="hidden">
+          <div class="text-xs uppercase tracking-wide text-neutral-500 dark:text-zinc-400 mb-2">Answer</div>
+          <div id="opAnswer" class="text-lg font-semibold"></div>
+          <div id="opAnswerExplain" class="text-sm text-neutral-600 dark:text-zinc-300 mt-2"></div>
+        </div>
+
+      <button id="opStarBtn" title="Star this card"
+  class="absolute top-3 right-3 text-xl leading-none dark:text-zinc-100">☆</button>
+
+      </div>
+
+      <div class="mt-5 flex items-center justify-between">
+        <button id="opPrevBtn"
+          class="px-4 py-2 rounded-xl border bg-white hover:bg-zinc-100
+                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">◀ Prev</button>
+        <button id="opFlipBtn"
+          class="px-4 py-2 rounded-xl border bg-white hover:bg-zinc-100
+                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">Flip</button>
+        <button id="opNextBtn"
+          class="px-4 py-2 rounded-xl border bg-white hover:bg-zinc-100
+                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">Next ▶</button>
+      </div>
+
+      <p class="mt-3 text-xs text-neutral-500 dark:text-zinc-400">
+        Tip: Tap card to flip · ←/→ to navigate · Space/Enter to flip
+      </p>
+    </section>
+
+    <!-- TEST MODE VIEW -->
+    <section id="testView" class="hidden max-w-xl mx-auto mt-8">
+      <div class="flex items-center justify-between mb-3">
+        <div id="tmProgress" class="text-sm text-neutral-600 dark:text-zinc-300">Q 1 / 20</div>
+        <button id="tmSubmitBtn"
+          class="px-3 py-1.5 rounded-lg border text-sm bg-black text-white hover:opacity-90
+                 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">
+          Submit
+        </button>
+      </div>
+
+      <div id="tmCard"
+           class="rounded-2xl border bg-white shadow p-6 min-h-[220px]
+                  dark:bg-zinc-800 dark:border-zinc-700">
+        <div id="tmQuestion" class="text-lg font-semibold mb-4">Question</div>
+        <div id="tmOptions" class="space-y-2"></div>
+        <div class="mt-3 flex items-center justify-between">
+          <label class="inline-flex items-center gap-2 text-sm">
+            <input id="tmFlag" type="checkbox" class="rounded" />
+            Flag for review
+          </label>
+          <div class="flex items-center gap-2">
+            <button id="tmPrev"
+              class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+                     dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">◀ Prev</button>
+            <button id="tmNext"
+              class="px-3 py-1.5 rounded-lg border text-sm bg-white hover:bg-zinc-100
+                     dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">Next ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="tmResults" class="hidden mt-6">
+        <div id="tmScore" class="text-lg font-semibold mb-2"></div>
+        <div id="tmBreakdown" class="text-sm text-neutral-700 dark:text-zinc-300 mb-4"></div>
+        <details class="rounded-xl border bg-white p-4 dark:bg-zinc-900 dark:border-zinc-800">
+          <summary class="cursor-pointer font-medium">Review answers</summary>
+          <div id="tmReview" class="mt-3 space-y-4"></div>
+        </details>
+        <div class="mt-4 flex items-center gap-2">
+          <button id="tmRestart"
+            class="px-4 py-2 rounded-xl border bg-white hover:bg-zinc-100
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">Retake</button>
+          <button id="tmBackToOpen"
+            class="px-4 py-2 rounded-xl border bg-white hover:bg-zinc-100
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-700">Back to Open Play</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  /* =======================
+   1) THEME TOGGLE (icon)
+======================= */
+(function setupThemeToggle(){
+  const KEY = 'fj_theme';
+  const btn = document.getElementById('themeToggle');
+  const icon = document.getElementById('themeIcon');
+  if (!btn || !icon) return;
+
+  const currentTheme = () =>
+    document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+
+  const renderButton = () => {
+    const t = currentTheme();
+    btn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+    // show the opposite icon as the “action”:
+    // if page is dark, show "light" icon to indicate tapping will go light
+    icon.src = t === 'dark' ? './light.icon.png' : './dark.icon.png';
+  };
+
+  const setTheme = (t) => {
+    if (t === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+    localStorage.setItem(KEY, t);
+    renderButton();
+  };
+
+  renderButton();
+  btn.addEventListener('click', () =>
+    setTheme(currentTheme() === 'dark' ? 'light' : 'dark')
+  );
+})();
+
+
+    /* =======================
+       2) DATA LOADING + NAMES
+    ======================= */
+    const DATASETS = [
+      { id: "exam1", short: "Exam 1", label: "MBF Exam 1", path: "./mbf_exam_1.csv" },
+      { id: "exam2", short: "Exam 2", label: "MBF Exam 2", path: "./mbf_exam_2.csv" },
+    ];
+    const RAW_FALLBACK = {
+      exam1: "https://raw.githubusercontent.com/barefoottico/milady-flashcards/main/mbf_exam_1.csv",
+      exam2: "https://raw.githubusercontent.com/barefoottico/milady-flashcards/main/mbf_exam_2.csv",
+    };
+
+    const state = { cards: [], mode: null };
+
+    // DOM refs
+    const $loadWrap        = document.getElementById("loadWrap");
+    const $status          = document.getElementById("status");
+    const $error           = document.getElementById("error");
+    const $app             = document.getElementById("app");
+    const $setPills        = document.getElementById("setPills");
+    const $statusSummary   = document.getElementById("statusSummary");
+
+    const $resources       = document.getElementById("resources");
+function hideResources() { 
+  $resources?.classList.add("hidden"); 
+}
+
+    const $openPlayView    = document.getElementById("openPlayView");
+    const $opCard          = document.getElementById("opCard");
+    const $opFront         = document.getElementById("opFront");
+    const $opBack          = document.getElementById("opBack");
+    const $opQuestion      = document.getElementById("opQuestion");
+    const $opOptions       = document.getElementById("opOptions");
+    const $opAnswer        = document.getElementById("opAnswer");
+    const $opAnswerExplain = document.getElementById("opAnswerExplain");
+    const $opProgress      = document.getElementById("opProgress");
+    const $opShuffleBtn    = document.getElementById("opShuffleBtn");
+    const $opStarFilterBtn = document.getElementById("opStarFilterBtn");
+    const $opStarBtn       = document.getElementById("opStarBtn");
+    const $opPrevBtn       = document.getElementById("opPrevBtn");
+    const $opNextBtn       = document.getElementById("opNextBtn");
+    const $opFlipBtn       = document.getElementById("opFlipBtn");
+
+    // Manage Sets state
+    let loadedSets = [];
+    const selectedSetIds = new Set();
+
+    // CSV/TSV parser (supports correct_options)
+    const csvSafeSplit = (line) => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g);
+    function parseCSV(text) {
+      text = text.replace(/\r/g, "");
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      const firstNewline = text.indexOf("\n");
+      const headerLine = firstNewline === -1 ? text : text.slice(0, firstNewline);
+      const isTSV = headerLine.includes("\t");
+
+      const rows = text.split("\n").filter(Boolean).map(line => {
+        const cells = isTSV ? line.split("\t") : csvSafeSplit(line);
+        return cells.map(s => s.replace(/^"(.*)"$/, "$1"));
+      });
+
+      const [rawHeader, ...lines] = rows;
+      if (!rawHeader) return [];
+      const header = rawHeader.map(h => (h || "").trim().toLowerCase());
+
+      const findCol = (...names) => { for (const n of names) { const i = header.indexOf(n); if (i !== -1) return i; } return -1; };
+      const idxId  = findCol("id");
+      const idxQ   = findCol("question", "q", "prompt", "stem");
+      const idxA   = findCol("option_a", "a", "opt_a", "choice_a");
+      const idxB   = findCol("option_b", "b", "opt_b", "choice_b");
+      const idxC   = findCol("option_c", "c", "opt_c", "choice_c");
+      const idxD   = findCol("option_d", "d", "opt_d", "choice_d");
+      const idxAns = findCol("correct_options", "answer", "correct", "key", "ans");
+
+      function coerceAnswer({A,B,C,D,raw}) {
+        if (!raw) return "A";
+        let s = String(raw).trim();
+        const letters = s.toUpperCase().replace(/[^A-D,; ]/g, "").split(/[;, ]+/).filter(Boolean);
+        if (letters.length && ["A","B","C","D"].includes(letters[0])) return letters[0];
+        const up = s.toUpperCase();
+        if (up === String(A||"").toUpperCase()) return "A";
+        if (up === String(B||"").toUpperCase()) return "B";
+        if (up === String(C||"").toUpperCase()) return "C";
+        if (up === String(D||"").toUpperCase()) return "D";
+        return "A";
+      }
+
+      return lines.map((cols, i) => {
+        const q  = (idxQ >= 0 ? cols[idxQ] : "").trim();
+        if (!q) return null;
+        const A  = (idxA >= 0 ? cols[idxA] : "").trim();
+        const B  = (idxB >= 0 ? cols[idxB] : "").trim();
+        const C  = (idxC >= 0 ? cols[idxC] : "").trim();
+        const D  = (idxD >= 0 ? cols[idxD] : "").trim();
+        const rawAns = (idxAns >= 0 ? cols[idxAns] : "").trim();
+        const answer = coerceAnswer({A,B,C,D,raw:rawAns});
+        const uid = (idxId >= 0 && cols[idxId]) ? `id_${cols[idxId]}` : `c_${i}_${q.slice(0,16)}`;
+        return { id: uid, q, a:A, b:B, c:C, d:D, answer };
+      }).filter(Boolean);
+    }
+
+    /* ==========================
+       MEMORY (localStorage)
+    ========================== */
+    const MEM_KEYS = {
+      SELECTED_SETS: "fj_selected_sets",
+      OPENPLAY_STATE: "fj_openplay_state"
+    };
+    const loadJSON = (k,f)=>{ try{const v=localStorage.getItem(k); return v?JSON.parse(v):f;}catch{return f;} };
+    const saveJSON = (k,v)=>{ try{localStorage.setItem(k, JSON.stringify(v));}catch{} };
+
+    /* ==========================
+       Fetch + Load
+    ========================== */
+    async function fetchWithFallback(ds) {
+      try {
+        const r = await fetch(ds.path, { cache: "no-store" });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return await r.text();
+      } catch {
+        const raw = RAW_FALLBACK[ds.id];
+        const r2 = await fetch(raw, { cache: "no-store" });
+        if (!r2.ok) throw new Error(`Fallback HTTP ${r2.status}`);
+        return await r2.text();
+      }
+    }
+
+    async function loadAll() {
+      try {
+        const results = await Promise.all(DATASETS.map(async ds => {
+          const text = await fetchWithFallback(ds);
+          const cards = parseCSV(text);
+          if (!cards.length) throw new Error(`${ds.label} parsed 0 cards`);
+          return { id: ds.id, short: ds.short, label: ds.label, cards };
+        }));
+
+        loadedSets = results;
+
+        // Restore selected sets from memory, else default to "all"
+        const savedSetIds = loadJSON(MEM_KEYS.SELECTED_SETS, null);
+        selectedSetIds.clear();
+        if (Array.isArray(savedSetIds) && savedSetIds.length) {
+          const validIds = new Set(results.map(s => s.id));
+          savedSetIds.forEach(id => { if (validIds.has(id)) selectedSetIds.add(id); });
+          if (selectedSetIds.size === 0) results.forEach(s => selectedSetIds.add(s.id));
+        } else {
+          results.forEach(s => selectedSetIds.add(s.id));
+        }
+
+        state.cards = results.flatMap(r => r.cards);
+
+        renderSetsSummary();
+        renderSetPills();
+        updateShuffleAvailability();
+
+      } catch (e) {
+        if ($status) $status.textContent = "Couldn’t finish loading.";
+        $error.classList.remove("hidden");
+        $error.textContent = String(e?.message || e);
+      }
+    }
+
+    /* ==========================
+       Filter pills (UI/Logic)
+    ========================== */
+    function renderSetsSummary() {
+      const chosen = loadedSets.filter(s => selectedSetIds.has(s.id));
+      const totalCards = chosen.reduce((sum, s) => sum + s.cards.length, 0);
+      if ($statusSummary) $statusSummary.textContent = `Ready • ${totalCards} ${totalCards === 1 ? "card" : "cards"}`;
+      updateShuffleAvailability();
+    }
+
+    function renderSetPills() {
+      const totalSets = loadedSets.length;
+      const activeCount = loadedSets.reduce((n, s) => n + (selectedSetIds.has(s.id) ? 1 : 0), 0);
+      const allActive = activeCount === totalSets && totalSets > 0;
+
+      saveJSON(MEM_KEYS.SELECTED_SETS, Array.from(selectedSetIds));
+
+      const base = "inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm transition-colors";
+      const on  = "bg-white text-zinc-900 border-black font-medium dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-400";
+      const off = "bg-white text-zinc-800 border-zinc-300 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-700";
+
+      const pillsHtml = [
+        `<button class="set-pill ${base} ${allActive ? on : off}" data-setid="__all__" role="switch" aria-pressed="${allActive}" title="Enable all sets">
+          All <span class="text-xs opacity-80">(${loadedSets.reduce((s,x)=>s+x.cards.length,0)})</span>
+        </button>`,
+        ...loadedSets.map(s => `
+          <button class="set-pill ${base} ${selectedSetIds.has(s.id) ? on : off}" data-setid="${s.id}" role="switch" aria-pressed="${selectedSetIds.has(s.id)}" title="${s.label}">
+            ${s.short} <span class="text-xs opacity-80">(${s.cards.length})</span>
+          </button>
+        `)
+      ].join("");
+
+      $setPills.innerHTML = pillsHtml;
+
+      Array.from($setPills.querySelectorAll(".set-pill")).forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-setid");
+          if (id === "__all__") {
+            const allAreOn = loadedSets.every(s => selectedSetIds.has(s.id));
+            selectedSetIds.clear();
+            if (!allAreOn) loadedSets.forEach(s => selectedSetIds.add(s.id));
+          } else {
+            if (selectedSetIds.has(id)) selectedSetIds.delete(id); else selectedSetIds.add(id);
+          }
+          renderSetsSummary();
+          renderSetPills();
+          if ($openPlayView && !$openPlayView.classList.contains("hidden")) opInjectFromSelection();
+        });
+      });
+
+      updateShuffleAvailability();
+    }
+
+    /* ==========================
+       Shuffle availability
+    ========================== */
+    function updateShuffleAvailability() {
+      const btn = document.getElementById("opShuffleBtn");
+      if (!btn) return;
+      const activeSets = loadedSets.filter(s => selectedSetIds.has(s.id)).length;
+      if (activeSets > 1) {
+        btn.disabled = false; btn.classList.remove("opacity-50","cursor-not-allowed");
+      } else {
+        btn.disabled = true; btn.classList.add("opacity-50","cursor-not-allowed");
+        if (op.shuffle) { op.shuffle = false; btn.textContent = "Shuffle: Off"; opBuildOrder(); opRenderCard(); }
+      }
+    }
+
+    /* =======================
+       Test Config (slider)
+    ======================= */
+    const TM_COUNTS = [20, 50, 100, 150];
+    const TM_CFG_KEYS = { COUNT_IDX: "fj_test_count_idx" };
+    const $tmCountRange = document.getElementById("tmCountRange");
+    const $tmCountLabel = document.getElementById("tmCountLabel");
+    const $tmApplyCount = document.getElementById("tmApplyCount");
+
+    let savedIdx = Number(localStorage.getItem(TM_CFG_KEYS.COUNT_IDX));
+    if (!Number.isInteger(savedIdx) || savedIdx < 0 || savedIdx > 3) savedIdx = 0;
+    if ($tmCountRange) $tmCountRange.value = String(savedIdx);
+    if ($tmCountLabel) $tmCountLabel.textContent = String(TM_COUNTS[savedIdx]);
+
+    $tmCountRange?.addEventListener("input", () => {
+      const idx = Number($tmCountRange.value);
+      $tmCountLabel.textContent = String(TM_COUNTS[idx]);
+      localStorage.setItem(TM_CFG_KEYS.COUNT_IDX, String(idx));
+    });
+
+    /* =======================
+       4) OPEN PLAY
+    ======================= */
+    const OP_LOCAL_KEY = { STARS: "fj_op_stars" };
+    const opLoadSet = key => { try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); } catch { return new Set(); } };
+    const opSaveSet = (key, set) => localStorage.setItem(key, JSON.stringify(Array.from(set)));
+
+    const op = { all: [], deck: [], order: [], i: 0, flipped: false, shuffle: false, starFilter: false, stars: opLoadSet(OP_LOCAL_KEY.STARS) };
+
+    function opBuildOrder() {
+      op.order = Array.from({length: op.deck.length}, (_, i) => i);
+      if (op.shuffle) for (let j = op.order.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [op.order[j], op.order[k]] = [op.order[k], op.order[j]]; }
+      op.i = 0;
+    }
+    function opApplyFilters() { op.deck = op.starFilter ? op.all.filter(c => op.stars.has(c.id)) : op.all.slice(); opBuildOrder(); }
+    const opCurrent = () => (op.deck.length ? op.deck[op.order[op.i]] : null);
+    function opRenderProgress() { $opProgress.textContent = op.deck.length ? `${op.i + 1} / ${op.deck.length}` : "0 / 0"; }
+    function opRenderStarBtn(card) { $opStarBtn.textContent = card && op.stars.has(card.id) ? "★" : "☆"; }
+
+    function saveOpenPlayState() { const i = Math.max(0, Math.min(op.i, Math.max(0, op.deck.length - 1))); saveJSON(MEM_KEYS.OPENPLAY_STATE, { shuffle: op.shuffle, starFilter: op.starFilter, i }); }
+    function restoreOpenPlayState() { const saved = loadJSON(MEM_KEYS.OPENPLAY_STATE, null); if (!saved) return; op.shuffle = !!saved.shuffle; op.starFilter = !!saved.starFilter; op.i = Number.isInteger(saved.i) ? saved.i : 0; }
+
+    function opRenderCard() {
+      const card = opCurrent();
+      if (!card) {
+        $opFront.classList.remove("hidden"); $opBack.classList.add("hidden");
+        $opQuestion.textContent = selectedSetIds.size ? (op.starFilter ? "No starred cards yet." : "No cards available in selection.") : "No sets selected.";
+        $opOptions.innerHTML = ""; $opAnswer.textContent = ""; $opAnswerExplain.textContent = "";
+        opRenderStarBtn(null); opRenderProgress(); return;
+      }
+      $opQuestion.textContent = card.q;
+      const opts = [["A",card.a],["B",card.b],["C",card.c],["D",card.d]].filter(([_,v]) => v && v.trim().length);
+      $opOptions.innerHTML = opts.map(([k,v]) => `<li class="border rounded-lg px-3 py-2"><strong>${k}.</strong> ${v}</li>`).join("");
+      const ansKey = card.answer; const ansText = ({A:card.a,B:card.b,C:card.c,D:card.d}[ansKey]) || "";
+      $opAnswer.textContent = `${ansKey}. ${ansText}`; $opAnswerExplain.textContent = "Flip and continue.";
+      if (op.flipped) { $opFront.classList.add("hidden"); $opBack.classList.remove("hidden"); } else { $opFront.classList.remove("hidden"); $opBack.classList.add("hidden"); }
+      opRenderStarBtn(card); opRenderProgress();
+    }
+
+    const opFlip = () => { op.flipped = !op.flipped; opRenderCard(); };
+    const opNext = () => { if (!op.deck.length) return; op.i = (op.i + 1) % op.deck.length; op.flipped = false; opRenderCard(); saveOpenPlayState(); };
+    const opPrev = () => { if (!op.deck.length) return; op.i = (op.i - 1 + op.deck.length) % op.deck.length; op.flipped = false; opRenderCard(); saveOpenPlayState(); };
+    function opToggleShuffle() { op.shuffle = !op.shuffle; document.getElementById("opShuffleBtn").textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`; opBuildOrder(); op.flipped = false; opRenderCard(); saveOpenPlayState(); }
+    function opToggleStarFilter() { op.starFilter = !op.starFilter; document.getElementById("opStarFilterBtn").textContent = `Starred: ${op.starFilter ? "Only" : "All"}`; opApplyFilters(); op.flipped = false; opRenderCard(); saveOpenPlayState(); }
+    function opToggleStar() { const card = opCurrent(); if (!card) return; if (op.stars.has(card.id)) op.stars.delete(card.id); else op.stars.add(card.id); opSaveSet(OP_LOCAL_KEY.STARS, op.stars); opRenderStarBtn(card); if (op.starFilter) { opApplyFilters(); opRenderCard(); } }
+
+    function opInjectFromSelection() {
+      op.all = loadedSets.filter(s => selectedSetIds.has(s.id)).flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
+      opApplyFilters();
+      const saved = loadJSON(MEM_KEYS.OPENPLAY_STATE, null);
+      if (saved && Number.isInteger(saved.i)) op.i = Math.max(0, Math.min(saved.i, Math.max(0, op.deck.length - 1)));
+      else op.i = 0;
+      op.flipped = false; opRenderCard(); saveOpenPlayState();
+    }
+
+    async function showOpenPlay() {
+      state.mode = "open";
+      $resources?.classList.add("hidden");
+
+
+      // loader while we fetch
+      $loadWrap.classList.remove("hidden");
+      $status.textContent = "Loading datasets…";
+
+      if (!loadedSets.length) await loadAll();
+
+      // Hide loader, reveal filter + view
+      $loadWrap.classList.add("hidden");
+      $app.classList.remove("hidden");
+      document.getElementById("testConfig").classList.add("hidden"); // hide test-only controls
+      document.getElementById("testView").classList.add("hidden");
+      $openPlayView.classList.remove("hidden");
+
+      restoreOpenPlayState();
+      opInjectFromSelection();
+
+      document.getElementById("opShuffleBtn").textContent = `Shuffle: ${op.shuffle ? "On" : "Off"}`;
+      document.getElementById("opStarFilterBtn").textContent = `Starred: ${op.starFilter ? "Only" : "All"}`;
+      updateShuffleAvailability();
+
+      if (!showOpenPlay._bound) {
+        $opCard.addEventListener("click", opFlip);
+        $opFlipBtn.addEventListener("click", opFlip);
+        $opNextBtn.addEventListener("click", opNext);
+        $opPrevBtn.addEventListener("click", opPrev);
+        $opShuffleBtn.addEventListener("click", opToggleShuffle);
+        $opStarFilterBtn.addEventListener("click", opToggleStarFilter);
+        $opStarBtn.addEventListener("click", (e) => { e.stopPropagation(); opToggleStar(); });
+
+        document.addEventListener("keydown", (e) => {
+          if ($openPlayView.classList.contains("hidden")) return;
+          if (e.key === "ArrowRight") { e.preventDefault(); opNext(); }
+          else if (e.key === "ArrowLeft") { e.preventDefault(); opPrev(); }
+          else if (e.key === " " || e.key === "Enter") { e.preventDefault(); opFlip(); }
+        });
+
+        showOpenPlay._bound = true;
+      }
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    /* =======================
+       5) TEST MODE (no timer)
+    ======================= */
+    const TM_KEYS = { STATE: "fj_test_state" };
+
+    const $testView = document.getElementById("testView");
+    const $tmProgress = document.getElementById("tmProgress");
+    const $tmQuestion = document.getElementById("tmQuestion");
+    const $tmOptions = document.getElementById("tmOptions");
+    const $tmFlag = document.getElementById("tmFlag");
+    const $tmPrev = document.getElementById("tmPrev");
+    const $tmNext = document.getElementById("tmNext");
+    const $tmSubmitBtn = document.getElementById("tmSubmitBtn");
+    const $tmResults = document.getElementById("tmResults");
+    const $tmScore = document.getElementById("tmScore");
+    const $tmBreakdown = document.getElementById("tmBreakdown");
+    const $tmReview = document.getElementById("tmReview");
+    const $tmRestart = document.getElementById("tmRestart");
+    const $tmBackToOpen = document.getElementById("tmBackToOpen");
+
+    const test = { deck: [], i: 0, answers: new Map(), flags: new Set(), config: { count: 20 } };
+
+    function sampleFromSelectedSets(n) {
+      const pool = loadedSets.filter(s => selectedSetIds.has(s.id)).flatMap(s => s.cards.map(c => ({ ...c, id: c.id || `${c.q}:${c.answer}:${s.id}` })));
+      if (!pool.length) return [];
+      for (let j = pool.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [pool[j], pool[k]] = [pool[k], pool[j]]; }
+      return pool.slice(0, Math.min(n, pool.length));
+    }
+
+    function persistTestState(){
+      saveJSON(TM_KEYS.STATE,{
+        deck:test.deck, i:test.i,
+        answers:Array.from(test.answers.entries()),
+        flags:Array.from(test.flags.values())
+      });
+    }
+    function restoreTestState(){
+      const saved = loadJSON(TM_KEYS.STATE, null);
+      if (!saved || !Array.isArray(saved.deck) || !saved.deck.length) return false;
+      test.deck = saved.deck;
+      test.i = Number.isInteger(saved.i) ? Math.max(0, Math.min(saved.i, test.deck.length - 1)) : 0;
+      test.answers = new Map(saved.answers || []);
+      test.flags = new Set(saved.flags || []);
+      renderTestQuestion();
+      return true;
+    }
+
+    function showTestView(){ $openPlayView.classList.add("hidden"); $testView.classList.remove("hidden"); }
+
+    function startNewTest(){
+      const idx = Number(document.getElementById("tmCountRange")?.value ?? 0);
+      const count = TM_COUNTS[idx] || 20;
+      test.config.count = count;
+
+      const deck = sampleFromSelectedSets(count);
+      if (!deck.length) { alert("No cards available in your filter. Pick at least one set."); return; }
+      test.deck=deck; test.i=0; test.answers.clear(); test.flags.clear();
+      persistTestState(); renderTestQuestion();
+    }
+
+    function renderTestQuestion(){
+      const total=test.deck.length; $tmResults.classList.add("hidden");
+      if(!total){ $tmProgress.textContent="No questions"; $tmQuestion.textContent="Add sets in the filter to create a test."; $tmOptions.innerHTML=""; return; }
+      const card=test.deck[test.i]; $tmProgress.textContent=`Q ${test.i+1} / ${total}`; $tmQuestion.textContent=card.q;
+      const options=[["A",card.a],["B",card.b],["C",card.c],["D",card.d]].filter(([k,v])=>v&&v.trim().length);
+      const chosen=test.answers.get(card.id) || null;
+      $tmOptions.innerHTML=options.map(([k,v])=>`<label class="flex items-center gap-3 border rounded-lg px-3 py-2 cursor-pointer"><input type="radio" name="tmOpt" value="${k}" ${chosen===k?"checked":""}/><span><strong>${k}.</strong> ${v}</span></label>`).join("");
+      $tmOptions.querySelectorAll('input[name="tmOpt"]').forEach(inp=>{ inp.addEventListener("change",()=>{ test.answers.set(card.id, inp.value); persistTestState(); }); });
+      $tmFlag.checked=test.flags.has(card.id);
+    }
+
+    const tmPrev = ()=>{ if(!test.deck.length) return; test.i=(test.i-1+test.deck.length)%test.deck.length; renderTestQuestion(); persistTestState(); };
+    const tmNext = ()=>{ if(!test.deck.length) return; test.i=(test.i+1)%test.deck.length; renderTestQuestion(); persistTestState(); };
+    function tmToggleFlag(){ const card=test.deck[test.i]; if(!card) return; if(test.flags.has(card.id)) test.flags.delete(card.id); else test.flags.add(card.id); persistTestState(); }
+
+    function gradeTest(){ let correct=0; const rows=test.deck.map((card,idx)=>{ const chosen=test.answers.get(card.id); const isCorrect=chosen===card.answer; if(isCorrect) correct++; return {idx,card,chosen,isCorrect}; }); return {correct,total:test.deck.length,rows}; }
+    function renderResults({correct,total,rows}){
+      const pct = total ? Math.round((correct/total)*100) : 0;
+      $tmScore.textContent=`Score: ${correct} / ${total} (${pct}%)`;
+      const unanswered=rows.filter(r=>!r.chosen).length; const flagged=test.flags.size;
+      $tmBreakdown.textContent=`${unanswered} unanswered • ${flagged} flagged`;
+      $tmReview.innerHTML=rows.map(({idx,card,chosen,isCorrect})=>{
+        const ansKey=card.answer; const ansText=({A:card.a,B:card.b,C:card.c,D:card.d}[ansKey])||"";
+        const yourText=chosen ? (({A:card.a,B:card.b,C:card.c,D:card.d}[chosen])||"") : "—";
+        const badge=isCorrect?'<span class="text-green-700">Correct</span>':'<span class="text-red-700">Wrong</span>';
+        return `<div class="rounded-lg border p-3 dark:border-zinc-700">
+                  <div class="text-sm text-neutral-500 dark:text-zinc-400 mb-1">Q ${idx+1}</div>
+                  <div class="font-medium mb-2">${card.q}</div>
+                  <div class="text-sm"><strong>Correct:</strong> ${ansKey}. ${ansText}</div>
+                  <div class="text-sm"><strong>Your answer:</strong> ${chosen ? (chosen + ". " + yourText) : "—"}</div>
+                  <div class="text-sm mt-1">${badge}</div>
+                </div>`;
+      }).join("");
+      $tmResults.classList.remove("hidden");
+    }
+    function finalizeTest(){ const graded=gradeTest(); renderResults(graded); localStorage.removeItem(TM_KEYS.STATE); }
+
+    // ---------- TEST FLOW (single-view, no stacking) ----------
+    function startTestFlow() {
+      state.mode = "test";
+      $resources?.classList.add("hidden");
+
+      const go = async () => {
+        // show loader while datasets load (first visit)
+        $loadWrap.classList.remove("hidden");
+        $status.textContent = "Loading datasets…";
+
+        if (!loadedSets.length) await loadAll();
+
+        // reveal filter + test config, hide Open Play, show Test
+        $loadWrap.classList.add("hidden");
+        $app.classList.remove("hidden");
+        document.getElementById("testConfig").classList.remove("hidden");
+        document.getElementById("openPlayView").classList.add("hidden");
+        showTestView();
+
+        // restore deck only if it matches selected question count
+        const saved = loadJSON(TM_KEYS.STATE, null);
+        const idx = Number(localStorage.getItem(TM_CFG_KEYS.COUNT_IDX)) || 0;
+        const targetCount = TM_COUNTS[idx] || 20;
+
+        const canRestore = saved && Array.isArray(saved.deck) && saved.deck.length > 0;
+        const sameSize   = canRestore && saved.deck.length === targetCount;
+        const hasAnswers = canRestore && Array.isArray(saved.answers) && saved.answers.length > 0;
+
+        if (canRestore && sameSize) {
+          restoreTestState();
+        } else {
+          if (hasAnswers) {
+            const ok = confirm(
+              "You have an in-progress test saved with a different question count. " +
+              "Starting a new test will discard your answers.\n\nStart a new test now?"
+            );
+            if (!ok) return;
+          }
+          localStorage.removeItem(TM_KEYS.STATE);
+          startNewTest();
+        }
+      };
+
+      // allow zero selected sets; user can pick in filter now
+      go();
+    }
+
+    // Question count Apply/Enter (with warning)
+    function hasInProgressAnswers() {
+      if (test && test.answers && test.answers.size > 0) return true;
+      const saved = loadJSON(TM_KEYS.STATE, null);
+      if (saved && Array.isArray(saved.answers) && saved.answers.length > 0) return true;
+      return false;
+    }
+    function applyQuestionCount() {
+      const idx = Number($tmCountRange.value);
+      if (hasInProgressAnswers()) {
+        const ok = confirm(
+          "You have an in-progress test. Changing the question count will restart it and your answers will be lost.\n\nContinue?"
+        );
+        if (!ok) return;
+      }
+      localStorage.setItem(TM_CFG_KEYS.COUNT_IDX, String(idx));
+      localStorage.removeItem(TM_KEYS.STATE);
+      if (!$testView.classList.contains("hidden")) startNewTest();
+    }
+    document.getElementById("tmApplyCount")?.addEventListener("click", applyQuestionCount);
+    document.getElementById("tmCountRange")?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); applyQuestionCount(); }
+    });
+
+    // Test bindings
+    document.getElementById("tmPrev").addEventListener("click", tmPrev);
+    document.getElementById("tmNext").addEventListener("click", tmNext);
+    document.getElementById("tmFlag").addEventListener("change", tmToggleFlag);
+    document.getElementById("tmSubmitBtn").addEventListener("click", () => finalizeTest());
+    document.getElementById("tmRestart").addEventListener("click", () => { localStorage.removeItem(TM_KEYS.STATE); startNewTest(); });
+    document.getElementById("tmBackToOpen").addEventListener("click", () => {
+      $testView.classList.add("hidden");
+      document.getElementById("testConfig").classList.add("hidden");
+      $openPlayView.classList.remove("hidden");
+    });
+
+    // CTA buttons
+    document.getElementById("openPlayBtn").addEventListener("click", showOpenPlay);
+    document.getElementById("testModeBtn").addEventListener("click", () => { state.mode = "test"; startTestFlow(); });
+
+    // NOTE: no initial load — data loads after a mode is chosen
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
