@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>What is FadeJunkie?</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: { fj: { 50:'#f8fafc', 900:'#0b0b0c' } },
+          typography: (theme) => ({
+            DEFAULT: {
+              css: {
+                h2: {
+                  fontSize: theme('fontSize.xl'),
+                  fontWeight: '800',
+                  color: theme('colors.zinc.900'),
+                  borderLeft: `4px solid ${theme('colors.fj.900')}`,
+                  paddingLeft: theme('spacing.3'),
+                  marginTop: theme('spacing.12'),
+                },
+                'ul > li::marker': {
+                  color: theme('colors.zinc.400'),
+                },
+                p: {
+                  fontSize: theme('fontSize.base'),
+                  lineHeight: theme('lineHeight.loose'),
+                },
+                strong: { fontWeight: '700' },
+                em: { fontStyle: 'italic' },
+                a: { textDecoration: 'underline' },
+              },
+            },
+          }),
+        },
+      },
+    };
+  </script>
+
+  <script>
+    (function(){
+      const KEY='fj_theme';
+      const saved=localStorage.getItem(KEY);
+      const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme=saved || (prefersDark?'dark':'light');
+      if(theme==='dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+
+  <link rel="icon" href="/favicon.ico" />
+  <meta name="description" content="An inside look at what FadeJunkie is, who it's for, and why it exists. From barber to brand." />
+</head>
+
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+  <header class="border-b border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-700 shadow-sm">
+    <div class="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="index.html#about" class="flex items-center gap-3">
+        <img src="./fadejunkie_logo.png" alt="FadeJunkie" class="h-8 w-auto" />
+        <span class="text-sm font-semibold tracking-tight">FadeJunkie / Blog</span>
+      </a>
+      <button id="themeToggle" class="p-0 border-none bg-transparent hover:opacity-80 transition" aria-pressed="false" title="Toggle dark mode">
+        <img id="themeIcon" src="./dark.icon.png" alt="Toggle theme" class="h-6 w-6" />
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-6 py-12">
+    <nav class="mb-6 text-xs text-zinc-500 dark:text-zinc-400">
+      <a href="index.html#about" class="underline">← Back to Home</a>
+    </nav>
+
+    <header class="mb-12">
+      <p class="text-xs font-medium uppercase tracking-wide text-fj-900">FadeJunkie</p>
+      <h1 class="mt-2 text-4xl sm:text-5xl font-extrabold tracking-tight">What is FadeJunkie?</h1>
+      <p class="mt-4 text-lg text-zinc-700 dark:text-zinc-300 max-w-2xl">
+        <strong>Not just a brand — a blueprint.</strong> Born from <em>real grind</em>, built for <strong>students</strong>, <strong>barbers</strong>, and <strong>clients</strong> who want more from the culture.
+      </p>
+      <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+        Last updated: <span id="updatedDate">2025</span> • Estimated read time: 4 minutes
+      </p>
+    </header>
+
+    <article class="prose prose-zinc dark:prose-invert prose-sm sm:prose-base max-w-none">
+      <p class="text-lg leading-relaxed">I started <strong>FadeJunkie</strong> after years of cutting without a license — <em>getting good before I got approved</em>. I built a name the long way. When I finally made it official, I saw the system didn’t support us — <strong>not really</strong>. Students were lost, licensed barbers were isolated, and clients didn’t know where to look.</p>
+
+      <p class="font-semibold italic bg-fj-50 dark:bg-zinc-800 p-4 rounded-lg border-l-4 border-fj-900 shadow-sm">
+        <strong>FadeJunkie</strong> is what I wish existed when I was coming up. It’s the blueprint I had to figure out the hard way.
+      </p>
+
+      <h2>FadeJunkie is a lane for three types of people:</h2>
+      <ul class="space-y-2">
+        <li><strong>Students</strong> – grinding toward that license with study tools and prep resources that actually help.</li>
+        <li><strong>Barbers</strong> – already licensed, looking to grow their presence, connect, and sharpen up.</li>
+        <li><strong>Clients</strong> – folks who want real fades, real talent, and no BS.</li>
+      </ul>
+
+      <h2>It’s <u>more</u> than a directory.</h2>
+      <p>It’s a full system: <strong>eBooks</strong>, <strong>flashcards</strong>, <strong>test prep tools</strong>, <strong>brand kits</strong>, <strong>booking links</strong>, <strong>mentorship</strong> — all organized by what stage you're at.</p>
+
+      <h2><u>Built by barbers. Run by the culture.</u></h2>
+      <p><em>No investors. No tech bros.</em> Just a network built from the ground up, with tools made by someone who’s lived the hustle. <strong>This is for us.</strong></p>
+
+      <div class="mt-12 bg-fj-50 dark:bg-zinc-800 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700">
+        <h2 class="text-lg font-semibold mb-3">Explore More</h2>
+        <ul class="space-y-2 list-disc pl-5">
+          <li><a href="#">How to Pass the Barber State Board Exam on Your First Try</a></li>
+          <li><a href="#">10 Things I Wish I Knew Before Starting Barber School</a></li>
+          <li><a href="#">Become a FadeJunkie Barber</a></li>
+        </ul>
+      </div>
+    </article>
+  </main>
+
+  <footer class="mt-16 border-t border-zinc-200 dark:border-zinc-800">
+    <div class="max-w-3xl mx-auto px-6 py-6 text-xs flex items-center justify-between text-zinc-500 dark:text-zinc-400">
+      <span>© <span id="year"></span> FadeJunkie</span>
+      <a href="index.html#about" class="underline hover:opacity-80">Back to FadeJunkie</a>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      const KEY='fj_theme';
+      const btn=document.getElementById('themeToggle');
+      const icon=document.getElementById('themeIcon');
+      if(!btn || !icon) return;
+      function current(){ return document.documentElement.classList.contains('dark')?'dark':'light'; }
+      function render(){ const t=current(); btn.setAttribute('aria-pressed', t==='dark'); icon.src = t==='dark' ? './light.icon.png' : './dark.icon.png'; }
+      function setTheme(t){
+        if(t==='dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+        localStorage.setItem(KEY,t); render();
+      }
+      render();
+      btn.addEventListener('click',()=> setTheme(current()==='dark'?'light':'dark'));
+    })();
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+    document.getElementById('updatedDate').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
