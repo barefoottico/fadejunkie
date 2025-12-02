@@ -37,7 +37,7 @@
     <header class="mb-6">
       <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Barber Schools Directory</h1>
       <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
-        Search the directory or use your location. Distance sorting can be added once lat/lng are saved for each school.
+        Search the directory by name, city, or ZIP — or use your location and filter by distance.
       </p>
     </header>
 
@@ -45,7 +45,7 @@
     <section id="schools" class="scroll-mt-24 py-6 border-t border-zinc-200 dark:border-zinc-800">
       <h3 class="text-xl font-semibold mb-2">Schools Near Me</h3>
       <p class="text-sm text-zinc-600 dark:text-zinc-300">
-        Type a school name, city, or ZIP to see matching results.
+        Type a school name, city, or ZIP to see matching results, or use your location and pick a radius.
       </p>
 
       <!-- Controls -->
@@ -56,12 +56,35 @@
                  dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
           placeholder="Search by name, city, or ZIP..."
         />
-        <div class="flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2">
           <button
             id="useLocation"
+            type="button"
             class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-sm
                    dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
             Use my location
+          </button>
+          <!-- Radius buttons -->
+          <button
+            type="button"
+            onclick="filterByRadius(10)"
+            class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-xs
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
+            10 mi
+          </button>
+          <button
+            type="button"
+            onclick="filterByRadius(25)"
+            class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-xs
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
+            25 mi
+          </button>
+          <button
+            type="button"
+            onclick="filterByRadius(50)"
+            class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-xs
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
+            50 mi
           </button>
         </div>
       </div>
@@ -72,7 +95,7 @@
 
       <!-- Empty state -->
       <div id="schoolEmpty" class="mt-6 text-sm text-zinc-600 dark:text-zinc-300">
-        No schools match your search yet. Try a different term.
+        No schools match your search yet. Try a different term or radius.
       </div>
     </section>
   </main>
@@ -85,28 +108,32 @@
         name: "Texas Barber and Beauty Academy",
         address: "8045 Pinebrook Drive, San Antonio, Texas 78230, United States",
         website: null,
-        phone: null
+        phone: null,
+        coords: { lat: 29.5395, lng: -98.5239 }
       },
       {
         id: "topoftheline",
         name: "Top of the Line Barber School",
         address: "5806 Walzem Rd, San Antonio, Texas 78218, United States",
         website: null,
-        phone: "(210) 646-0567"
+        phone: "(210) 646-0567",
+        coords: { lat: 29.5047, lng: -98.3807 }
       },
       {
         id: "fadedculture",
         name: "Faded Culture Academy",
         address: "215 Coca-Cola Pl Unit 218, San Antonio, Texas 78219, United States",
         website: null,
-        phone: "(210) 542-5140"
+        phone: "(210) 542-5140",
+        coords: { lat: 29.4371, lng: -98.4411 }
       },
       {
         id: "deluxebarbercollege",
         name: "Deluxe Barber College",
         address: "12636 Nacogdoches Rd, San Antonio, Texas 78217, United States",
         website: null,
-        phone: "(210) 655-9999"
+        phone: "(210) 655-9999",
+        coords: { lat: 29.5528, lng: -98.3991 }
       }
     ];
 
@@ -117,6 +144,7 @@
     const btnGeo   = document.getElementById("useLocation");
 
     let filtered = [];
+    let userLocation = null;
 
     function mapsDirHref(address){
       return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
@@ -162,6 +190,7 @@
     function filterList(){
       const q = (elQuery.value || "").trim().toLowerCase();
       if (!q) {
+        // keep blank when there's no query
         filtered = [];
         render(filtered);
         return;
@@ -175,6 +204,43 @@
       render(filtered);
     }
 
+    // Haversine distance in miles
+    function distanceMiles(lat1, lng1, lat2, lng2) {
+      const R = 3958.8; // miles
+      const toRad = x => x * Math.PI / 180;
+
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) ** 2;
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    // Radius filter – global so buttons can call it
+    function filterByRadius(radiusMiles) {
+      if (!userLocation) {
+        alert("Click 'Use my location' first.");
+        return;
+      }
+
+      const list = SCHOOLS.filter(s => {
+        if (!s.coords) return false;
+        const dist = distanceMiles(
+          userLocation.lat,
+          userLocation.lng,
+          s.coords.lat,
+          s.coords.lng
+        );
+        return dist <= radiusMiles;
+      });
+
+      render(list);
+    }
+
     // Events
     elQuery.addEventListener("input", filterList);
 
@@ -185,7 +251,11 @@
       }
       navigator.geolocation.getCurrentPosition(
         pos => {
-          alert("Location captured. Once we store lat/lng for schools, we can sort by distance.");
+          userLocation = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          };
+          alert("Got your location. Now pick a radius (10, 25, or 50 miles).");
         },
         err => {
           console.warn("Geolocation error:", err);
