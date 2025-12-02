@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FadeJunkie – Barber Schools Directory</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: { fj: { 50:'#f8fafc', 900:'#0b0b0c' } }
+        }
+      }
+    };
+  </script>
+
+  <!-- Simple dark-mode init (optional) -->
+  <script>
+    (function(){
+      const KEY='fj_theme';
+      const saved=localStorage.getItem(KEY);
+      const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme=saved || (prefersDark?'dark':'light');
+      if (theme === 'dark') document.documentElement.classList.add('dark');
+    })();
+  </script>
+
+  <meta name="description" content="Search barber schools by name, city, or ZIP." />
+</head>
+<body class="bg-zinc-50 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+
+  <main class="max-w-3xl mx-auto px-6 py-10">
+    <header class="mb-6">
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Barber Schools Directory</h1>
+      <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-300">
+        Search the directory or use your location. Distance sorting can be added once lat/lng are saved for each school.
+      </p>
+    </header>
+
+    <!-- Schools widget -->
+    <section id="schools" class="scroll-mt-24 py-6 border-t border-zinc-200 dark:border-zinc-800">
+      <h3 class="text-xl font-semibold mb-2">Schools Near Me</h3>
+      <p class="text-sm text-zinc-600 dark:text-zinc-300">
+        Type a school name, city, or ZIP to see matching results.
+      </p>
+
+      <!-- Controls -->
+      <div class="mt-4 flex flex-col sm:flex-row gap-3 max-w-2xl">
+        <input
+          id="schoolQuery"
+          class="flex-1 px-3 py-2 rounded-lg border border-zinc-200 text-sm
+                 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
+          placeholder="Search by name, city, or ZIP..."
+        />
+        <div class="flex items-center gap-2">
+          <button
+            id="useLocation"
+            class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-sm
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
+            Use my location
+          </button>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="schoolCount" class="mt-3 text-xs text-zinc-500 dark:text-zinc-400">0 results</div>
+      <div id="schoolGrid" class="mt-4 grid sm:grid-cols-2 gap-3"></div>
+
+      <!-- Empty state -->
+      <div id="schoolEmpty" class="mt-6 text-sm text-zinc-600 dark:text-zinc-300">
+        No schools match your search yet. Try a different term.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Sample data – extend this with your full list
+    const SCHOOLS = [
+      {
+        id: "tbba",
+        name: "Texas Barber and Beauty Academy",
+        address: "8045 Pinebrook Drive, San Antonio, Texas 78230, United States",
+        website: null,
+        phone: null
+      },
+      {
+        id: "topoftheline",
+        name: "Top of the Line Barber School",
+        address: "5806 Walzem Rd, San Antonio, Texas 78218, United States",
+        website: null,
+        phone: "(210) 646-0567"
+      },
+      {
+        id: "fadedculture",
+        name: "Faded Culture Academy",
+        address: "215 Coca-Cola Pl Unit 218, San Antonio, Texas 78219, United States",
+        website: null,
+        phone: "(210) 542-5140"
+      },
+      {
+        id: "deluxebarbercollege",
+        name: "Deluxe Barber College",
+        address: "12636 Nacogdoches Rd, San Antonio, Texas 78217, United States",
+        website: null,
+        phone: "(210) 655-9999"
+      }
+    ];
+
+    const elQuery  = document.getElementById("schoolQuery");
+    const elGrid   = document.getElementById("schoolGrid");
+    const elEmpty  = document.getElementById("schoolEmpty");
+    const elCount  = document.getElementById("schoolCount");
+    const btnGeo   = document.getElementById("useLocation");
+
+    let filtered = [];
+
+    function mapsDirHref(address){
+      return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
+    }
+
+    function card(s){
+      const hasPhone = !!s.phone;
+      const hasSite  = !!s.website;
+      return `
+        <article class="rounded-2xl border border-zinc-200 bg-white shadow p-5
+                        dark:bg-zinc-800 dark:border-zinc-700">
+          <h4 class="text-lg font-semibold">${s.name}</h4>
+          <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${s.address}</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <a href="${mapsDirHref(s.address)}" target="_blank" rel="noopener"
+               class="px-3 py-1.5 rounded-lg bg-black text-white text-sm hover:opacity-90
+                      dark:bg-zinc-100 dark:text-zinc-900">
+              Directions
+            </a>
+            ${hasSite ? `
+            <a href="${s.website}" target="_blank" rel="noopener"
+               class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
+                      dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">
+              Website
+            </a>` : ``}
+            ${hasPhone ? `
+            <a href="tel:${s.phone.replace(/[^+\d]/g,'')}"
+               class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
+                      dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">
+              Call
+            </a>` : ``}
+          </div>
+        </article>
+      `;
+    }
+
+    function render(list){
+      elGrid.innerHTML = list.map(card).join("");
+      elEmpty.classList.toggle("hidden", list.length > 0);
+      elCount.textContent = `${list.length} result${list.length === 1 ? "" : "s"}`;
+    }
+
+    function filterList(){
+      const q = (elQuery.value || "").trim().toLowerCase();
+      if (!q) {
+        filtered = [];
+        render(filtered);
+        return;
+      }
+
+      filtered = SCHOOLS.filter(s => {
+        const haystack = (s.name + " " + s.address).toLowerCase();
+        return haystack.includes(q);
+      });
+
+      render(filtered);
+    }
+
+    // Events
+    elQuery.addEventListener("input", filterList);
+
+    btnGeo.addEventListener("click", () => {
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported on this device/browser.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          alert("Location captured. Once we store lat/lng for schools, we can sort by distance.");
+        },
+        err => {
+          console.warn("Geolocation error:", err);
+          alert("Could not get your location. You can still search by city/ZIP.");
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    });
+
+    // Start with no results
+    render([]);
+  </script>
+</body>
+</html>
