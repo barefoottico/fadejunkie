@@ -1,4 +1,4 @@
---
+---
 slug: real-marketing-techniques-for-barbers
 title: Real Marketing Techniques for Barbers
 category: Barber Business
