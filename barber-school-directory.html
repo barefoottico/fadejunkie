@@ -141,18 +141,18 @@
       elQuery.parentElement.insertBefore(wrapper, elQuery.nextSibling);
 
       // update label + re-filter on slide
-      radiusSlider.addEventListener("input", () => {
-        const idx = parseInt(radiusSlider.value, 10) || 0;
-        const opt = radiusOptions[idx] || radiusOptions[0];
-        radiusLabel.textContent = opt.label;
+   radiusSlider.addEventListener("input", () => {
+  const idx = parseInt(radiusSlider.value, 10) || 0;
+  const opt = radiusOptions[idx] || radiusOptions[0];
+  radiusLabel.textContent = opt.label;
 
-        const hasZip = elQuery && elQuery.value.trim();
-        if (userLoc) {
-          filterByUserLocation();
-        } else if (hasZip) {
-          filterList();
-        }
-      });
+  const hasQuery = elQuery && elQuery.value.trim().length > 0;
+  if (userLoc) {
+    filterByUserLocation();
+  } else if (hasQuery) {
+    filterList();
+  }
+});
     }
 
     function getRadius() {
@@ -238,114 +238,137 @@
       });
     }
 
-    // ZIP / text-based filtering
-    function filterList(){
-      const qRaw = (elQuery && elQuery.value ? elQuery.value : "").trim();
-      const q = qRaw.toLowerCase();
+   // ZIP / city-based filtering
+function filterList(){
+  const qRaw = (elQuery && elQuery.value ? elQuery.value : "").trim();
+  const q = qRaw.toLowerCase();
+  const isZip = /^\d{5}$/.test(qRaw);
 
-      userLoc = null; // if they start typing again, we treat it as a query search
+  userLoc = null; // typing again switches back to query-based mode
 
-      // if no query, show nothing
-      if (!q) {
-        filtered = [];
-        render(filtered);
-        return;
-      }
+  // if no query, show nothing
+  if (!q) {
+    filtered = [];
+    render(filtered);
+    return;
+  }
 
-      const isZip = /^\d{5}$/.test(qRaw);
-      const radius = getRadius();
+  const radius = getRadius();
 
-      // SIMPLE MODE: not a ZIP or radius == 0 → normal text search
-      if (!isZip || radius === 0) {
-        filtered = SCHOOLS.filter(s =>
-          (s.name + " " + s.address).toLowerCase().includes(q)
-        );
-        clearDistances(filtered);
-        render(filtered);
-        return;
-      }
-
-      // ZIP + radius: center on schools with that ZIP, then expand
-      const exactZipSchools = SCHOOLS.filter(s =>
-        s.address && s.address.includes(qRaw) && s.coords
+  // ---------- ZIP MODE ----------
+  if (isZip) {
+    // Exact ZIP only (radius = 0)
+    if (radius === 0) {
+      filtered = SCHOOLS.filter(s =>
+        s.address && s.address.includes(qRaw)
       );
-
-      if (!exactZipSchools.length) {
-        // fallback to text search if we can't find coords for that ZIP
-        filtered = SCHOOLS.filter(s =>
-          (s.name + " " + s.address).toLowerCase().includes(q)
-        );
-        clearDistances(filtered);
-        render(filtered);
-        return;
-      }
-
-      // center = average of coords of exact-zip schools
-      const center = exactZipSchools.reduce(
-        (acc, s) => {
-          acc.lat += s.coords.lat;
-          acc.lng += s.coords.lng;
-          return acc;
-        },
-        { lat: 0, lng: 0 }
-      );
-      center.lat /= exactZipSchools.length;
-      center.lng /= exactZipSchools.length;
-
-      filtered = SCHOOLS.filter(s => {
-        if (!s.coords) {
-          if (s._distance !== undefined) delete s._distance;
-          return false;
-        }
-        const d = distanceMiles(center.lat, center.lng, s.coords.lat, s.coords.lng);
-        const within = d <= radius;
-        if (within) {
-          s._distance = d;
-        } else if (s._distance !== undefined) {
-          delete s._distance;
-        }
-        return within;
-      });
-
-      // sort by distance ascending
-      filtered.sort((a, b) => (a._distance || 0) - (b._distance || 0));
-
+      clearDistances(filtered);
       render(filtered);
+      return;
     }
 
-    // Location-based filtering (Use my location)
-    function filterByUserLocation(){
-      if (!userLoc) {
-        filtered = [];
-        render(filtered);
-        return;
-      }
-      let radius = getRadius();
-      if (radius === 0) {
-        // if slider is on "Exact ZIP only", default to 10 miles for location-based
-        radius = 10;
-        setRadiusByValue(10);
-      }
+    // ZIP + radius: center on schools with that ZIP, then expand
+    const exactZipSchools = SCHOOLS.filter(s =>
+      s.address && s.address.includes(qRaw) && s.coords
+    );
 
-      filtered = SCHOOLS.filter(s => {
-        if (!s.coords) {
-          if (s._distance !== undefined) delete s._distance;
-          return false;
-        }
-        const d = distanceMiles(userLoc.lat, userLoc.lng, s.coords.lat, s.coords.lng);
-        const within = d <= radius;
-        if (within) {
-          s._distance = d;
-        } else if (s._distance !== undefined) {
-          delete s._distance;
-        }
-        return within;
-      });
-
-      filtered.sort((a, b) => (a._distance || 0) - (b._distance || 0));
-
+    if (!exactZipSchools.length) {
+      // fallback: show schools in that ZIP (no radius expansion possible)
+      filtered = SCHOOLS.filter(s =>
+        s.address && s.address.includes(qRaw)
+      );
+      clearDistances(filtered);
       render(filtered);
+      return;
     }
+
+    const center = exactZipSchools.reduce(
+      (acc, s) => {
+        acc.lat += s.coords.lat;
+        acc.lng += s.coords.lng;
+        return acc;
+      },
+      { lat: 0, lng: 0 }
+    );
+    center.lat /= exactZipSchools.length;
+    center.lng /= exactZipSchools.length;
+
+    filtered = SCHOOLS.filter(s => {
+      if (!s.coords) {
+        if (s._distance !== undefined) delete s._distance;
+        return false;
+      }
+      const d = distanceMiles(center.lat, center.lng, s.coords.lat, s.coords.lng);
+      const within = d <= radius;
+      if (within) {
+        s._distance = d;
+      } else if (s._distance !== undefined) {
+        delete s._distance;
+      }
+      return within;
+    });
+
+    filtered.sort((a, b) => (a._distance || 0) - (b._distance || 0));
+    render(filtered);
+    return;
+  }
+
+  // ---------- CITY / TEXT MODE ----------
+  // If radius = 0 → simple text search (no neighbor expansion)
+  if (radius === 0) {
+    filtered = SCHOOLS.filter(s =>
+      (s.name + " " + s.address).toLowerCase().includes(q)
+    );
+    clearDistances(filtered);
+    render(filtered);
+    return;
+  }
+
+  // radius > 0: use schools that match the text to define a center, then expand
+  const baseSchools = SCHOOLS.filter(s =>
+    s.address && s.coords && s.address.toLowerCase().includes(q)
+  );
+
+  if (!baseSchools.length) {
+    // fallback: text search only (no radius expansion possible)
+    filtered = SCHOOLS.filter(s =>
+      (s.name + " " + s.address).toLowerCase().includes(q)
+    );
+    clearDistances(filtered);
+    render(filtered);
+    return;
+  }
+
+  const center = baseSchools.reduce(
+    (acc, s) => {
+      acc.lat += s.coords.lat;
+      acc.lng += s.coords.lng;
+      return acc;
+    },
+    { lat: 0, lng: 0 }
+  );
+  center.lat /= baseSchools.length;
+  center.lng /= baseSchools.length;
+
+  filtered = SCHOOLS.filter(s => {
+    if (!s.coords) {
+      if (s._distance !== undefined) delete s._distance;
+      return false;
+    }
+    const d = distanceMiles(center.lat, center.lng, s.coords.lat, s.coords.lng);
+    const within = d <= radius;
+    if (within) {
+      s._distance = d;
+    } else if (s._distance !== undefined) {
+      delete s._distance;
+    }
+    return within;
+  });
+
+  filtered.sort((a, b) => (a._distance || 0) - (b._distance || 0));
+  render(filtered);
+}
+
 
     async function init() {
       try {
