@@ -18,7 +18,7 @@
     };
   </script>
 
-  <!-- Simple dark-mode init (optional) -->
+  <!-- Simple dark-mode init -->
   <script>
     (function(){
       const KEY='fj_theme';
@@ -45,7 +45,7 @@
     <section id="schools" class="scroll-mt-24 py-6 border-t border-zinc-200 dark:border-zinc-800">
       <h3 class="text-xl font-semibold mb-2">Schools Near Me</h3>
       <p class="text-sm text-zinc-600 dark:text-zinc-300">
-        Type a school name, city, or ZIP to see matching results, or use your location and pick a radius.
+        Type a school name, city, or ZIP to see matching results. Or use your location plus a radius.
       </p>
 
       <!-- Controls -->
@@ -56,35 +56,19 @@
                  dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
           placeholder="Search by name, city, or ZIP..."
         />
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
           <button
             id="useLocation"
-            type="button"
             class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-sm
                    dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
             Use my location
           </button>
-          <!-- Radius buttons -->
+          <!-- optional reset for standalone -->
           <button
-            type="button"
-            onclick="filterByRadius(10)"
+            id="resetSchoolFilters"
             class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-xs
                    dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
-            10 mi
-          </button>
-          <button
-            type="button"
-            onclick="filterByRadius(25)"
-            class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-xs
-                   dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
-            25 mi
-          </button>
-          <button
-            type="button"
-            onclick="filterByRadius(50)"
-            class="px-3 py-2 rounded-lg border bg-white hover:bg-zinc-100 text-xs
-                   dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700">
-            50 mi
+            Reset
           </button>
         </div>
       </div>
@@ -95,178 +79,255 @@
 
       <!-- Empty state -->
       <div id="schoolEmpty" class="mt-6 text-sm text-zinc-600 dark:text-zinc-300">
-        No schools match your search yet. Try a different term or radius.
+        No schools match your search yet. Try a different term.
       </div>
     </section>
   </main>
 
   <script>
-    // Sample data – extend this with your full list
-    const SCHOOLS = [
-      {
-        id: "tbba",
-        name: "Texas Barber and Beauty Academy",
-        address: "8045 Pinebrook Drive, San Antonio, Texas 78230, United States",
-        website: null,
-        phone: null,
-        coords: { lat: 29.5395, lng: -98.5239 }
-      },
-      {
-        id: "topoftheline",
-        name: "Top of the Line Barber School",
-        address: "5806 Walzem Rd, San Antonio, Texas 78218, United States",
-        website: null,
-        phone: "(210) 646-0567",
-        coords: { lat: 29.5047, lng: -98.3807 }
-      },
-      {
-        id: "fadedculture",
-        name: "Faded Culture Academy",
-        address: "215 Coca-Cola Pl Unit 218, San Antonio, Texas 78219, United States",
-        website: null,
-        phone: "(210) 542-5140",
-        coords: { lat: 29.4371, lng: -98.4411 }
-      },
-      {
-        id: "deluxebarbercollege",
-        name: "Deluxe Barber College",
-        address: "12636 Nacogdoches Rd, San Antonio, Texas 78217, United States",
-        website: null,
-        phone: "(210) 655-9999",
-        coords: { lat: 29.5528, lng: -98.3991 }
-      }
-    ];
+    /* ==========================
+       Schools Directory Widget
+    ========================== */
+    (function(){
+      const JSON_URL = "https://raw.githubusercontent.com/barefoottico/fadejunkie/430211070b8512c117a07136e34b087971666571/texas_barber_schools.json";
 
-    const elQuery  = document.getElementById("schoolQuery");
-    const elGrid   = document.getElementById("schoolGrid");
-    const elEmpty  = document.getElementById("schoolEmpty");
-    const elCount  = document.getElementById("schoolCount");
-    const btnGeo   = document.getElementById("useLocation");
+      const elQuery  = document.getElementById("schoolQuery");
+      const elGrid   = document.getElementById("schoolGrid");
+      const elEmpty  = document.getElementById("schoolEmpty");
+      const elCount  = document.getElementById("schoolCount");
+      const btnGeo   = document.getElementById("useLocation");
+      const btnReset = document.getElementById("resetSchoolFilters");
 
-    let filtered = [];
-    let userLocation = null;
+      if (!elGrid || !elCount || !elEmpty) return;
 
-    function mapsDirHref(address){
-      return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
-    }
+      let SCHOOLS = [];
+      let filtered = [];
+      let userLoc = null; // { lat, lng } when using "Use my location"
 
-    function card(s){
-      const hasPhone = !!s.phone;
-      const hasSite  = !!s.website;
-      return `
-        <article class="rounded-2xl border border-zinc-200 bg-white shadow p-5
-                        dark:bg-zinc-800 dark:border-zinc-700">
-          <h4 class="text-lg font-semibold">${s.name}</h4>
-          <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${s.address}</p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <a href="${mapsDirHref(s.address)}" target="_blank" rel="noopener"
-               class="px-3 py-1.5 rounded-lg bg-black text-white text-sm hover:opacity-90
-                      dark:bg-zinc-100 dark:text-zinc-900">
-              Directions
-            </a>
-            ${hasSite ? `
-            <a href="${s.website}" target="_blank" rel="noopener"
-               class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
-                      dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">
-              Website
-            </a>` : ``}
-            ${hasPhone ? `
-            <a href="tel:${s.phone.replace(/[^+\d]/g,'')}"
-               class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
-                      dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">
-              Call
-            </a>` : ``}
-          </div>
-        </article>
-      `;
-    }
+      // ---- Radius selector (Exact ZIP / 10 / 25 / 50 mi) ----
+      let radiusSelect = null;
+      if (elQuery && elQuery.parentElement) {
+        radiusSelect = document.createElement("select");
+        radiusSelect.id = "schoolRadius";
+        radiusSelect.className =
+          "mt-2 sm:mt-0 sm:ml-2 px-3 py-2 rounded-lg border bg-white text-sm " +
+          "dark:bg-zinc-800 dark:border-zinc-700 dark:hover:bg-zinc-700";
 
-    function render(list){
-      elGrid.innerHTML = list.map(card).join("");
-      elEmpty.classList.toggle("hidden", list.length > 0);
-      elCount.textContent = `${list.length} result${list.length === 1 ? "" : "s"}`;
-    }
+        const options = [
+          { value: "0",  label: "Exact ZIP only" },
+          { value: "10", label: "Within 10 mi" },
+          { value: "25", label: "Within 25 mi" },
+          { value: "50", label: "Within 50 mi" },
+        ];
+        options.forEach(opt => {
+          const o = document.createElement("option");
+          o.value = opt.value;
+          o.textContent = opt.label;
+          radiusSelect.appendChild(o);
+        });
 
-    function filterList(){
-      const q = (elQuery.value || "").trim().toLowerCase();
-      if (!q) {
-        // keep blank when there's no query
-        filtered = [];
-        render(filtered);
-        return;
+        // insert right after the ZIP input
+        elQuery.parentElement.insertBefore(radiusSelect, elQuery.nextSibling);
+
+        // re-filter when radius changes (only if there's already a query or location)
+        radiusSelect.addEventListener("change", () => {
+          const hasZip = elQuery && elQuery.value.trim();
+          if (userLoc) {
+            filterByUserLocation();
+          } else if (hasZip) {
+            filterList();
+          }
+        });
       }
 
-      filtered = SCHOOLS.filter(s => {
-        const haystack = (s.name + " " + s.address).toLowerCase();
-        return haystack.includes(q);
-      });
-
-      render(filtered);
-    }
-
-    // Haversine distance in miles
-    function distanceMiles(lat1, lng1, lat2, lng2) {
-      const R = 3958.8; // miles
-      const toRad = x => x * Math.PI / 180;
-
-      const dLat = toRad(lat2 - lat1);
-      const dLng = toRad(lng2 - lng1);
-      const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-        Math.sin(dLng / 2) ** 2;
-
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    }
-
-    // Radius filter – global so buttons can call it
-    function filterByRadius(radiusMiles) {
-      if (!userLocation) {
-        alert("Click 'Use my location' first.");
-        return;
+      function mapsDirHref(address){
+        return "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(address);
       }
 
-      const list = SCHOOLS.filter(s => {
-        if (!s.coords) return false;
-        const dist = distanceMiles(
-          userLocation.lat,
-          userLocation.lng,
-          s.coords.lat,
-          s.coords.lng
+      function card(s){
+        const hasPhone = !!s.phone;
+        const hasSite  = !!s.website;
+        return `
+          <article class="rounded-2xl border border-zinc-200 bg-white shadow p-5
+                          dark:bg-zinc-800 dark:border-zinc-700">
+            <h4 class="text-lg font-semibold">${s.name}</h4>
+            <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-300">${s.address}</p>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <a href="${mapsDirHref(s.address)}" target="_blank" rel="noopener"
+                 class="px-3 py-1.5 rounded-lg bg-black text-white text-sm hover:opacity-90
+                        dark:bg-zinc-100 dark:text-zinc-900">Directions</a>
+              ${hasSite ? `
+              <a href="${s.website}" target="_blank" rel="noopener"
+                 class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
+                        dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Website</a>` : ``}
+              ${hasPhone ? `
+              <a href="tel:${s.phone.replace(/[^+\d]/g,'')}"
+                 class="px-3 py-1.5 rounded-lg border bg-white text-sm hover:bg-zinc-100
+                        dark:bg-zinc-900 dark:border-zinc-700 dark:hover:bg-zinc-700">Call</a>` : ``}
+            </div>
+            <div class="mt-2 text-xs text-zinc-500 dark:text-zinc-400" data-distance-for="${s.id}"></div>
+          </article>
+        `;
+      }
+
+      function render(list){
+        elGrid.innerHTML = list.map(card).join("");
+        elEmpty.classList.toggle("hidden", list.length > 0);
+        elCount.textContent = `${list.length} result${list.length===1?"":"s"}`;
+      }
+
+      // Haversine distance in miles
+      function distanceMiles(lat1, lon1, lat2, lon2) {
+        const R = 3958.8; // miles
+        const toRad = d => d * Math.PI / 180;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a =
+          Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+          Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+      }
+
+      // ZIP / text-based filtering
+      function filterList(){
+        const qRaw = (elQuery && elQuery.value ? elQuery.value : "").trim();
+        const q = qRaw.toLowerCase();
+
+        userLoc = null; // if they start typing again, we treat it as a query search
+
+        // if no query, show nothing
+        if (!q) {
+          filtered = [];
+          render(filtered);
+          return;
+        }
+
+        const isZip = /^\d{5}$/.test(qRaw);
+        const radius = radiusSelect ? parseInt(radiusSelect.value, 10) || 0 : 0;
+
+        // SIMPLE MODE: not a ZIP or radius == 0 → normal text search
+        if (!isZip || radius === 0) {
+          filtered = SCHOOLS.filter(s =>
+            (s.name + " " + s.address).toLowerCase().includes(q)
+          );
+          render(filtered);
+          return;
+        }
+
+        // ZIP + radius: center on schools with that ZIP, then expand
+        const exactZipSchools = SCHOOLS.filter(s =>
+          s.address && s.address.includes(qRaw) && s.coords
         );
-        return dist <= radiusMiles;
-      });
 
-      render(list);
-    }
+        if (!exactZipSchools.length) {
+          // fallback to text search if we can't find coords for that ZIP
+          filtered = SCHOOLS.filter(s =>
+            (s.name + " " + s.address).toLowerCase().includes(q)
+          );
+          render(filtered);
+          return;
+        }
 
-    // Events
-    elQuery.addEventListener("input", filterList);
+        // center = average of coords of exact-zip schools
+        const center = exactZipSchools.reduce(
+          (acc, s) => {
+            acc.lat += s.coords.lat;
+            acc.lng += s.coords.lng;
+            return acc;
+          },
+          { lat: 0, lng: 0 }
+        );
+        center.lat /= exactZipSchools.length;
+        center.lng /= exactZipSchools.length;
 
-    btnGeo.addEventListener("click", () => {
-      if (!navigator.geolocation) {
-        alert("Geolocation not supported on this device/browser.");
-        return;
+        filtered = SCHOOLS.filter(s => {
+          if (!s.coords) return false;
+          const d = distanceMiles(center.lat, center.lng, s.coords.lat, s.coords.lng);
+          return d <= radius;
+        });
+
+        render(filtered);
       }
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          userLocation = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-          };
-          alert("Got your location. Now pick a radius (10, 25, or 50 miles).");
-        },
-        err => {
-          console.warn("Geolocation error:", err);
-          alert("Could not get your location. You can still search by city/ZIP.");
-        },
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    });
 
-    // Start with no results
-    render([]);
+      // Location-based filtering (Use my location)
+      function filterByUserLocation(){
+        if (!userLoc) {
+          filtered = [];
+          render(filtered);
+          return;
+        }
+        let radius = radiusSelect ? parseInt(radiusSelect.value, 10) || 0 : 0;
+        if (radius === 0) {
+          // if user chose "Exact ZIP only", default to 10 miles for location-based
+          radius = 10;
+          if (radiusSelect) radiusSelect.value = "10";
+        }
+
+        filtered = SCHOOLS.filter(s => {
+          if (!s.coords) return false;
+          const d = distanceMiles(userLoc.lat, userLoc.lng, s.coords.lat, s.coords.lng);
+          return d <= radius;
+        });
+
+        render(filtered);
+      }
+
+      async function init() {
+        try {
+          const res = await fetch(JSON_URL, { cache: "no-store" });
+          if (!res.ok) throw new Error("Failed to load schools JSON");
+          SCHOOLS  = await res.json();
+
+          // start with no results
+          filtered = [];
+          render(filtered);
+
+          if (elQuery) {
+            elQuery.addEventListener("input", filterList);
+          }
+
+          if (btnGeo) {
+            btnGeo.addEventListener("click", () => {
+              if (!navigator.geolocation) {
+                alert("Geolocation not supported on this device/browser.");
+                return;
+              }
+              navigator.geolocation.getCurrentPosition(
+                pos => {
+                  userLoc = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                  };
+                  filterByUserLocation();
+                },
+                err => {
+                  console.warn("Geolocation error:", err);
+                  alert("Could not get your location. You can still search by city/ZIP.");
+                },
+                { enableHighAccuracy: true, timeout: 8000 }
+              );
+            });
+          }
+
+          if (btnReset) {
+            btnReset.addEventListener("click", () => {
+              if (elQuery) elQuery.value = "";
+              if (radiusSelect) radiusSelect.value = "0";
+              userLoc = null;
+              filtered = [];
+              render(filtered);
+            });
+          }
+        } catch (err) {
+          console.error("Error loading school list:", err);
+          render([]);
+        }
+      }
+
+      init();
+    })();
   </script>
 </body>
 </html>
